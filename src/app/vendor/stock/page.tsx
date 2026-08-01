@@ -1,8 +1,8 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import Link from 'next/link';
-import { Store, Plus, Save, ArrowLeft, RefreshCw, AlertCircle, Check } from 'lucide-react';
+import { VendorHeader } from '@/components/VendorHeader';
+import { Plus, Save, Check, X } from 'lucide-react';
 
 interface MenuItemStock {
   id: string;
@@ -21,7 +21,6 @@ export default function VendorStockPage() {
   const [savingId, setSavingId] = useState<string | null>(null);
   const [savedId, setSavedId] = useState<string | null>(null);
 
-  // Add Item state
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [newName, setNewName] = useState('');
   const [newDesc, setNewDesc] = useState('');
@@ -106,160 +105,165 @@ export default function VendorStockPage() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-900 text-slate-100 pb-16">
-      {/* Top Header */}
-      <header className="bg-slate-800 border-b border-slate-700 px-6 py-4 flex items-center justify-between sticky top-0 z-30">
-        <div className="flex items-center space-x-3">
-          <Link href="/vendor/queue" className="p-2 rounded-xl bg-slate-700 hover:bg-slate-600 text-slate-300">
-            <ArrowLeft className="w-5 h-5" />
-          </Link>
+    <div className="min-h-screen bg-ej-deep text-ej-cream pb-16 flex flex-col">
+      <VendorHeader />
+
+      <main className="max-w-5xl w-full mx-auto px-4 pt-6 space-y-5 flex-1">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
-            <h1 className="text-xl font-bold text-amber-400">Daily Stock Management</h1>
-            <p className="text-xs text-slate-400">Set today's available quantities per item to update sold-out badges</p>
+            <h1 className="text-xl font-extrabold text-ej-cream">Daily Stock Management</h1>
+            <p className="text-xs text-ej-muted mt-1">Set today&apos;s available quantities per item to update sold-out badges</p>
           </div>
+
+          <button
+            onClick={() => setIsAddModalOpen(true)}
+            className="btn-primary py-2 px-4 text-xs font-bold flex items-center gap-1.5 self-start sm:self-auto"
+          >
+            <Plus className="w-4 h-4" />
+            <span>Add New Menu Item</span>
+          </button>
         </div>
 
-        <button
-          onClick={() => setIsAddModalOpen(true)}
-          className="px-4 py-2 rounded-xl bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold text-xs flex items-center space-x-1.5 shadow-md"
-        >
-          <Plus className="w-4 h-4" />
-          <span>Add New Menu Item</span>
-        </button>
-      </header>
-
-      {/* Main Stock Table / Grid */}
-      <main className="max-w-5xl mx-auto px-4 pt-6">
         {loading ? (
           <div className="space-y-3">
             {[1, 2, 3, 4].map((i) => (
-              <div key={i} className="h-20 bg-slate-800 rounded-xl animate-pulse" />
+              <div key={i} className="h-16 bg-ej-indigo/60 rounded-2xl border border-ej-border/60 skeleton" />
             ))}
           </div>
         ) : (
-          <div className="bg-slate-800 rounded-2xl border border-slate-700 overflow-hidden shadow-xl">
-            <table className="w-full text-left text-xs border-collapse">
-              <thead>
-                <tr className="bg-slate-850 text-slate-400 border-b border-slate-700 font-semibold">
-                  <th className="p-4">Item Name & Category</th>
-                  <th className="p-4">Price (₹)</th>
-                  <th className="p-4">Today's Total Available</th>
-                  <th className="p-4">Reserved</th>
-                  <th className="p-4">Orderable Now</th>
-                  <th className="p-4 text-center">Active State</th>
-                  <th className="p-4 text-right">Actions</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-700">
-                {items.map((item) => (
-                  <tr key={item.id} className="hover:bg-slate-750/50 transition">
-                    <td className="p-4 font-bold text-slate-200">
-                      <div>{item.name}</div>
-                      <span className="text-[10px] text-amber-400/80 font-mono">{item.category}</span>
-                    </td>
-                    <td className="p-4 font-bold text-emerald-400">₹{item.price}</td>
-                    <td className="p-4">
-                      <input
-                        type="number"
-                        min="0"
-                        value={item.quantityAvailable}
-                        onChange={(e) => {
-                          const val = parseInt(e.target.value, 10) || 0;
-                          setItems((prev) =>
-                            prev.map((i) => (i.id === item.id ? { ...i, quantityAvailable: val } : i))
-                          );
-                        }}
-                        className="w-20 px-3 py-1.5 bg-slate-900 border border-slate-600 rounded-lg text-amber-300 font-bold text-sm text-center focus:outline-none focus:border-amber-500"
-                      />
-                    </td>
-                    <td className="p-4 font-semibold text-amber-400">{item.quantityReserved}</td>
-                    <td className="p-4">
-                      <span
-                        className={`font-bold px-2 py-0.5 rounded ${
-                          item.netAvailable <= 0
-                            ? 'bg-red-900/50 text-red-300 border border-red-700'
-                            : 'bg-emerald-900/50 text-emerald-300 border border-emerald-700'
-                        }`}
-                      >
-                        {item.netAvailable <= 0 ? 'SOLD OUT' : `${item.netAvailable} left`}
-                      </span>
-                    </td>
-                    <td className="p-4 text-center">
-                      <button
-                        onClick={() =>
-                          handleUpdateStock(item, item.quantityAvailable, !item.isActive)
-                        }
-                        className={`px-3 py-1 rounded-full font-bold text-[11px] transition ${
-                          item.isActive
-                            ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/40'
-                            : 'bg-red-500/20 text-red-400 border border-red-500/40'
-                        }`}
-                      >
-                        {item.isActive ? 'Active' : 'Inactive'}
-                      </button>
-                    </td>
-                    <td className="p-4 text-right">
-                      <button
-                        onClick={() =>
-                          handleUpdateStock(item, item.quantityAvailable, item.isActive)
-                        }
-                        disabled={savingId === item.id}
-                        className="px-3 py-1.5 rounded-lg bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold text-xs inline-flex items-center space-x-1 transition disabled:opacity-50"
-                      >
-                        {savedId === item.id ? (
-                          <>
-                            <Check className="w-3.5 h-3.5 text-slate-950" />
-                            <span>Saved</span>
-                          </>
-                        ) : (
-                          <>
-                            <Save className="w-3.5 h-3.5" />
-                            <span>Update</span>
-                          </>
-                        )}
-                      </button>
-                    </td>
+          <div className="card overflow-hidden border-ej-border shadow-2xl">
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-xs border-collapse">
+                <thead>
+                  <tr className="bg-ej-surface text-ej-muted border-b border-ej-border font-bold uppercase tracking-wider">
+                    <th className="p-4">Item Name &amp; Category</th>
+                    <th className="p-4">Price (₹)</th>
+                    <th className="p-4">Today&apos;s Total Available</th>
+                    <th className="p-4">Reserved</th>
+                    <th className="p-4">Orderable Now</th>
+                    <th className="p-4 text-center">Active State</th>
+                    <th className="p-4 text-right">Actions</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody className="divide-y divide-ej-border/60">
+                  {items.map((item) => (
+                    <tr key={item.id} className="hover:bg-ej-surface/40 transition">
+                      <td className="p-4 font-bold text-ej-cream">
+                        <div className="text-sm">{item.name}</div>
+                        <span className="text-[10px] text-ej-lime/80 font-mono uppercase">{item.category}</span>
+                      </td>
+                      <td className="p-4 font-black text-ej-gold text-sm">₹{item.price}</td>
+                      <td className="p-4">
+                        <input
+                          type="number"
+                          min="0"
+                          value={item.quantityAvailable}
+                          onChange={(e) => {
+                            const val = parseInt(e.target.value, 10) || 0;
+                            setItems((prev) =>
+                              prev.map((i) => (i.id === item.id ? { ...i, quantityAvailable: val } : i))
+                            );
+                          }}
+                          className="w-20 px-3 py-1.5 bg-ej-deep border border-ej-border rounded-lg text-ej-lime font-extrabold text-sm text-center focus:outline-none focus:border-ej-lime"
+                        />
+                      </td>
+                      <td className="p-4 font-extrabold text-ej-gold">{item.quantityReserved}</td>
+                      <td className="p-4">
+                        <span
+                          className={`font-bold px-2.5 py-1 rounded-md text-[11px] ${
+                            item.netAvailable <= 0
+                              ? 'bg-ej-vermilion/20 text-ej-vermilion border border-ej-vermilion/40'
+                              : 'bg-ej-teal/20 text-ej-teal border border-ej-teal/40'
+                          }`}
+                        >
+                          {item.netAvailable <= 0 ? 'SOLD OUT' : `${item.netAvailable} left`}
+                        </span>
+                      </td>
+                      <td className="p-4 text-center">
+                        <button
+                          onClick={() =>
+                            handleUpdateStock(item, item.quantityAvailable, !item.isActive)
+                          }
+                          className={`px-3 py-1 rounded-full font-bold text-[11px] transition ${
+                            item.isActive
+                              ? 'bg-ej-teal/20 text-ej-teal border border-ej-teal/40'
+                              : 'bg-ej-vermilion/20 text-ej-vermilion border border-ej-vermilion/40'
+                          }`}
+                        >
+                          {item.isActive ? 'Active' : 'Inactive'}
+                        </button>
+                      </td>
+                      <td className="p-4 text-right">
+                        <button
+                          onClick={() =>
+                            handleUpdateStock(item, item.quantityAvailable, item.isActive)
+                          }
+                          disabled={savingId === item.id}
+                          className="btn-gold py-1.5 px-3 text-xs inline-flex items-center gap-1"
+                        >
+                          {savedId === item.id ? (
+                            <>
+                              <Check className="w-3.5 h-3.5" />
+                              <span>Saved</span>
+                            </>
+                          ) : (
+                            <>
+                              <Save className="w-3.5 h-3.5" />
+                              <span>Update</span>
+                            </>
+                          )}
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </div>
         )}
       </main>
 
-      {/* Add New Item Modal */}
+      {/* Add Item Modal */}
       {isAddModalOpen && (
-        <div className="fixed inset-0 z-50 bg-black/70 flex items-center justify-center p-4">
-          <div className="bg-slate-800 border border-slate-700 rounded-2xl w-full max-w-md p-6 space-y-4 shadow-2xl text-white">
-            <h2 className="text-lg font-bold text-amber-400">Add New Menu Item</h2>
+        <div className="fixed inset-0 z-50 bg-ej-deep/80 backdrop-blur-md flex items-center justify-center p-4">
+          <div className="card w-full max-w-md p-6 space-y-4 shadow-2xl border-ej-border">
+            <div className="flex items-center justify-between pb-3 border-b border-ej-border">
+              <h2 className="text-base font-extrabold text-ej-lime">Add New Menu Item</h2>
+              <button
+                onClick={() => setIsAddModalOpen(false)}
+                className="text-ej-muted hover:text-ej-cream"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
 
             <form onSubmit={handleAddItem} className="space-y-3 text-xs">
               <div>
-                <label className="block text-slate-300 mb-1">Item Name (English & Malayalam)</label>
+                <label className="block text-ej-muted mb-1 font-medium">Item Name (English &amp; Malayalam)</label>
                 <input
                   type="text"
                   required
                   placeholder="e.g. Samosa (സമോസ)"
                   value={newName}
                   onChange={(e) => setNewName(e.target.value)}
-                  className="w-full p-2.5 bg-slate-900 border border-slate-700 rounded-xl text-white focus:outline-none focus:border-amber-500"
+                  className="input-field"
                 />
               </div>
 
               <div>
-                <label className="block text-slate-300 mb-1">Description</label>
+                <label className="block text-ej-muted mb-1 font-medium">Description</label>
                 <input
                   type="text"
                   placeholder="Crispy fried potato pastry..."
                   value={newDesc}
                   onChange={(e) => setNewDesc(e.target.value)}
-                  className="w-full p-2.5 bg-slate-900 border border-slate-700 rounded-xl text-white focus:outline-none focus:border-amber-500"
+                  className="input-field"
                 />
               </div>
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-slate-300 mb-1">Price (₹)</label>
+                  <label className="block text-ej-muted mb-1 font-medium">Price (₹)</label>
                   <input
                     type="number"
                     step="1"
@@ -267,49 +271,49 @@ export default function VendorStockPage() {
                     placeholder="15"
                     value={newPrice}
                     onChange={(e) => setNewPrice(e.target.value)}
-                    className="w-full p-2.5 bg-slate-900 border border-slate-700 rounded-xl text-white focus:outline-none focus:border-amber-500"
+                    className="input-field"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-slate-300 mb-1">Initial Daily Stock</label>
+                  <label className="block text-ej-muted mb-1 font-medium">Initial Daily Stock</label>
                   <input
                     type="number"
                     required
                     value={newStock}
                     onChange={(e) => setNewStock(e.target.value)}
-                    className="w-full p-2.5 bg-slate-900 border border-slate-700 rounded-xl text-white focus:outline-none focus:border-amber-500"
+                    className="input-field"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="block text-slate-300 mb-1">Category</label>
+                <label className="block text-ej-muted mb-1 font-medium">Category</label>
                 <select
                   value={newCategory}
                   onChange={(e) => setNewCategory(e.target.value)}
-                  className="w-full p-2.5 bg-slate-900 border border-slate-700 rounded-xl text-white focus:outline-none focus:border-amber-500"
+                  className="input-field cursor-pointer"
                 >
                   <option value="Snacks">Snacks</option>
                   <option value="Bakery">Bakery</option>
                   <option value="Soft Drinks">Soft Drinks</option>
                   <option value="Ice Creams">Ice Creams</option>
-                  <option value="Tea & Snacks">Tea & Snacks</option>
+                  <option value="Tea &amp; Snacks">Tea &amp; Snacks</option>
                 </select>
               </div>
 
-              <div className="pt-3 flex justify-end space-x-2">
+              <div className="pt-3 flex justify-end gap-2">
                 <button
                   type="button"
                   onClick={() => setIsAddModalOpen(false)}
-                  className="px-4 py-2 rounded-xl bg-slate-700 text-slate-300 hover:bg-slate-600 font-semibold"
+                  className="btn-secondary"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={adding}
-                  className="px-4 py-2 rounded-xl bg-amber-500 text-slate-950 font-bold hover:bg-amber-600 disabled:opacity-50"
+                  className="btn-primary"
                 >
                   {adding ? 'Creating...' : 'Create Item'}
                 </button>

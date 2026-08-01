@@ -1,31 +1,74 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { signIn } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { LogoWordmark } from '@/components/LogoWordmark';
+import { ElephantMascot } from '@/components/ElephantMascot';
+import { MuralBackground } from '@/components/MuralBackground';
+import { FloralDivider } from '@/components/FloralDivider';
 
-/*
- * PAGE: Student login
- * Screen type: .screen-branding
- * Auth rule: any email address (college or Gmail) is accepted.
- *   Set ALLOWED_EMAIL_DOMAIN in .env to restrict to one domain.
- */
 export default function StudentLoginPage() {
+  const [step, setStep]       = useState<1 | 2>(1);
   const [email, setEmail]     = useState('');
+  const [code, setCode]       = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError]     = useState<string | null>(null);
+  const [countdown, setCountdown] = useState(0);
   const router = useRouter();
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  useEffect(() => {
+    let timer: NodeJS.Timeout;
+    if (countdown > 0) {
+      timer = setTimeout(() => setCountdown(countdown - 1), 1000);
+    }
+    return () => clearTimeout(timer);
+  }, [countdown]);
+
+  const handleRequestOtp = async (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
     if (!email.trim()) return;
     setLoading(true);
     setError(null);
     try {
-      const res = await signIn('credentials', { email: email.trim(), role: 'STUDENT', redirect: false });
-      if (res?.error) { setError(res.error); return; }
+      const res = await fetch('/api/auth/otp/request', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: email.trim(), purpose: 'student' }),
+      });
+      const data = await res.json();
+      
+      if (!res.ok) {
+        throw new Error(data.error || 'Failed to send code.');
+      }
+      
+      setStep(2);
+      setCountdown(60);
+      setCode('');
+    } catch (err: any) {
+      setError(err.message || 'Failed to send code.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleVerifyOtp = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!code.trim()) return;
+    setLoading(true);
+    setError(null);
+    try {
+      const res = await signIn('credentials', { 
+        email: email.trim(), 
+        code: code.trim(),
+        purpose: 'student', 
+        redirect: false 
+      });
+      if (res?.error) { 
+        setError(res.error); 
+        return; 
+      }
       router.push('/');
       router.refresh();
     } catch (err: any) {
@@ -39,59 +82,203 @@ export default function StudentLoginPage() {
     <main
       id="student-login-page"
       className="screen-branding"
-      style={{ minHeight: '100svh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--color-bg)', padding: '1rem' }}
+      style={{
+        minHeight: '100svh',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        padding: '1rem',
+        position: 'relative',
+      }}
     >
+      {/* Full mural decorative background */}
+      <MuralBackground opacity={0.1} />
+
+      {/* Elephant mascot — positioned behind the card */}
+      <div
+        className="animate-float"
+        style={{
+          position: 'absolute',
+          bottom: '5%',
+          right: '5%',
+          opacity: 0.15,
+          pointerEvents: 'none',
+        }}
+      >
+        <ElephantMascot size={280} />
+      </div>
+
+      {/* Login card */}
       <div
         id="login-card"
-        className="card"
-        style={{ width: '100%', maxWidth: 400, padding: '2.5rem', textAlign: 'center' }}
+        className="glass animate-fade-in-up"
+        style={{
+          width: '100%',
+          maxWidth: 400,
+          padding: '2.5rem 2rem',
+          textAlign: 'center',
+          borderRadius: 'var(--radius-2xl)',
+          position: 'relative',
+          zIndex: 1,
+          boxShadow: '0 8px 48px rgba(0,0,0,0.5)',
+        }}
       >
-        {/* Logo slot */}
-        <div id="login-logo" style={{ marginBottom: '2rem' }}>
-          <LogoWordmark size={150} light />
+        {/* Logo + tagline */}
+        <div id="login-logo" style={{ marginBottom: '1.5rem' }}>
+          <LogoWordmark size={180} light glow />
         </div>
 
-        <h1 style={{ margin: '0 0 0.5rem', fontSize: '1.1rem', fontWeight: 700 }}>
-          Student login
+        <FloralDivider width={140} className="mx-auto" />
+
+        <h1 style={{
+          margin: '1.25rem 0 0.3rem',
+          fontSize: '1rem',
+          fontWeight: 700,
+          color: 'var(--ej-cream)',
+        }}>
+          Welcome, student!
         </h1>
-        <p style={{ color: 'var(--color-text-muted)', fontSize: '0.875rem', margin: '0 0 1.5rem' }}>
-          Enter your college or Gmail address to continue.
+        <p style={{
+          color: 'var(--ej-muted)',
+          fontSize: '0.8rem',
+          margin: '0 0 1.5rem',
+        }}>
+          {step === 1 ? 'Enter your email to receive a login code.' : `Code sent to ${email}`}
         </p>
 
+        {/* Error state */}
         {error && (
-          <div id="login-error" role="alert" style={{ padding: '0.65rem', background: 'rgba(239,68,68,0.1)', border: '1px solid var(--color-error)', borderRadius: 'var(--radius-md)', color: 'var(--color-error)', fontSize: '0.8rem', marginBottom: '1rem', textAlign: 'left' }}>
+          <div
+            id="login-error"
+            role="alert"
+            className="animate-shake"
+            style={{
+              padding: '0.65rem 0.85rem',
+              background: 'rgba(240,86,46,0.1)',
+              border: '1px solid rgba(240,86,46,0.4)',
+              borderRadius: 'var(--radius-md)',
+              color: 'var(--ej-vermilion)',
+              fontSize: '0.78rem',
+              marginBottom: '1rem',
+              textAlign: 'left',
+              fontWeight: 500,
+            }}
+          >
             ⚠ {error}
           </div>
         )}
 
-        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-          <input
-            id="login-email"
-            type="email"
-            required
-            className="input-field"
-            placeholder="student@college.ac.in or @gmail.com"
-            value={email}
-            onChange={e => setEmail(e.target.value)}
-            autoComplete="email"
-          />
-          <button
-            id="login-submit"
-            type="submit"
-            className="btn-primary"
-            style={{ width: '100%', padding: '0.85rem' }}
-            disabled={loading}
-          >
-            {loading ? 'Logging in…' : 'Continue to menu →'}
-          </button>
-        </form>
+        {step === 1 ? (
+          <form onSubmit={handleRequestOtp} style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+            <input
+              id="login-email"
+              type="email"
+              required
+              className="input-field"
+              placeholder="your.email@college.ac.in"
+              value={email}
+              onChange={e => setEmail(e.target.value)}
+              autoComplete="email"
+              style={{ textAlign: 'center', fontSize: '0.95rem' }}
+            />
+            <button
+              id="login-submit"
+              type="submit"
+              className="btn-primary"
+              style={{
+                width: '100%',
+                padding: '0.85rem',
+                fontSize: '0.9rem',
+                fontWeight: 800,
+              }}
+              disabled={loading}
+            >
+              {loading ? (
+                <span style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', justifyContent: 'center' }}>
+                  <svg className="animate-spin" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round"><path d="M21 12a9 9 0 11-6.219-8.56" /></svg>
+                  Sending…
+                </span>
+              ) : (
+                'Send code →'
+              )}
+            </button>
+          </form>
+        ) : (
+          <form onSubmit={handleVerifyOtp} style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+            <input
+              id="login-code"
+              type="text"
+              required
+              maxLength={6}
+              className="input-field"
+              placeholder="123456"
+              value={code}
+              onChange={e => setCode(e.target.value.replace(/[^0-9]/g, ''))}
+              autoComplete="one-time-code"
+              style={{ textAlign: 'center', fontSize: '1.5rem', letterSpacing: '4px', fontWeight: 'bold' }}
+            />
+            <button
+              id="login-verify"
+              type="submit"
+              className="btn-primary"
+              style={{
+                width: '100%',
+                padding: '0.85rem',
+                fontSize: '0.9rem',
+                fontWeight: 800,
+              }}
+              disabled={loading}
+            >
+              {loading ? (
+                <span style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', justifyContent: 'center' }}>
+                  <svg className="animate-spin" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round"><path d="M21 12a9 9 0 11-6.219-8.56" /></svg>
+                  Verifying…
+                </span>
+              ) : (
+                'Verify & Login'
+              )}
+            </button>
+            <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '0.5rem', fontSize: '0.75rem' }}>
+              <button 
+                type="button" 
+                onClick={() => setStep(1)}
+                style={{ color: 'var(--ej-muted)', textDecoration: 'underline', background: 'none', border: 'none', cursor: 'pointer' }}
+              >
+                Wrong email?
+              </button>
+              <button 
+                type="button"
+                onClick={() => handleRequestOtp()}
+                disabled={countdown > 0 || loading}
+                style={{ 
+                  color: countdown > 0 ? 'var(--ej-dark-text)' : 'var(--ej-lime)', 
+                  background: 'none', 
+                  border: 'none', 
+                  cursor: countdown > 0 ? 'not-allowed' : 'pointer'
+                }}
+              >
+                {countdown > 0 ? `Resend in ${countdown}s` : 'Resend code'}
+              </button>
+            </div>
+          </form>
+        )}
 
-        <div style={{ marginTop: '1.5rem', paddingTop: '1.25rem', borderTop: '1px solid var(--color-border)' }}>
+        {/* Staff login link */}
+        <div style={{
+          marginTop: '1.75rem',
+          paddingTop: '1.25rem',
+          borderTop: '1px solid var(--ej-border)',
+        }}>
           <Link
             href="/vendor/login"
-            style={{ color: 'var(--color-text-muted)', fontSize: '0.8rem', textDecoration: 'none' }}
+            style={{
+              color: 'var(--ej-muted)',
+              fontSize: '0.75rem',
+              textDecoration: 'none',
+              transition: 'color 0.15s',
+            }}
           >
-            Vendor staff? Login here →
+            Staff login →
           </Link>
         </div>
       </div>

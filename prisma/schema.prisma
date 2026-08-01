@@ -3,7 +3,7 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
@@ -19,7 +19,6 @@ enum OrderStatus {
   READY
   DELIVERED
   EXPIRED
-  CANCELLED
 }
 
 model User {
@@ -83,4 +82,17 @@ model OrderItem {
   menuItem         MenuItem @relation(fields: [menuItemId], references: [id])
   quantity         Int
   priceAtOrderTime Float
+}
+
+model OtpCode {
+  id         String   @id @default(cuid())
+  email      String
+  codeHash   String   // hashed OTP, never store the raw code
+  purpose    String   // "student" | "vendor" — keep the two login paths distinct
+  attempts   Int      @default(0)
+  expiresAt  DateTime
+  consumedAt DateTime?
+  createdAt  DateTime @default(now())
+
+  @@index([email, purpose])
 }

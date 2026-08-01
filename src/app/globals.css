@@ -1,71 +1,87 @@
 /*
- * ENJIPULI — Global Design Token System
- *
- * ─────────────────────────────────────────────────────────────────
- * All colours, radii, and spacing live here as CSS variables.
- * The Google Stitch design integration ONLY needs to override the
- * :root block below — no component code changes required.
- *
- * Expected Stitch palette (dark, saturated):
- *   base: deep indigo/violet  (#0f0e1a or similar)
- *   accent-primary: lime / orange / gold / teal (TBD by Stitch)
- *   surface: slightly lighter than base
- *   text-primary: near-white
- *   text-muted: muted grey/lavender
- * ─────────────────────────────────────────────────────────────────
+ * ENJIPULI — Design System
+ * Palette sampled directly from the food truck's mural artwork.
+ * ─────────────────────────────────────────────────────────────
  */
 
 /* ── Font loading ─────────────────────────────────────────────── */
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+Malayalam:wght@400;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Baloo+Chettan+2:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700;800;900&family=Noto+Sans+Malayalam:wght@400;600;700;800&display=swap');
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-/* ── Design tokens (override entire block for Stitch theme) ───── */
+/* ══════════════════════════════════════════════════════════════════
+   DESIGN TOKENS — sampled from the actual truck photos
+   ══════════════════════════════════════════════════════════════════ */
 :root {
-  /* Base surface */
-  --color-bg:           #0f0e1a;
-  --color-surface:      #1a1828;
-  --color-surface-2:    #231f35;
-  --color-border:       #2e2a45;
+  /* ── Background tiers ─────────────────────────────────────── */
+  --ej-deep:        #150F2E;
+  --ej-indigo:      #241B5E;
+  --ej-violet:      #3B2C8C;
+  --ej-surface:     #2A2168;
+  --ej-surface-2:   #322878;
+  --ej-border:      #3D3580;
+  --ej-border-light:#4E44A0;
 
-  /* Text */
-  --color-text-primary: #f0eeff;
-  --color-text-muted:   #8b88a8;
-  --color-text-inverse: #0f0e1a;
+  /* ── Accent colors ────────────────────────────────────────── */
+  --ej-lime:        #D4FF3D;
+  --ej-lime-dim:    #a8cc31;
+  --ej-lime-glow:   rgba(212, 255, 61, 0.25);
+  --ej-vermilion:   #F0562E;
+  --ej-vermilion-dim:#c44422;
+  --ej-gold:        #F4B400;
+  --ej-gold-dim:    #c89200;
+  --ej-magenta:     #B33DB0;
+  --ej-teal:        #2FBFA0;
+  --ej-teal-dim:    #249985;
 
-  /* Brand accent — Stitch will define these */
-  --color-accent:       #f5a623;   /* warm gold — placeholder */
-  --color-accent-hover: #e09010;
-  --color-accent-2:     #7c3aed;   /* indigo accent */
-  --color-accent-3:     #10b981;   /* teal accent */
+  /* ── Text ─────────────────────────────────────────────────── */
+  --ej-cream:       #FFF7E8;
+  --ej-muted:       #9B95C4;
+  --ej-ink:         #150F2E;
 
-  /* Status colours */
-  --color-success:      #22c55e;
-  --color-warning:      #f59e0b;
-  --color-error:        #ef4444;
-  --color-info:         #3b82f6;
+  /* ── Mapped tokens (consumed by .card, .btn-*, etc.) ──────── */
+  --color-bg:           var(--ej-deep);
+  --color-surface:      var(--ej-indigo);
+  --color-surface-2:    var(--ej-surface);
+  --color-border:       var(--ej-border);
+  --color-text-primary: var(--ej-cream);
+  --color-text-muted:   var(--ej-muted);
+  --color-text-inverse: var(--ej-ink);
+  --color-accent:       var(--ej-lime);
+  --color-accent-hover: var(--ej-lime-dim);
+  --color-accent-2:     var(--ej-violet);
+  --color-accent-3:     var(--ej-teal);
+  --color-success:      var(--ej-teal);
+  --color-warning:      var(--ej-gold);
+  --color-error:        var(--ej-vermilion);
+  --color-info:         #6C8CFF;
 
-  /* Radii */
+  /* ── Radii ────────────────────────────────────────────────── */
   --radius-sm:  6px;
   --radius-md:  12px;
   --radius-lg:  18px;
   --radius-xl:  24px;
+  --radius-2xl: 32px;
 
-  /* Shadows */
-  --shadow-card: 0 4px 24px 0 rgba(0,0,0,0.45);
-  --shadow-glow: 0 0 20px 0 rgba(245,166,35,0.15);
+  /* ── Shadows ──────────────────────────────────────────────── */
+  --shadow-card:  0 4px 32px 0 rgba(0,0,0,0.5);
+  --shadow-glow:  0 0 24px 0 var(--ej-lime-glow);
+  --shadow-glow-sm: 0 0 12px 0 var(--ej-lime-glow);
+  --shadow-vermilion: 0 0 20px 0 rgba(240,86,46,0.2);
+  --shadow-gold: 0 0 16px 0 rgba(244,180,0,0.15);
 }
 
-/* ── Base resets ─────────────────────────────────────────────── */
-*, *::before, *::after {
-  box-sizing: border-box;
-}
+/* ══════════════════════════════════════════════════════════════════
+   BASE RESETS
+   ══════════════════════════════════════════════════════════════════ */
+*, *::before, *::after { box-sizing: border-box; }
 
 html {
   font-size: 16px;
   -webkit-text-size-adjust: 100%;
+  scroll-behavior: smooth;
 }
 
 body {
@@ -76,135 +92,345 @@ body {
   font-family: 'Inter', system-ui, -apple-system, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  overflow-x: hidden;
 }
 
-/* ── Malayalam script elements ───────────────────────────────── */
-/*
- * Any element with lang="ml" uses the Malayalam webfont.
- * The LogoWordmark SVG component does NOT use this — it is an image.
- * This rule covers the tagline, status labels in Malayalam, etc.
- */
+/* ── Malayalam script ──────────────────────────────────────────── */
 [lang="ml"] {
-  font-family: 'Noto Sans Malayalam', 'Baloo Chettan 2', sans-serif;
+  font-family: 'Baloo Chettan 2', 'Noto Sans Malayalam', sans-serif;
   font-feature-settings: "kern" 1;
   line-height: 1.5;
 }
 
-/* ── Utility: screen type variants ──────────────────────────── */
-/*
- * Stitch distinguishes two screen types:
- *   .screen-branding  → login, order confirmation/ticket (decoration-heavy)
- *   .screen-task      → menu, checkout, vendor queue (task-focused, minimal)
- *
- * Add these classes to the wrapping <main> of each page.
- * Stitch will fill in the visual treatment; the class names are stable.
- */
+/* ══════════════════════════════════════════════════════════════════
+   ANIMATION KEYFRAMES
+   ══════════════════════════════════════════════════════════════════ */
+
+/* Ambient pulsing glow for the wordmark on branding screens */
+@keyframes glowPulse {
+  0%, 100% {
+    filter: drop-shadow(0 0 8px var(--ej-lime-glow)) drop-shadow(0 0 24px rgba(212,255,61,0.1));
+  }
+  50% {
+    filter: drop-shadow(0 0 16px var(--ej-lime-glow)) drop-shadow(0 0 40px rgba(212,255,61,0.2));
+  }
+}
+
+/* Card lift on hover */
+@keyframes cardLift {
+  from { transform: translateY(0) scale(1); box-shadow: var(--shadow-card); }
+  to   { transform: translateY(-2px) scale(1.02); box-shadow: 0 8px 40px rgba(0,0,0,0.6), var(--shadow-glow-sm); }
+}
+
+/* Receipt drop-in on order confirmation */
+@keyframes receiptDrop {
+  0%   { opacity: 0; transform: translateY(-30px) scale(0.95); }
+  60%  { opacity: 1; transform: translateY(4px) scale(1.01); }
+  100% { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* Token number count-in fade */
+@keyframes tokenReveal {
+  0%   { opacity: 0; transform: scale(0.7); filter: blur(8px); }
+  100% { opacity: 1; transform: scale(1); filter: blur(0); }
+}
+
+/* Status step neon fill */
+@keyframes statusFill {
+  0%   { background: var(--ej-surface); border-color: var(--ej-border); }
+  100% { background: var(--ej-lime); border-color: var(--ej-lime); box-shadow: var(--shadow-glow-sm); }
+}
+
+/* Error shake for QR scan failure */
+@keyframes shakeError {
+  0%, 100% { transform: translateX(0); }
+  10%, 30%, 50%, 70%, 90% { transform: translateX(-4px); }
+  20%, 40%, 60%, 80% { transform: translateX(4px); }
+}
+
+/* Success flash */
+@keyframes successFlash {
+  0%   { background: rgba(47,191,160,0.3); }
+  50%  { background: rgba(47,191,160,0.1); }
+  100% { background: transparent; }
+}
+
+/* Fade in up — scroll reveal and general entry */
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* Slide in from right — cart drawer */
+@keyframes slideInRight {
+  from { transform: translateX(100%); }
+  to   { transform: translateX(0); }
+}
+
+/* Slide in from bottom — floating elements */
+@keyframes slideInUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* Badge pop — cart count increment */
+@keyframes badgePop {
+  0%   { transform: scale(1); }
+  50%  { transform: scale(1.3); }
+  100% { transform: scale(1); }
+}
+
+/* Skeleton shimmer */
+@keyframes shimmer {
+  0%   { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+/* Gentle float for mascot */
+@keyframes gentleFloat {
+  0%, 100% { transform: translateY(0); }
+  50%      { transform: translateY(-6px); }
+}
+
+/* Kanban card slide transition */
+@keyframes kanbanSlide {
+  from { opacity: 0; transform: translateX(-12px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+/* Spin for loading */
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
+/* ══════════════════════════════════════════════════════════════════
+   UTILITY ANIMATION CLASSES
+   ══════════════════════════════════════════════════════════════════ */
+.animate-glow-pulse   { animation: glowPulse 3s ease-in-out infinite; }
+.animate-receipt-drop { animation: receiptDrop 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards; }
+.animate-token-reveal { animation: tokenReveal 0.5s 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) forwards; opacity: 0; }
+.animate-fade-in-up   { animation: fadeInUp 0.4s ease-out forwards; }
+.animate-slide-in-right { animation: slideInRight 0.3s ease-out forwards; }
+.animate-slide-in-up  { animation: slideInUp 0.35s ease-out forwards; }
+.animate-badge-pop    { animation: badgePop 0.25s ease-out; }
+.animate-shake        { animation: shakeError 0.5s ease-out; }
+.animate-success-flash{ animation: successFlash 0.8s ease-out; }
+.animate-float        { animation: gentleFloat 4s ease-in-out infinite; }
+.animate-kanban-slide { animation: kanbanSlide 0.3s ease-out forwards; }
+.animate-spin         { animation: spin 1s linear infinite; }
+
+/* Stagger delays for lists */
+.delay-1 { animation-delay: 0.05s; }
+.delay-2 { animation-delay: 0.1s; }
+.delay-3 { animation-delay: 0.15s; }
+.delay-4 { animation-delay: 0.2s; }
+.delay-5 { animation-delay: 0.25s; }
+.delay-6 { animation-delay: 0.3s; }
+
+/* ══════════════════════════════════════════════════════════════════
+   SCREEN TYPE VARIANTS
+   ══════════════════════════════════════════════════════════════════ */
+
+/* Branding screens: login, order confirmation (decoration-heavy) */
 .screen-branding {
-  /* placeholder — Stitch overrides */
+  background: radial-gradient(ellipse at 30% 20%, var(--ej-violet) 0%, var(--ej-indigo) 40%, var(--ej-deep) 100%);
+  min-height: 100svh;
+  position: relative;
+  overflow: hidden;
 }
 
+/* Task screens: menu, checkout, vendor queue (clean, focused) */
 .screen-task {
-  /* placeholder — Stitch overrides */
+  background: var(--ej-deep);
 }
 
-/* ── Component tokens — used by interim placeholder UI ─────── */
+/* ══════════════════════════════════════════════════════════════════
+   COMPONENT TOKENS
+   ══════════════════════════════════════════════════════════════════ */
+
 .card {
-  background: var(--color-surface);
-  border: 1px solid var(--color-border);
+  background: var(--ej-indigo);
+  border: 1px solid var(--ej-border);
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-card);
+  transition: transform 0.15s ease-out, box-shadow 0.15s ease-out;
+}
+.card-hover:hover {
+  transform: translateY(-2px) scale(1.02);
+  box-shadow: 0 8px 40px rgba(0,0,0,0.6), var(--shadow-glow-sm);
+  border-color: var(--ej-border-light);
 }
 
+/* ── Buttons ────────────────────────────────────────────────── */
 .btn-primary {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 0.4rem;
   padding: 0.65rem 1.25rem;
-  background: var(--color-accent);
-  color: var(--color-text-inverse);
+  background: var(--ej-lime);
+  color: var(--ej-ink);
   font-weight: 700;
   font-size: 0.875rem;
   border: none;
   border-radius: var(--radius-md);
   cursor: pointer;
-  transition: background 0.15s ease, transform 0.1s ease;
+  transition: background 0.15s ease, transform 0.1s ease, box-shadow 0.15s ease;
+  box-shadow: 0 2px 12px rgba(212,255,61,0.2);
 }
-.btn-primary:hover  { background: var(--color-accent-hover); }
-.btn-primary:active { transform: scale(0.98); }
-.btn-primary:disabled { opacity: 0.45; cursor: not-allowed; }
+.btn-primary:hover {
+  background: var(--ej-lime-dim);
+  box-shadow: var(--shadow-glow);
+}
+.btn-primary:active { transform: scale(0.97); }
+.btn-primary:disabled { opacity: 0.4; cursor: not-allowed; box-shadow: none; }
 
 .btn-secondary {
   display: inline-flex;
   align-items: center;
   gap: 0.4rem;
   padding: 0.6rem 1.1rem;
-  background: transparent;
-  color: var(--color-text-primary);
+  background: rgba(212,255,61,0.06);
+  color: var(--ej-cream);
   font-weight: 600;
   font-size: 0.875rem;
-  border: 1px solid var(--color-border);
+  border: 1px solid var(--ej-border);
   border-radius: var(--radius-md);
   cursor: pointer;
   transition: border-color 0.15s ease, background 0.15s ease;
 }
-.btn-secondary:hover { background: var(--color-surface-2); border-color: var(--color-accent); }
+.btn-secondary:hover {
+  background: rgba(212,255,61,0.12);
+  border-color: var(--ej-lime);
+  color: var(--ej-lime);
+}
 
+.btn-danger {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  padding: 0.6rem 1.1rem;
+  background: rgba(240,86,46,0.15);
+  color: var(--ej-vermilion);
+  font-weight: 700;
+  font-size: 0.875rem;
+  border: 1px solid rgba(240,86,46,0.3);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+.btn-danger:hover { background: rgba(240,86,46,0.25); }
+
+.btn-gold {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  padding: 0.65rem 1.25rem;
+  background: var(--ej-gold);
+  color: var(--ej-ink);
+  font-weight: 700;
+  font-size: 0.875rem;
+  border: none;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: background 0.15s ease, transform 0.1s ease;
+  box-shadow: var(--shadow-gold);
+}
+.btn-gold:hover { background: var(--ej-gold-dim); }
+.btn-gold:active { transform: scale(0.97); }
+
+/* ── Input ──────────────────────────────────────────────────── */
 .input-field {
   width: 100%;
-  padding: 0.65rem 0.9rem;
-  background: var(--color-surface-2);
-  color: var(--color-text-primary);
-  border: 1px solid var(--color-border);
+  padding: 0.75rem 1rem;
+  background: var(--ej-deep);
+  color: var(--ej-cream);
+  border: 1.5px solid var(--ej-border);
   border-radius: var(--radius-md);
-  font-size: 0.875rem;
+  font-size: 0.9rem;
   font-family: inherit;
   outline: none;
-  transition: border-color 0.15s ease;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
-.input-field:focus { border-color: var(--color-accent); }
-.input-field::placeholder { color: var(--color-text-muted); }
+.input-field:focus {
+  border-color: var(--ej-lime);
+  box-shadow: var(--shadow-glow-sm);
+}
+.input-field::placeholder { color: var(--ej-muted); }
 
+/* ── Badges ─────────────────────────────────────────────────── */
 .badge-sold-out {
   display: inline-block;
   padding: 0.2rem 0.6rem;
-  background: rgba(239,68,68,0.15);
-  color: var(--color-error);
-  border: 1px solid rgba(239,68,68,0.3);
+  background: rgba(240,86,46,0.12);
+  color: var(--ej-vermilion);
+  border: 1px solid rgba(240,86,46,0.3);
   border-radius: var(--radius-sm);
   font-size: 0.7rem;
   font-weight: 700;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.05em;
   text-transform: uppercase;
 }
 
 .badge-available {
   display: inline-block;
   padding: 0.2rem 0.6rem;
-  background: rgba(34,197,94,0.12);
-  color: var(--color-success);
-  border: 1px solid rgba(34,197,94,0.25);
+  background: rgba(47,191,160,0.1);
+  color: var(--ej-teal);
+  border: 1px solid rgba(47,191,160,0.25);
   border-radius: var(--radius-sm);
   font-size: 0.7rem;
   font-weight: 600;
 }
 
-/* ── Status label colours (order pipeline) ──────────────────── */
-.status-PENDING_PAYMENT { color: var(--color-text-muted); }
-.status-PAID       { color: var(--color-accent); }
+/* ── Status colors ──────────────────────────────────────────── */
+.status-PENDING_PAYMENT { color: var(--ej-muted); }
+.status-PAID       { color: var(--ej-gold); }
 .status-PREPARING  { color: var(--color-info); }
-.status-READY      { color: var(--color-success); }
-.status-DELIVERED  { color: var(--color-text-muted); }
-.status-EXPIRED    { color: var(--color-error); }
-.status-CANCELLED  { color: var(--color-error); }
+.status-READY      { color: var(--ej-teal); }
+.status-DELIVERED  { color: var(--ej-muted); }
+.status-EXPIRED    { color: var(--ej-vermilion); }
 
-/* ── Scrollbar (subtle, dark) ────────────────────────────────── */
+/* ── Skeleton ───────────────────────────────────────────────── */
+.skeleton {
+  background: linear-gradient(90deg, var(--ej-surface) 0%, var(--ej-surface-2) 50%, var(--ej-surface) 100%);
+  background-size: 400% 100%;
+  animation: shimmer 1.8s ease-in-out infinite;
+  border-radius: var(--radius-md);
+}
+
+/* ── Scrollbar ──────────────────────────────────────────────── */
 ::-webkit-scrollbar       { width: 6px; height: 6px; }
-::-webkit-scrollbar-track { background: var(--color-bg); }
-::-webkit-scrollbar-thumb { background: var(--color-border); border-radius: 3px; }
+::-webkit-scrollbar-track { background: var(--ej-deep); }
+::-webkit-scrollbar-thumb { background: var(--ej-border); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--ej-border-light); }
 
-/* ── Focus ring (accessibility) ──────────────────────────────── */
+/* ── Focus ring ─────────────────────────────────────────────── */
 :focus-visible {
-  outline: 2px solid var(--color-accent);
+  outline: 2px solid var(--ej-lime);
   outline-offset: 2px;
+}
+
+/* ── Glass panel effect ─────────────────────────────────────── */
+.glass {
+  background: rgba(36, 27, 94, 0.75);
+  backdrop-filter: blur(20px) saturate(1.4);
+  -webkit-backdrop-filter: blur(20px) saturate(1.4);
+  border: 1px solid rgba(61, 53, 128, 0.6);
+}
+
+/* ── Neon border glow ───────────────────────────────────────── */
+.neon-border {
+  border: 1.5px solid var(--ej-lime);
+  box-shadow: var(--shadow-glow-sm), inset 0 0 12px rgba(212,255,61,0.05);
+}
+
+/* ── Price tag ──────────────────────────────────────────────── */
+.price-tag {
+  color: var(--ej-gold);
+  font-weight: 800;
+  text-shadow: 0 0 12px rgba(244,180,0,0.2);
 }

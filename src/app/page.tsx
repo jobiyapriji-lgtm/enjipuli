@@ -4,8 +4,10 @@ import { useState, useEffect, useCallback } from 'react';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { Header } from '@/components/Header';
+import { FloralDivider } from '@/components/FloralDivider';
+import { ShoppingBag, X, Plus, Minus, ArrowRight, RefreshCw, AlertTriangle } from 'lucide-react';
 
-/* ─── Types (stable — Stitch integration maps to these) ─────────────────── */
+/* ─── Types ───────────────────────────────────────────────────────────── */
 export interface MenuItem {
   id: string;
   name: string;
@@ -14,8 +16,8 @@ export interface MenuItem {
   category: string;
   photoUrl: string | null;
   isActive: boolean;
-  netAvailable: number;    // quantityAvailable - quantityReserved
-  isSoldOut: boolean;      // netAvailable <= 0
+  netAvailable: number;
+  isSoldOut: boolean;
 }
 
 export interface CartItem {
@@ -27,35 +29,25 @@ declare global {
   interface Window { Razorpay: any; }
 }
 
-/* ─── Category list (Stitch renders the tab strip) ──────────────────────── */
 const CATEGORIES = ['All', 'Snacks', 'Bakery', 'Soft Drinks', 'Ice Creams', 'Tea & Snacks'] as const;
 
-/* ═══════════════════════════════════════════════════════════════════════════
-   PAGE: Student home — live menu + cart
-   Screen type: .screen-task
-   Stable state: cart, setCart, handleCheckout, selectedCategory, menuItems
-   ═══════════════════════════════════════════════════════════════════════════ */
 export default function StudentHomePage() {
   const { data: session } = useSession();
   const router = useRouter();
 
-  /* ── Menu & UI state ──────────────────────────────────────────────────── */
   const [menuItems, setMenuItems]               = useState<MenuItem[]>([]);
   const [menuLoading, setMenuLoading]           = useState(true);
   const [menuError, setMenuError]               = useState<string | null>(null);
   const [selectedCategory, setSelectedCategory] = useState<string>('All');
 
-  /* ── Cart state (stable name — Stitch maps to this) ──────────────────── */
-  const [cart, setCart]           = useState<CartItem[]>([]);
+  const [cart, setCart]             = useState<CartItem[]>([]);
   const [isCartOpen, setIsCartOpen] = useState(false);
   const cartItemCount = cart.reduce((s, c) => s + c.quantity, 0);
   const cartTotal     = cart.reduce((s, c) => s + c.menuItem.price * c.quantity, 0);
 
-  /* ── Checkout state ───────────────────────────────────────────────────── */
   const [checkingOut, setCheckingOut]     = useState(false);
   const [checkoutError, setCheckoutError] = useState<string | null>(null);
 
-  /* ─── Fetch menu — also called on stock polling ────────────────────────── */
   const fetchMenu = useCallback(async () => {
     try {
       const res = await fetch('/api/menu');
@@ -75,12 +67,10 @@ export default function StudentHomePage() {
 
   useEffect(() => {
     fetchMenu();
-    // Poll stock every 10 s — keeps sold-out state current without websockets
     const id = setInterval(fetchMenu, 10_000);
     return () => clearInterval(id);
   }, [fetchMenu]);
 
-  // Load Razorpay checkout.js once
   useEffect(() => {
     const s = document.createElement('script');
     s.src = 'https://checkout.razorpay.com/v1/checkout.js';
@@ -89,13 +79,12 @@ export default function StudentHomePage() {
     return () => { document.body.removeChild(s); };
   }, []);
 
-  /* ─── Cart helpers ──────────────────────────────────────────────────────── */
   function addToCart(item: MenuItem) {
     if (item.isSoldOut) return;
     setCart(prev => {
       const existing = prev.find(c => c.menuItem.id === item.id);
       if (existing) {
-        if (existing.quantity >= item.netAvailable) return prev; // cap at stock
+        if (existing.quantity >= item.netAvailable) return prev;
         return prev.map(c =>
           c.menuItem.id === item.id ? { ...c, quantity: c.quantity + 1 } : c
         );
@@ -117,14 +106,8 @@ export default function StudentHomePage() {
     );
   }
 
-  function removeFromCart(itemId: string) {
-    setCart(prev => prev.filter(c => c.menuItem.id !== itemId));
-  }
-
-  /* ─── Checkout handler (stable name — Stitch maps to this) ─────────────── */
   const handleCheckout = async () => {
     if (cart.length === 0) return;
-
     if (!session) {
       router.push('/login');
       return;
@@ -134,7 +117,6 @@ export default function StudentHomePage() {
     setCheckoutError(null);
 
     try {
-      /* Step 1 — Reserve stock & create Razorpay order */
       const checkoutRes = await fetch('/api/checkout', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -146,14 +128,13 @@ export default function StudentHomePage() {
       const checkoutData = await checkoutRes.json();
       if (!checkoutRes.ok) {
         setCheckoutError(checkoutData.error || 'Checkout failed. Please try again.');
-        await fetchMenu(); // refresh sold-out badges
+        await fetchMenu();
         setCheckingOut(false);
         return;
       }
 
       const { orderId, razorpayOrderId, amount, currency, key } = checkoutData;
 
-      /* Step 2 — Open Razorpay modal or fallback for local dev */
       if (typeof window !== 'undefined' && window.Razorpay) {
         const rzp = new window.Razorpay({
           key,
@@ -163,7 +144,6 @@ export default function StudentHomePage() {
           description: 'Campus food truck order',
           order_id: razorpayOrderId,
           handler: async (response: any) => {
-            /* Step 3 — Verify payment server-side */
             const verifyRes = await fetch('/api/payment/verify', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
@@ -195,7 +175,6 @@ export default function StudentHomePage() {
         });
         rzp.open();
       } else {
-        /* Dev/test fallback — skips Razorpay modal */
         const verifyRes = await fetch('/api/payment/verify', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -221,123 +200,144 @@ export default function StudentHomePage() {
     }
   };
 
-  /* ─── Filtered menu ──────────────────────────────────────────────────────── */
   const filteredItems = selectedCategory === 'All'
     ? menuItems
     : menuItems.filter(i => i.category === selectedCategory);
 
-  /* ═══════════════════════════════════════════════════════════════════════════
-     RENDER
-     All element IDs are stable — Stitch maps visual styles against these IDs.
-     ═══════════════════════════════════════════════════════════════════════════ */
   return (
-    <div id="student-home">
+    <div id="student-home" className="min-h-screen bg-ej-deep text-ej-cream flex flex-col">
       <Header cartItemCount={cartItemCount} onOpenCart={() => setIsCartOpen(true)} />
 
-      <main className="screen-task" id="menu-page" style={{ maxWidth: 1100, margin: '0 auto', padding: '1.5rem 1rem' }}>
-
-        {/* ── Page heading ──────────────────────────────────────────────── */}
-        <section id="menu-hero" style={{ marginBottom: '1.5rem' }}>
-          <h1 style={{ fontSize: '1.4rem', fontWeight: 700, margin: 0, color: 'var(--color-text-primary)' }}>
-            Today&apos;s Menu
-          </h1>
-          <p style={{ color: 'var(--color-text-muted)', fontSize: '0.875rem', marginTop: 4 }}>
-            Order now — stock is live and limited.
-          </p>
+      <main className="screen-task flex-1 max-w-5xl w-full mx-auto px-4 py-6">
+        {/* Hero Section */}
+        <section id="menu-hero" className="mb-6 flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-ej-border pb-5">
+          <div>
+            <div className="flex items-center gap-2">
+              <h1 className="text-2xl md:text-3xl font-extrabold text-ej-cream tracking-tight">
+                Today&apos;s Live Menu
+              </h1>
+              <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-ej-teal/15 text-ej-teal border border-ej-teal/30">
+                <span className="w-2 h-2 rounded-full bg-ej-teal animate-pulse" />
+                LIVE STOCK
+              </span>
+            </div>
+            <p className="text-sm text-ej-muted mt-1">
+              Order online &amp; pick up hot at the food truck counter.
+            </p>
+          </div>
+          <FloralDivider width={100} className="hidden md:block opacity-60" />
         </section>
 
-        {/* ── Category tabs ─────────────────────────────────────────────── */}
-        <nav id="category-tabs" aria-label="Menu categories" style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', marginBottom: '1.5rem' }}>
-          {CATEGORIES.map(cat => (
-            <button
-              key={cat}
-              onClick={() => setSelectedCategory(cat)}
-              aria-pressed={selectedCategory === cat}
-              style={{
-                padding: '0.4rem 1rem',
-                borderRadius: 'var(--radius-md)',
-                border: '1px solid',
-                borderColor: selectedCategory === cat ? 'var(--color-accent)' : 'var(--color-border)',
-                background: selectedCategory === cat ? 'var(--color-accent)' : 'var(--color-surface)',
-                color: selectedCategory === cat ? 'var(--color-text-inverse)' : 'var(--color-text-primary)',
-                fontWeight: 600,
-                fontSize: '0.8rem',
-                cursor: 'pointer',
-              }}
-            >
-              {cat}
-            </button>
-          ))}
+        {/* Category Tabs */}
+        <nav id="category-tabs" aria-label="Menu categories" className="flex gap-2 overflow-x-auto pb-3 mb-6 no-scrollbar">
+          {CATEGORIES.map(cat => {
+            const isActive = selectedCategory === cat;
+            return (
+              <button
+                key={cat}
+                onClick={() => setSelectedCategory(cat)}
+                aria-pressed={isActive}
+                className={`px-4 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-all duration-150 ${
+                  isActive
+                    ? 'bg-ej-lime text-ej-ink shadow-glow-sm scale-[1.02]'
+                    : 'bg-ej-indigo/70 text-ej-cream border border-ej-border hover:border-ej-lime/50 hover:bg-ej-indigo'
+                }`}
+              >
+                {cat}
+              </button>
+            );
+          })}
         </nav>
 
-        {/* ── Error / loading states ─────────────────────────────────────── */}
+        {/* Error message */}
         {menuError && (
-          <div id="menu-error" role="alert" style={{ padding: '0.75rem 1rem', background: 'rgba(239,68,68,0.1)', border: '1px solid var(--color-error)', borderRadius: 'var(--radius-md)', color: 'var(--color-error)', marginBottom: '1rem', fontSize: '0.875rem' }}>
-            ⚠ {menuError}
+          <div id="menu-error" role="alert" className="p-4 mb-6 rounded-2xl bg-ej-vermilion/10 border border-ej-vermilion/40 text-ej-vermilion text-sm flex items-center gap-2 animate-shake">
+            <AlertTriangle className="w-5 h-5 shrink-0" />
+            <span>⚠ {menuError}</span>
           </div>
         )}
 
+        {/* Menu Loading Skeleton */}
         {menuLoading ? (
-          <div id="menu-skeleton" aria-busy="true" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: '1rem' }}>
+          <div id="menu-skeleton" aria-busy="true" className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {[...Array(6)].map((_, i) => (
-              <div key={i} style={{ height: 140, background: 'var(--color-surface-2)', borderRadius: 'var(--radius-lg)', animation: 'pulse 1.5s ease-in-out infinite' }} />
+              <div key={i} className="h-40 bg-ej-indigo/60 border border-ej-border/60 rounded-2xl p-4 flex flex-col justify-between skeleton" />
             ))}
           </div>
         ) : (
-          /* ── Menu grid ──────────────────────────────────────────────── */
-          <div id="menu-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: '1rem' }}>
-            {filteredItems.map(item => {
+          /* Menu Items Grid */
+          <div id="menu-grid" className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {filteredItems.map((item, idx) => {
               const inCart = cart.find(c => c.menuItem.id === item.id);
               const qtyInCart = inCart?.quantity ?? 0;
               return (
                 <article
                   key={item.id}
                   id={`menu-item-${item.id}`}
-                  className="card"
                   data-sold-out={item.isSoldOut}
-                  style={{ padding: '1rem', display: 'flex', flexDirection: 'column', gap: '0.6rem', opacity: item.isSoldOut ? 0.6 : 1 }}
+                  className={`card card-hover p-4 flex flex-col justify-between gap-3 animate-fade-in-up delay-${(idx % 6) + 1} ${
+                    item.isSoldOut ? 'opacity-60 border-ej-border/40' : ''
+                  }`}
                 >
-                  {/* Item info */}
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                    <div>
-                      <h2 style={{ margin: 0, fontSize: '0.95rem', fontWeight: 700, color: 'var(--color-text-primary)' }}>
-                        {item.name}
-                      </h2>
-                      <span style={{ fontSize: '0.7rem', color: 'var(--color-text-muted)' }}>{item.category}</span>
+                  <div className="space-y-1.5">
+                    <div className="flex items-start justify-between gap-2">
+                      <div>
+                        <h2 className="text-base font-bold text-ej-cream leading-tight">
+                          {item.name}
+                        </h2>
+                        <span className="text-[11px] font-semibold text-ej-muted uppercase tracking-wider">
+                          {item.category}
+                        </span>
+                      </div>
+                      <span className="price-tag text-base font-black shrink-0">
+                        ₹{item.price}
+                      </span>
                     </div>
-                    <span style={{ fontWeight: 800, fontSize: '1rem', color: 'var(--color-accent)', whiteSpace: 'nowrap' }}>
-                      ₹{item.price}
-                    </span>
+
+                    {item.description && (
+                      <p className="text-xs text-ej-muted line-clamp-2 leading-relaxed">
+                        {item.description}
+                      </p>
+                    )}
                   </div>
 
-                  {item.description && (
-                    <p style={{ margin: 0, fontSize: '0.8rem', color: 'var(--color-text-muted)', lineHeight: 1.4 }}>
-                      {item.description}
-                    </p>
-                  )}
-
-                  {/* Availability & cart controls */}
-                  <div style={{ marginTop: 'auto', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                  <div className="pt-2 border-t border-ej-border/60 flex items-center justify-between mt-auto">
                     {item.isSoldOut ? (
                       <span className="badge-sold-out">Sold out</span>
                     ) : (
-                      <span className="badge-available">{item.netAvailable} left</span>
+                      <span className="badge-available">
+                        {item.netAvailable} left
+                      </span>
                     )}
 
                     {!item.isSoldOut && (
                       qtyInCart > 0 ? (
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                          <button onClick={() => updateCartQuantity(item.id, -1)} style={qtyBtnStyle} aria-label="Decrease quantity">−</button>
-                          <span style={{ fontWeight: 700, minWidth: 20, textAlign: 'center' }}>{qtyInCart}</span>
+                        <div className="flex items-center gap-2 bg-ej-deep/80 border border-ej-border p-1 rounded-xl">
+                          <button
+                            onClick={() => updateCartQuantity(item.id, -1)}
+                            className="w-7 h-7 rounded-lg bg-ej-surface hover:bg-ej-surface-2 text-ej-cream font-bold text-sm flex items-center justify-center transition active:scale-95"
+                            aria-label="Decrease quantity"
+                          >
+                            <Minus className="w-3.5 h-3.5" />
+                          </button>
+                          <span className="font-extrabold text-sm min-w-[20px] text-center text-ej-lime">
+                            {qtyInCart}
+                          </span>
                           <button
                             onClick={() => updateCartQuantity(item.id, 1)}
                             disabled={qtyInCart >= item.netAvailable}
-                            style={qtyBtnStyle}
+                            className="w-7 h-7 rounded-lg bg-ej-lime hover:bg-ej-lime-dim text-ej-ink font-bold text-sm flex items-center justify-center transition active:scale-95 disabled:opacity-40 disabled:hover:bg-ej-lime"
                             aria-label="Increase quantity"
-                          >+</button>
+                          >
+                            <Plus className="w-3.5 h-3.5" />
+                          </button>
                         </div>
                       ) : (
-                        <button className="btn-primary" style={{ padding: '0.35rem 0.9rem', fontSize: '0.8rem' }} onClick={() => addToCart(item)}>
+                        <button
+                          onClick={() => addToCart(item)}
+                          className="btn-primary py-1.5 px-4 text-xs font-bold flex items-center gap-1.5 shadow-glow-sm"
+                        >
+                          <Plus className="w-3.5 h-3.5" />
                           Add
                         </button>
                       )
@@ -350,99 +350,136 @@ export default function StudentHomePage() {
         )}
       </main>
 
-      {/* ── Floating cart bar ────────────────────────────────────────────── */}
+      {/* Floating Cart Bar */}
       {cartItemCount > 0 && !isCartOpen && (
         <div
           id="cart-bar"
-          style={{
-            position: 'fixed', bottom: '1rem', left: '50%', transform: 'translateX(-50%)',
-            width: 'min(92%, 500px)', zIndex: 30,
-          }}
+          className="fixed bottom-5 left-1/2 -translate-x-1/2 w-[90%] max-w-md z-30 animate-slide-in-up"
         >
           <button
             onClick={() => setIsCartOpen(true)}
-            style={{
-              width: '100%', padding: '1rem 1.25rem',
-              background: 'var(--color-surface-2)', border: '1px solid var(--color-border)',
-              borderRadius: 'var(--radius-xl)', cursor: 'pointer',
-              display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-              boxShadow: 'var(--shadow-card)',
-            }}
+            className="w-full p-4 bg-ej-indigo border border-ej-lime/60 rounded-2xl shadow-2xl flex items-center justify-between text-ej-cream hover:border-ej-lime transition-all duration-200 group"
           >
-            <span style={{ fontWeight: 700, color: 'var(--color-text-primary)' }}>
-              {cartItemCount} item{cartItemCount !== 1 ? 's' : ''}
-            </span>
-            <span style={{ fontWeight: 800, color: 'var(--color-accent)', fontSize: '1rem' }}>
-              ₹{cartTotal} — View Cart →
-            </span>
+            <div className="flex items-center gap-3">
+              <div className="w-9 h-9 rounded-xl bg-ej-lime text-ej-ink font-black flex items-center justify-center text-sm shadow-glow-sm group-hover:scale-105 transition">
+                {cartItemCount}
+              </div>
+              <div className="text-left">
+                <p className="text-xs text-ej-muted font-medium">Cart total</p>
+                <p className="text-base font-black text-ej-gold">₹{cartTotal}</p>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-1.5 text-xs font-extrabold text-ej-lime group-hover:translate-x-1 transition-transform">
+              <span>View Cart</span>
+              <ArrowRight className="w-4 h-4" />
+            </div>
           </button>
         </div>
       )}
 
-      {/* ── Cart drawer ───────────────────────────────────────────────────── */}
+      {/* Slide-over Cart Drawer */}
       {isCartOpen && (
-        <div id="cart-drawer-overlay" style={{ position: 'fixed', inset: 0, zIndex: 50, background: 'rgba(0,0,0,0.7)', display: 'flex', justifyContent: 'flex-end' }} onClick={e => { if ((e.target as HTMLElement).id === 'cart-drawer-overlay') setIsCartOpen(false); }}>
+        <div
+          id="cart-drawer-overlay"
+          className="fixed inset-0 z-50 bg-ej-deep/80 backdrop-blur-md flex justify-end"
+          onClick={e => { if ((e.target as HTMLElement).id === 'cart-drawer-overlay') setIsCartOpen(false); }}
+        >
           <div
             id="cart-drawer"
-            className="card"
-            style={{ width: 'min(100%, 420px)', height: '100%', borderRadius: '0', display: 'flex', flexDirection: 'column', overflowY: 'auto', boxShadow: 'var(--shadow-card)' }}
+            className="w-full max-w-md bg-ej-indigo border-l border-ej-border h-full flex flex-col shadow-2xl animate-slide-in-right"
           >
-            {/* Cart header */}
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '1rem 1.25rem', borderBottom: '1px solid var(--color-border)', flexShrink: 0 }}>
-              <h2 style={{ margin: 0, fontSize: '1rem', fontWeight: 700 }}>Your Cart</h2>
-              <button onClick={() => setIsCartOpen(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--color-text-muted)', fontSize: '1.2rem' }} aria-label="Close cart">✕</button>
+            {/* Header */}
+            <div className="p-4 border-b border-ej-border flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <ShoppingBag className="w-5 h-5 text-ej-lime" />
+                <h2 className="text-base font-extrabold text-ej-cream">Your Order Cart</h2>
+              </div>
+              <button
+                onClick={() => setIsCartOpen(false)}
+                className="p-2 rounded-xl text-ej-muted hover:text-ej-cream hover:bg-ej-surface transition"
+                aria-label="Close cart"
+              >
+                <X className="w-5 h-5" />
+              </button>
             </div>
 
-            {/* Checkout error */}
+            {/* Error in checkout */}
             {checkoutError && (
-              <div id="checkout-error" role="alert" style={{ margin: '0.75rem', padding: '0.75rem', background: 'rgba(239,68,68,0.1)', border: '1px solid var(--color-error)', borderRadius: 'var(--radius-md)', color: 'var(--color-error)', fontSize: '0.8rem' }}>
-                ⚠ {checkoutError}
+              <div id="checkout-error" role="alert" className="m-4 p-3 rounded-xl bg-ej-vermilion/10 border border-ej-vermilion/40 text-ej-vermilion text-xs font-semibold flex items-center gap-2">
+                <AlertTriangle className="w-4 h-4 shrink-0" />
+                <span>⚠ {checkoutError}</span>
               </div>
             )}
 
-            {/* Cart items */}
-            <div id="cart-items" style={{ flex: 1, padding: '0.75rem 1.25rem', display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+            {/* Items List */}
+            <div id="cart-items" className="flex-1 overflow-y-auto p-4 space-y-3">
               {cart.length === 0 ? (
-                <p style={{ color: 'var(--color-text-muted)', fontSize: '0.875rem', textAlign: 'center', marginTop: '2rem' }}>
-                  Your cart is empty.
-                </p>
+                <div className="text-center py-12 text-ej-muted space-y-2">
+                  <ShoppingBag className="w-12 h-12 stroke-1 mx-auto opacity-40 text-ej-muted" />
+                  <p className="text-sm font-medium">Your cart is empty</p>
+                  <p className="text-xs text-ej-muted/70">Add some delicious snacks to get started.</p>
+                </div>
               ) : (
                 cart.map(c => (
-                  <div key={c.menuItem.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0.6rem 0', borderBottom: '1px solid var(--color-border)' }}>
-                    <div>
-                      <p style={{ margin: 0, fontWeight: 600, fontSize: '0.875rem' }}>{c.menuItem.name}</p>
-                      <p style={{ margin: 0, fontSize: '0.8rem', color: 'var(--color-accent)' }}>
+                  <div
+                    key={c.menuItem.id}
+                    className="p-3 bg-ej-surface/70 border border-ej-border/80 rounded-xl flex items-center justify-between gap-3"
+                  >
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-bold text-ej-cream truncate">{c.menuItem.name}</p>
+                      <p className="text-xs font-extrabold text-ej-gold mt-0.5">
                         ₹{c.menuItem.price} × {c.quantity} = ₹{c.menuItem.price * c.quantity}
                       </p>
                     </div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-                      <button onClick={() => updateCartQuantity(c.menuItem.id, -1)} style={qtyBtnStyle}>−</button>
-                      <span style={{ fontWeight: 700, minWidth: 20, textAlign: 'center' }}>{c.quantity}</span>
-                      <button onClick={() => updateCartQuantity(c.menuItem.id, 1)} disabled={c.quantity >= c.menuItem.netAvailable} style={qtyBtnStyle}>+</button>
+
+                    <div className="flex items-center gap-2 bg-ej-deep p-1 rounded-lg border border-ej-border">
+                      <button
+                        onClick={() => updateCartQuantity(c.menuItem.id, -1)}
+                        className="w-6 h-6 rounded bg-ej-surface hover:bg-ej-surface-2 text-ej-cream flex items-center justify-center font-bold text-xs"
+                      >
+                        <Minus className="w-3 h-3" />
+                      </button>
+                      <span className="font-extrabold text-xs text-ej-lime min-w-[16px] text-center">
+                        {c.quantity}
+                      </span>
+                      <button
+                        onClick={() => updateCartQuantity(c.menuItem.id, 1)}
+                        disabled={c.quantity >= c.menuItem.netAvailable}
+                        className="w-6 h-6 rounded bg-ej-lime text-ej-ink flex items-center justify-center font-bold text-xs disabled:opacity-40"
+                      >
+                        <Plus className="w-3 h-3" />
+                      </button>
                     </div>
                   </div>
                 ))
               )}
             </div>
 
-            {/* Checkout footer */}
+            {/* Footer */}
             {cart.length > 0 && (
-              <div id="cart-footer" style={{ padding: '1rem 1.25rem', borderTop: '1px solid var(--color-border)', flexShrink: 0 }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.75rem' }}>
-                  <span style={{ color: 'var(--color-text-muted)', fontSize: '0.875rem' }}>Total</span>
-                  <span style={{ fontWeight: 800, fontSize: '1.1rem', color: 'var(--color-accent)' }}>₹{cartTotal}</span>
+              <div id="cart-footer" className="p-4 border-t border-ej-border bg-ej-deep/90 space-y-3">
+                <div className="flex justify-between items-baseline">
+                  <span className="text-xs text-ej-muted font-medium">Subtotal Amount</span>
+                  <span className="text-xl font-black text-ej-gold">₹{cartTotal}</span>
                 </div>
-                <p style={{ fontSize: '0.75rem', color: 'var(--color-text-muted)', marginBottom: '0.75rem' }}>
-                  Stock is reserved for 5 minutes after checkout. Pay promptly.
+                <p className="text-[11px] text-ej-muted leading-tight">
+                  ⚡ Stock is held for 5 mins upon checkout. Complete payment to get your token &amp; QR.
                 </p>
                 <button
                   id="checkout-btn"
-                  className="btn-primary"
-                  style={{ width: '100%', padding: '0.85rem' }}
                   onClick={handleCheckout}
                   disabled={checkingOut}
+                  className="btn-primary w-full py-3.5 text-sm font-extrabold shadow-glow flex items-center justify-center gap-2"
                 >
-                  {checkingOut ? 'Processing…' : `Pay ₹${cartTotal} with Razorpay`}
+                  {checkingOut ? (
+                    <>
+                      <RefreshCw className="w-4 h-4 animate-spin" />
+                      <span>Reserving Stock &amp; Launching...</span>
+                    </>
+                  ) : (
+                    <span>Pay ₹{cartTotal} via Razorpay →</span>
+                  )}
                 </button>
               </div>
             )}
@@ -452,11 +489,3 @@ export default function StudentHomePage() {
     </div>
   );
 }
-
-/* ── Tiny shared style objects ─────────────────────────────────────────── */
-const qtyBtnStyle: React.CSSProperties = {
-  width: 28, height: 28, display: 'flex', alignItems: 'center', justifyContent: 'center',
-  background: 'var(--color-surface-2)', border: '1px solid var(--color-border)',
-  borderRadius: 'var(--radius-sm)', cursor: 'pointer', fontWeight: 700, fontSize: '1rem',
-  color: 'var(--color-text-primary)',
-};

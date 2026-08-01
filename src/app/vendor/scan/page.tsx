@@ -1,8 +1,8 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
-import Link from 'next/link';
-import { ArrowLeft, Camera, CheckCircle2, AlertTriangle, XCircle, Search, RefreshCw } from 'lucide-react';
+import { VendorHeader } from '@/components/VendorHeader';
+import { Camera, CheckCircle2, AlertTriangle, XCircle, Search, RefreshCw } from 'lucide-react';
 import { Html5QrcodeScanner } from 'html5-qrcode';
 
 export default function VendorScanPage() {
@@ -66,7 +66,6 @@ export default function VendorScanPage() {
   };
 
   useEffect(() => {
-    // Initialize html5-qrcode scanner
     const scanner = new Html5QrcodeScanner(
       'reader',
       {
@@ -74,7 +73,7 @@ export default function VendorScanPage() {
         qrbox: { width: 250, height: 250 },
         aspectRatio: 1.0,
       },
-      /* verbose= */ false
+      false
     );
 
     scannerRef.current = scanner;
@@ -82,7 +81,6 @@ export default function VendorScanPage() {
     scanner.render(
       (decodedText) => {
         try {
-          // Parse JSON payload or raw text
           if (decodedText.startsWith('{')) {
             const parsed = JSON.parse(decodedText);
             handleProcessPayload({ orderId: parsed.orderId, qrSecret: parsed.qrSecret });
@@ -93,7 +91,7 @@ export default function VendorScanPage() {
           handleProcessPayload({ token: decodedText.trim() });
         }
       },
-      (error) => {
+      (_error) => {
         // quiet background frame errors
       }
     );
@@ -104,49 +102,39 @@ export default function VendorScanPage() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-slate-900 text-slate-100 pb-16">
-      {/* Header */}
-      <header className="bg-slate-800 border-b border-slate-700 px-6 py-4 flex items-center justify-between sticky top-0 z-30">
-        <div className="flex items-center space-x-3">
-          <Link href="/vendor/queue" className="p-2 rounded-xl bg-slate-700 hover:bg-slate-600 text-slate-300">
-            <ArrowLeft className="w-5 h-5" />
-          </Link>
-          <div>
-            <h1 className="text-xl font-bold text-amber-400">In-Browser QR Scanner</h1>
-            <p className="text-xs text-slate-400">Scan pickup QR codes using tablet/phone camera</p>
-          </div>
-        </div>
-      </header>
+    <div className="min-h-screen bg-ej-deep text-ej-cream flex flex-col pb-16">
+      <VendorHeader />
 
-      <main className="max-w-md mx-auto px-4 pt-6 space-y-5">
-        {/* Verification Status Toast Banner */}
+      <main className="max-w-md w-full mx-auto px-4 pt-6 space-y-5">
+        {/* Verification Loading Banner */}
         {verifying && (
-          <div className="p-4 rounded-2xl bg-amber-500/20 border border-amber-500/50 text-amber-300 text-sm flex items-center space-x-2 animate-pulse">
+          <div className="p-4 rounded-2xl bg-ej-gold/20 border border-ej-gold/50 text-ej-gold text-sm flex items-center justify-center gap-2 animate-pulse font-bold">
             <RefreshCw className="w-5 h-5 animate-spin" />
             <span>Verifying QR token with server...</span>
           </div>
         )}
 
+        {/* Scan Result Alert */}
         {scanResult && !verifying && (
           <div
-            className={`p-5 rounded-2xl border shadow-xl space-y-2 animate-in fade-in duration-200 ${
+            className={`p-5 rounded-2xl border shadow-2xl space-y-3 ${
               scanResult.status === 'SUCCESS'
-                ? 'bg-emerald-950/80 border-emerald-500 text-emerald-200'
+                ? 'bg-ej-teal/20 border-ej-teal text-ej-teal animate-success-flash'
                 : scanResult.status === 'ALREADY_DELIVERED'
-                ? 'bg-amber-950/80 border-amber-500 text-amber-200'
-                : 'bg-red-950/80 border-red-500 text-red-200'
+                ? 'bg-ej-gold/20 border-ej-gold text-ej-gold animate-fade-in-up'
+                : 'bg-ej-vermilion/20 border-ej-vermilion text-ej-vermilion animate-shake'
             }`}
           >
-            <div className="flex items-center space-x-2 font-bold text-base">
-              {scanResult.status === 'SUCCESS' && <CheckCircle2 className="w-6 h-6 text-emerald-400 shrink-0" />}
-              {scanResult.status === 'ALREADY_DELIVERED' && <AlertTriangle className="w-6 h-6 text-amber-400 shrink-0" />}
-              {scanResult.status === 'ERROR' && <XCircle className="w-6 h-6 text-red-400 shrink-0" />}
+            <div className="flex items-center gap-2 font-extrabold text-base">
+              {scanResult.status === 'SUCCESS' && <CheckCircle2 className="w-6 h-6 text-ej-teal shrink-0" />}
+              {scanResult.status === 'ALREADY_DELIVERED' && <AlertTriangle className="w-6 h-6 text-ej-gold shrink-0" />}
+              {scanResult.status === 'ERROR' && <XCircle className="w-6 h-6 text-ej-vermilion shrink-0" />}
               <span>{scanResult.message}</span>
             </div>
 
             {scanResult.order && (
-              <div className="text-xs space-y-1 pt-2 border-t border-white/10 font-mono">
-                <p>Token: <strong className="text-white font-bold">{scanResult.order.token}</strong></p>
+              <div className="text-xs space-y-1 pt-3 border-t border-white/10 font-mono text-ej-cream">
+                <p>Token: <strong className="text-ej-lime font-black text-sm">{scanResult.order.token}</strong></p>
                 <p>Items: {scanResult.order.items?.map((i: any) => `${i.quantity}x ${i.menuItem.name}`).join(', ')}</p>
                 <p>Total: ₹{scanResult.order.totalAmount}</p>
               </div>
@@ -154,42 +142,42 @@ export default function VendorScanPage() {
 
             <button
               onClick={() => setScanResult(null)}
-              className="mt-2 w-full py-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-white font-semibold text-xs transition"
+              className="w-full py-2 rounded-xl bg-ej-surface hover:bg-ej-surface-2 text-ej-cream font-bold text-xs border border-ej-border transition"
             >
-              Dismiss Alert
+              Dismiss &amp; Scan Next
             </button>
           </div>
         )}
 
         {/* Camera Container */}
-        <div className="bg-slate-800 rounded-3xl border border-slate-700 p-4 space-y-3 shadow-xl">
-          <div className="flex items-center space-x-2 text-xs font-bold text-amber-400 border-b border-slate-700 pb-2">
+        <div className="card p-4 space-y-3 border-ej-border/80 shadow-2xl">
+          <div className="flex items-center gap-2 text-xs font-extrabold text-ej-lime border-b border-ej-border pb-2.5">
             <Camera className="w-4 h-4" />
-            <span>Point camera at Student's Order QR code</span>
+            <span>Point camera at Student&apos;s Order QR code</span>
           </div>
 
-          <div id="reader" className="overflow-hidden rounded-2xl border border-slate-700 bg-slate-900" />
+          <div id="reader" className="overflow-hidden rounded-xl border border-ej-border bg-ej-deep" />
         </div>
 
         {/* Manual Token Entry Fallback */}
-        <div className="bg-slate-800 rounded-2xl border border-slate-700 p-4 space-y-3">
-          <h3 className="text-xs font-bold text-slate-300 flex items-center space-x-1.5">
-            <Search className="w-4 h-4 text-amber-400" />
+        <div className="card p-4 space-y-3 border-ej-border/80">
+          <h3 className="text-xs font-bold text-ej-cream flex items-center gap-2">
+            <Search className="w-4 h-4 text-ej-gold" />
             <span>Manual Token Override</span>
           </h3>
 
-          <form onSubmit={handleManualSubmit} className="flex space-x-2">
+          <form onSubmit={handleManualSubmit} className="flex gap-2">
             <input
               type="text"
               placeholder="e.g. EJ-014"
               value={manualToken}
               onChange={(e) => setManualToken(e.target.value)}
-              className="flex-1 px-3 py-2 bg-slate-900 border border-slate-700 rounded-xl text-white font-mono text-sm focus:outline-none focus:border-amber-500 uppercase"
+              className="input-field flex-1 font-mono uppercase text-center text-sm tracking-wider"
             />
             <button
               type="submit"
               disabled={verifying}
-              className="px-4 py-2 rounded-xl bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold text-xs transition disabled:opacity-50"
+              className="btn-gold py-2 px-4 text-xs font-extrabold"
             >
               Verify
             </button>

@@ -18,6 +18,7 @@ export async function POST(request: Request) {
     let order;
 
     if (orderId && qrSecret) {
+      // ── Primary path: QR scan (orderId + qrSecret) ───────────────────
       order = await prisma.order.findUnique({
         where: { id: orderId },
         include: { items: { include: { menuItem: true } } },
@@ -25,11 +26,15 @@ export async function POST(request: Request) {
 
       if (!order || order.qrSecret !== qrSecret) {
         return NextResponse.json(
-          { success: false, error: 'Invalid or forged QR code!' },
+          { success: false, error: 'Invalid or tampered QR code. Delivery rejected.' },
           { status: 400 }
         );
       }
     } else if (token) {
+      // ── Fallback path: manual token entry (no QR secret) ─────────────
+      // The vendor is assumed to have physical possession of the customer
+      // since this path requires being logged in as VENDOR. Token lookup is
+      // scoped to today to avoid collisions across days.
       const todayStart = new Date();
       todayStart.setHours(0, 0, 0, 0);
 
@@ -43,35 +48,59 @@ export async function POST(request: Request) {
 
       if (!order) {
         return NextResponse.json(
-          { success: false, error: `No active order found for token ${token}` },
+          { success: false, error: `No order found for token '${token.trim().toUpperCase()}' today.` },
           { status: 404 }
         );
       }
     } else {
       return NextResponse.json(
-        { success: false, error: 'QR Code payload or Token required' },
+        { success: false, error: 'Provide either (orderId + qrSecret) from a QR scan, or a token for manual entry.' },
         { status: 400 }
       );
     }
 
-    // Idempotent delivery check
+    // ── Idempotency: already delivered ───────────────────────────────────
     if (order.status === 'DELIVERED') {
       return NextResponse.json({
         success: true,
         alreadyDelivered: true,
-        message: `Order ${order.token} was ALREADY delivered!`,
+        message: `Order ${order.token} was already marked DELIVERED.`,
         order,
       });
     }
 
+    // ── Guard: order must exist in a paid/active state ───────────────────
     if (order.status === 'PENDING_PAYMENT' || order.status === 'EXPIRED') {
       return NextResponse.json(
-        { success: false, error: `Order ${order.token} has not been paid!` },
+        { success: false, error: `Order ${order.token} has not been paid yet and cannot be delivered.` },
         { status: 400 }
       );
     }
 
-    // Update order status to DELIVERED
+    // ── Guard: must be READY before delivery ─────────────────────────────
+    // This prevents scanning a QR while food is still PREPARING,
+    // avoiding premature delivery confirmation.
+    if (order.status === 'PAID') {
+      return NextResponse.json(
+        {
+          success: false,
+          error: `Order ${order.token} has been paid but preparation hasn't started yet. Advance it to PREPARING first.`,
+        },
+        { status: 400 }
+      );
+    }
+
+    if (order.status === 'PREPARING') {
+      return NextResponse.json(
+        {
+          success: false,
+          error: `Order ${order.token} is still being PREPARED. Mark it READY before scanning for delivery.`,
+        },
+        { status: 400 }
+      );
+    }
+
+    // ── Order is READY — mark as DELIVERED ───────────────────────────────
     const deliveredOrder = await prisma.order.update({
       where: { id: order.id },
       data: { status: 'DELIVERED' },
@@ -81,7 +110,7 @@ export async function POST(request: Request) {
     return NextResponse.json({
       success: true,
       alreadyDelivered: false,
-      message: `Order ${deliveredOrder.token} successfully marked DELIVERED!`,
+      message: `Order ${deliveredOrder.token} successfully marked DELIVERED.`,
       order: deliveredOrder,
     });
   } catch (err: any) {

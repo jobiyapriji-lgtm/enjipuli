@@ -2,9 +2,15 @@ import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
+import { cleanupExpiredOrders } from '@/app/api/checkout/route';
 
 export async function GET(request: Request) {
   try {
+    // Release any expired PENDING_PAYMENT reservations before computing
+    // availability, so students always see accurate stock counts even if
+    // no new checkout has been attempted recently.
+    await cleanupExpiredOrders();
+
     const { searchParams } = new URL(request.url);
     const includeInactive = searchParams.get('all') === 'true';
     const todayStr = new Date().toISOString().split('T')[0];
@@ -59,7 +65,7 @@ export async function POST(request: Request) {
     const { name, description, price, category, photoUrl, initialStock } = body;
 
     if (!name || price == null || !category) {
-      return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
+      return NextResponse.json({ error: 'Missing required fields: name, price, category' }, { status: 400 });
     }
 
     const newItem = await prisma.menuItem.create({

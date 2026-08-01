@@ -4,9 +4,12 @@ import { useState, useEffect, use } from 'react';
 import { Header } from '@/components/Header';
 import Link from 'next/link';
 import { LogoWordmark } from '@/components/LogoWordmark';
+import { ElephantMascot } from '@/components/ElephantMascot';
+import { MuralBackground } from '@/components/MuralBackground';
+import { FloralDivider } from '@/components/FloralDivider';
 import QRCode from 'qrcode';
+import { CheckCircle2, Clock, QrCode, ArrowLeft, RefreshCw } from 'lucide-react';
 
-/* ─── Types ──────────────────────────────────────────────────────────────── */
 interface OrderItem {
   id: string;
   quantity: number;
@@ -36,10 +39,6 @@ function stepIndex(status: string) {
   return i === -1 ? 0 : i;
 }
 
-/* ═══════════════════════════════════════════════════════════════════════════
-   PAGE: Order confirmation + live tracker
-   Screen type: .screen-branding  (decoration-heavy per Stitch brief)
-   ═══════════════════════════════════════════════════════════════════════════ */
 export default function OrderConfirmationPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
 
@@ -59,10 +58,13 @@ export default function OrderConfirmationPage({ params }: { params: Promise<{ id
       setOrder(data);
       setError(null);
 
-      // Build QR once token is available
       if (data.id && data.qrSecret && !qrDataUrl) {
         const payload = JSON.stringify({ orderId: data.id, qrSecret: data.qrSecret });
-        const url = await QRCode.toDataURL(payload, { width: 280, margin: 2, color: { dark: '#0f0e1a', light: '#ffffff' } });
+        const url = await QRCode.toDataURL(payload, {
+          width: 280,
+          margin: 2,
+          color: { dark: '#150F2E', light: '#FFFFFF' }
+        });
         setQrDataUrl(url);
       }
     } catch (err: any) {
@@ -74,27 +76,28 @@ export default function OrderConfirmationPage({ params }: { params: Promise<{ id
 
   useEffect(() => {
     fetchOrder();
-    // Poll every 4 s for status updates
     const id = setInterval(fetchOrder, 4_000);
     return () => clearInterval(id);
-  }, []);  // eslint-disable-line react-hooks/exhaustive-deps
+  }, []);
 
-  /* ─── Loading ──────────────────────────────────────────────────────────── */
   if (loading) return (
-    <div style={{ minHeight: '100svh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--color-bg)' }}>
-      <p style={{ color: 'var(--color-text-muted)' }}>Loading order…</p>
+    <div className="min-h-screen bg-ej-deep flex items-center justify-center text-ej-cream">
+      <div className="flex flex-col items-center gap-3">
+        <RefreshCw className="w-8 h-8 text-ej-lime animate-spin" />
+        <p className="text-sm font-bold text-ej-muted">Retrieving order receipt...</p>
+      </div>
     </div>
   );
 
-  /* ─── Error ────────────────────────────────────────────────────────────── */
   if (error || !order) return (
-    <div style={{ minHeight: '100svh', background: 'var(--color-bg)' }}>
+    <div className="min-h-screen bg-ej-deep text-ej-cream">
       <Header />
-      <main style={{ maxWidth: 480, margin: '3rem auto', padding: '1.5rem' }}>
-        <div className="card" style={{ padding: '2rem', textAlign: 'center' }}>
-          <p style={{ color: 'var(--color-error)', fontWeight: 600 }}>⚠ {error || 'Order not found'}</p>
-          <Link href="/" style={{ color: 'var(--color-accent)', display: 'block', marginTop: '1rem', fontSize: '0.875rem' }}>
-            ← Back to menu
+      <main className="max-w-md mx-auto pt-12 px-4">
+        <div className="card p-6 text-center space-y-4">
+          <p className="text-ej-vermilion font-bold text-sm">⚠ {error || 'Order not found'}</p>
+          <Link href="/" className="btn-primary inline-flex items-center gap-2 text-xs">
+            <ArrowLeft className="w-4 h-4" />
+            <span>Return to Live Menu</span>
           </Link>
         </div>
       </main>
@@ -104,114 +107,155 @@ export default function OrderConfirmationPage({ params }: { params: Promise<{ id
   const currentStep = stepIndex(order.status);
 
   return (
-    <div id="order-confirmation-page">
+    <div id="order-confirmation-page" className="min-h-screen bg-ej-deep text-ej-cream flex flex-col relative overflow-hidden">
       <Header />
 
-      {/*
-       * screen-branding: Stitch applies richer decoration here
-       * (glow effects, brand-colour backgrounds, etc.)
-       */}
-      <main className="screen-branding" style={{ maxWidth: 520, margin: '0 auto', padding: '1.5rem 1rem' }}>
+      <MuralBackground opacity={0.12} />
 
-        {/* ── Token ticket ───────────────────────────────────────────────── */}
+      <main className="screen-branding flex-1 max-w-lg w-full mx-auto px-4 py-6 relative z-10 space-y-5">
+        {/* Token Ticket */}
         <section
           id="order-ticket"
-          className="card"
-          style={{ padding: '2rem', textAlign: 'center', marginBottom: '1rem' }}
+          className="card p-6 text-center animate-receipt-drop relative border-ej-border/80 shadow-2xl"
           aria-label="Order pickup ticket"
         >
-          <LogoWordmark size={110} light />
+          <div className="flex justify-center mb-3">
+            <LogoWordmark size={140} light glow />
+          </div>
 
-          <div id="order-token" style={{ margin: '1.5rem 0 0.5rem' }}>
-            <p style={{ margin: 0, fontSize: '0.7rem', textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--color-text-muted)' }}>
-              Your pickup token
+          <FloralDivider width={120} className="mx-auto opacity-70 mb-4" />
+
+          <div id="order-token" className="space-y-1">
+            <p className="text-[11px] font-bold text-ej-muted uppercase tracking-widest">
+              Your Pickup Token Number
             </p>
-            <p style={{ margin: '0.3rem 0 0', fontSize: '3.5rem', fontWeight: 900, letterSpacing: '-0.02em', color: 'var(--color-accent)', lineHeight: 1 }}>
+            <p className="text-5xl font-black text-ej-lime tracking-tight leading-none animate-token-reveal drop-shadow-[0_0_20px_rgba(212,255,61,0.3)]">
               {order.token}
             </p>
           </div>
 
           {/* QR code */}
-          {qrDataUrl ? (
-            <div id="order-qr" style={{ display: 'inline-block', padding: '0.75rem', background: '#fff', borderRadius: 'var(--radius-lg)', marginTop: '1rem' }}>
-              <img src={qrDataUrl} alt={`QR code for order ${order.token}`} width={200} height={200} style={{ display: 'block' }} />
-            </div>
-          ) : (
-            <div style={{ width: 200, height: 200, background: 'var(--color-surface-2)', borderRadius: 'var(--radius-lg)', margin: '1rem auto', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <span style={{ color: 'var(--color-text-muted)', fontSize: '0.8rem' }}>Generating QR…</span>
-            </div>
-          )}
+          <div className="mt-5 flex justify-center">
+            {qrDataUrl ? (
+              <div
+                id="order-qr"
+                className="p-3 bg-white rounded-2xl shadow-xl border-4 border-ej-indigo"
+              >
+                <img
+                  src={qrDataUrl}
+                  alt={`QR code for order ${order.token}`}
+                  width={200}
+                  height={200}
+                  className="block rounded-lg"
+                />
+              </div>
+            ) : (
+              <div className="w-[200px] h-[200px] bg-ej-surface rounded-2xl flex items-center justify-center">
+                <span className="text-xs text-ej-muted font-medium">Generating QR Code...</span>
+              </div>
+            )}
+          </div>
 
-          <p style={{ color: 'var(--color-text-muted)', fontSize: '0.75rem', marginTop: '0.75rem' }}>
-            Show this QR to the vendor at pickup.
-          </p>
+          <div className="mt-4 flex items-center justify-center gap-1.5 text-xs text-ej-muted font-medium">
+            <QrCode className="w-4 h-4 text-ej-lime" />
+            <span>Show this QR to vendor at pickup</span>
+          </div>
         </section>
 
-        {/* ── Live status tracker ────────────────────────────────────────── */}
-        <section id="order-status-tracker" className="card" style={{ padding: '1.25rem', marginBottom: '1rem' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
-            <h2 style={{ margin: 0, fontSize: '0.9rem', fontWeight: 700 }}>Order status</h2>
+        {/* Live Status Tracker */}
+        <section id="order-status-tracker" className="card p-5 border-ej-border/80 shadow-xl space-y-4">
+          <div className="flex justify-between items-center pb-3 border-b border-ej-border">
+            <h2 className="text-sm font-extrabold text-ej-cream flex items-center gap-2">
+              <Clock className="w-4 h-4 text-ej-lime" />
+              <span>Live Order Tracker</span>
+            </h2>
             <span
               id="order-status-badge"
-              className={`status-${order.status}`}
-              style={{ fontSize: '0.75rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em' }}
+              className={`text-xs font-black uppercase px-2.5 py-1 rounded-full border ${
+                order.status === 'READY'
+                  ? 'bg-ej-teal/20 text-ej-teal border-ej-teal/40 animate-pulse'
+                  : order.status === 'DELIVERED'
+                  ? 'bg-ej-muted/20 text-ej-muted border-ej-border'
+                  : 'bg-ej-gold/20 text-ej-gold border-ej-gold/40'
+              }`}
             >
               {order.status.replace('_', ' ')}
             </span>
           </div>
 
-          <ol style={{ listStyle: 'none', margin: 0, padding: 0, display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+          <ol className="space-y-3 relative before:absolute before:left-3.5 before:top-3 before:bottom-3 before:w-0.5 before:bg-ej-border">
             {STATUS_STEPS.map((step, i) => {
               const done    = i <= currentStep;
               const current = i === currentStep;
               return (
-                <li key={step.key} style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                  <span style={{
-                    width: 26, height: 26, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    background: done ? 'var(--color-accent)' : 'var(--color-surface-2)',
-                    border: `2px solid ${done ? 'var(--color-accent)' : 'var(--color-border)'}`,
-                    color: done ? 'var(--color-text-inverse)' : 'var(--color-text-muted)',
-                    fontWeight: 700, fontSize: '0.75rem', flexShrink: 0,
-                    boxShadow: current ? 'var(--shadow-glow)' : 'none',
-                  }}>
+                <li key={step.key} className="flex items-center gap-3 relative z-10">
+                  <span
+                    className={`w-7 h-7 rounded-full flex items-center justify-center font-bold text-xs shrink-0 transition-all duration-300 ${
+                      done
+                        ? 'bg-ej-lime text-ej-ink shadow-glow-sm border-2 border-ej-lime'
+                        : 'bg-ej-surface text-ej-muted border-2 border-ej-border'
+                    }`}
+                  >
                     {done ? '✓' : i + 1}
                   </span>
-                  <span style={{
-                    fontSize: '0.875rem',
-                    fontWeight: current ? 700 : 400,
-                    color: current ? 'var(--color-text-primary)' : done ? 'var(--color-text-muted)' : 'var(--color-text-muted)',
-                  }}>
-                    {step.label}
-                  </span>
-                  {current && order.status !== 'DELIVERED' && (
-                    <span style={{ marginLeft: 'auto', fontSize: '0.65rem', color: 'var(--color-text-muted)', fontStyle: 'italic' }}>
-                      live ↻
+                  <div className="flex-1 min-w-0 flex items-center justify-between">
+                    <span
+                      className={`text-xs ${
+                        current
+                          ? 'font-extrabold text-ej-lime text-sm'
+                          : done
+                          ? 'font-bold text-ej-cream'
+                          : 'font-medium text-ej-muted'
+                      }`}
+                    >
+                      {step.label}
                     </span>
-                  )}
+                    {current && order.status !== 'DELIVERED' && (
+                      <span className="text-[10px] text-ej-lime/80 font-mono animate-pulse flex items-center gap-1">
+                        <span className="w-1.5 h-1.5 rounded-full bg-ej-lime inline-block" />
+                        LIVE
+                      </span>
+                    )}
+                  </div>
                 </li>
               );
             })}
           </ol>
         </section>
 
-        {/* ── Receipt ───────────────────────────────────────────────────── */}
-        <section id="order-receipt" className="card" style={{ padding: '1.25rem' }}>
-          <h2 style={{ margin: '0 0 0.75rem', fontSize: '0.9rem', fontWeight: 700 }}>Receipt</h2>
-          {order.items.map(item => (
-            <div key={item.id} style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem', padding: '0.25rem 0', borderBottom: '1px solid var(--color-border)' }}>
-              <span>{item.quantity}× {item.menuItem.name}</span>
-              <span style={{ fontWeight: 600 }}>₹{item.priceAtOrderTime * item.quantity}</span>
-            </div>
-          ))}
-          <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '0.75rem', fontWeight: 800, fontSize: '1rem' }}>
-            <span>Total paid</span>
-            <span style={{ color: 'var(--color-accent)' }}>₹{order.totalAmount}</span>
+        {/* Receipt */}
+        <section id="order-receipt" className="card p-5 border-ej-border/80 shadow-xl space-y-3">
+          <div className="flex justify-between items-center pb-2 border-b border-ej-border">
+            <h2 className="text-xs font-bold uppercase tracking-wider text-ej-muted">Order Itemized Receipt</h2>
+            <span className="text-[11px] text-ej-muted font-mono">
+              {new Date(order.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+            </span>
+          </div>
+
+          <div className="space-y-2">
+            {order.items.map(item => (
+              <div key={item.id} className="flex justify-between text-xs font-medium">
+                <span className="text-ej-cream">{item.quantity}× {item.menuItem.name}</span>
+                <span className="font-extrabold text-ej-gold">₹{item.priceAtOrderTime * item.quantity}</span>
+              </div>
+            ))}
+          </div>
+
+          <div className="pt-3 border-t border-ej-border flex justify-between items-center font-black">
+            <span className="text-sm text-ej-cream">Total Amount Paid</span>
+            <span className="text-base text-ej-lime">₹{order.totalAmount}</span>
           </div>
         </section>
 
-        <Link href="/" style={{ display: 'block', textAlign: 'center', color: 'var(--color-text-muted)', fontSize: '0.8rem', marginTop: '1.5rem' }}>
-          ← Order more
-        </Link>
+        <div className="text-center pt-2 pb-6">
+          <Link
+            href="/"
+            className="inline-flex items-center gap-1.5 text-xs font-bold text-ej-muted hover:text-ej-lime transition"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            <span>Order more items</span>
+          </Link>
+        </div>
       </main>
     </div>
   );
