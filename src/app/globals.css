@@ -1,0 +1,210 @@
+/*
+ * ENJIPULI — Global Design Token System
+ *
+ * ─────────────────────────────────────────────────────────────────
+ * All colours, radii, and spacing live here as CSS variables.
+ * The Google Stitch design integration ONLY needs to override the
+ * :root block below — no component code changes required.
+ *
+ * Expected Stitch palette (dark, saturated):
+ *   base: deep indigo/violet  (#0f0e1a or similar)
+ *   accent-primary: lime / orange / gold / teal (TBD by Stitch)
+ *   surface: slightly lighter than base
+ *   text-primary: near-white
+ *   text-muted: muted grey/lavender
+ * ─────────────────────────────────────────────────────────────────
+ */
+
+/* ── Font loading ─────────────────────────────────────────────── */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+Malayalam:wght@400;600;700;800&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ── Design tokens (override entire block for Stitch theme) ───── */
+:root {
+  /* Base surface */
+  --color-bg:           #0f0e1a;
+  --color-surface:      #1a1828;
+  --color-surface-2:    #231f35;
+  --color-border:       #2e2a45;
+
+  /* Text */
+  --color-text-primary: #f0eeff;
+  --color-text-muted:   #8b88a8;
+  --color-text-inverse: #0f0e1a;
+
+  /* Brand accent — Stitch will define these */
+  --color-accent:       #f5a623;   /* warm gold — placeholder */
+  --color-accent-hover: #e09010;
+  --color-accent-2:     #7c3aed;   /* indigo accent */
+  --color-accent-3:     #10b981;   /* teal accent */
+
+  /* Status colours */
+  --color-success:      #22c55e;
+  --color-warning:      #f59e0b;
+  --color-error:        #ef4444;
+  --color-info:         #3b82f6;
+
+  /* Radii */
+  --radius-sm:  6px;
+  --radius-md:  12px;
+  --radius-lg:  18px;
+  --radius-xl:  24px;
+
+  /* Shadows */
+  --shadow-card: 0 4px 24px 0 rgba(0,0,0,0.45);
+  --shadow-glow: 0 0 20px 0 rgba(245,166,35,0.15);
+}
+
+/* ── Base resets ─────────────────────────────────────────────── */
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+html {
+  font-size: 16px;
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  min-height: 100svh;
+  background-color: var(--color-bg);
+  color: var(--color-text-primary);
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* ── Malayalam script elements ───────────────────────────────── */
+/*
+ * Any element with lang="ml" uses the Malayalam webfont.
+ * The LogoWordmark SVG component does NOT use this — it is an image.
+ * This rule covers the tagline, status labels in Malayalam, etc.
+ */
+[lang="ml"] {
+  font-family: 'Noto Sans Malayalam', 'Baloo Chettan 2', sans-serif;
+  font-feature-settings: "kern" 1;
+  line-height: 1.5;
+}
+
+/* ── Utility: screen type variants ──────────────────────────── */
+/*
+ * Stitch distinguishes two screen types:
+ *   .screen-branding  → login, order confirmation/ticket (decoration-heavy)
+ *   .screen-task      → menu, checkout, vendor queue (task-focused, minimal)
+ *
+ * Add these classes to the wrapping <main> of each page.
+ * Stitch will fill in the visual treatment; the class names are stable.
+ */
+.screen-branding {
+  /* placeholder — Stitch overrides */
+}
+
+.screen-task {
+  /* placeholder — Stitch overrides */
+}
+
+/* ── Component tokens — used by interim placeholder UI ─────── */
+.card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-card);
+}
+
+.btn-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  padding: 0.65rem 1.25rem;
+  background: var(--color-accent);
+  color: var(--color-text-inverse);
+  font-weight: 700;
+  font-size: 0.875rem;
+  border: none;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: background 0.15s ease, transform 0.1s ease;
+}
+.btn-primary:hover  { background: var(--color-accent-hover); }
+.btn-primary:active { transform: scale(0.98); }
+.btn-primary:disabled { opacity: 0.45; cursor: not-allowed; }
+
+.btn-secondary {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.6rem 1.1rem;
+  background: transparent;
+  color: var(--color-text-primary);
+  font-weight: 600;
+  font-size: 0.875rem;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: border-color 0.15s ease, background 0.15s ease;
+}
+.btn-secondary:hover { background: var(--color-surface-2); border-color: var(--color-accent); }
+
+.input-field {
+  width: 100%;
+  padding: 0.65rem 0.9rem;
+  background: var(--color-surface-2);
+  color: var(--color-text-primary);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  font-size: 0.875rem;
+  font-family: inherit;
+  outline: none;
+  transition: border-color 0.15s ease;
+}
+.input-field:focus { border-color: var(--color-accent); }
+.input-field::placeholder { color: var(--color-text-muted); }
+
+.badge-sold-out {
+  display: inline-block;
+  padding: 0.2rem 0.6rem;
+  background: rgba(239,68,68,0.15);
+  color: var(--color-error);
+  border: 1px solid rgba(239,68,68,0.3);
+  border-radius: var(--radius-sm);
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.badge-available {
+  display: inline-block;
+  padding: 0.2rem 0.6rem;
+  background: rgba(34,197,94,0.12);
+  color: var(--color-success);
+  border: 1px solid rgba(34,197,94,0.25);
+  border-radius: var(--radius-sm);
+  font-size: 0.7rem;
+  font-weight: 600;
+}
+
+/* ── Status label colours (order pipeline) ──────────────────── */
+.status-PENDING_PAYMENT { color: var(--color-text-muted); }
+.status-PAID       { color: var(--color-accent); }
+.status-PREPARING  { color: var(--color-info); }
+.status-READY      { color: var(--color-success); }
+.status-DELIVERED  { color: var(--color-text-muted); }
+.status-EXPIRED    { color: var(--color-error); }
+.status-CANCELLED  { color: var(--color-error); }
+
+/* ── Scrollbar (subtle, dark) ────────────────────────────────── */
+::-webkit-scrollbar       { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: var(--color-bg); }
+::-webkit-scrollbar-thumb { background: var(--color-border); border-radius: 3px; }
+
+/* ── Focus ring (accessibility) ──────────────────────────────── */
+:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+}
