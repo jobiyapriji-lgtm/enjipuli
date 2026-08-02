@@ -38,3 +38,6 @@ next-env.d.ts
 
 # Vercel
 .vercel
+
+# Prisma generated client (OS-specific binaries — generated fresh on each deploy)
+src/generated/
