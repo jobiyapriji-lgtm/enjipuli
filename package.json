@@ -4,9 +4,9 @@
   "description": "ENJIPULI Food Truck App",
   "scripts": {
     "dev": "next dev",
-    "build": "prisma generate && next build",
+    "build": "npx prisma generate && next build",
     "start": "next start",
-    "postinstall": "prisma generate",
+    "postinstall": "npx prisma generate",
     "db:push": "prisma db push",
     "db:seed": "prisma db seed"
   },
@@ -15,6 +15,7 @@
   },
   "dependencies": {
     "@prisma/client": "^6.4.0",
+    "prisma": "^6.4.0",
     "@types/bcryptjs": "^2.4.6",
     "bcryptjs": "^3.0.3",
     "clsx": "^2.1.1",
@@ -36,7 +37,6 @@
     "@types/react-dom": "^19.2.3",
     "autoprefixer": "^10.5.4",
     "postcss": "^8.5.23",
-    "prisma": "^6.4.0",
     "tailwindcss": "^3.4.19",
     "tsx": "^4.23.1",
     "typescript": "^5.7.3"
