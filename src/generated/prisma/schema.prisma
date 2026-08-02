@@ -86,14 +86,14 @@ model OrderItem {
 }
 
 model OtpCode {
-  id         String   @id @default(cuid())
+  id         String    @id @default(cuid())
   email      String
-  codeHash   String   // hashed OTP, never store the raw code
-  purpose    String   // "student" | "vendor" — keep the two login paths distinct
-  attempts   Int      @default(0)
+  codeHash   String // hashed OTP, never store the raw code
+  purpose    String // "student" | "vendor" — keep the two login paths distinct
+  attempts   Int       @default(0)
   expiresAt  DateTime
   consumedAt DateTime?
-  createdAt  DateTime @default(now())
+  createdAt  DateTime  @default(now())
 
   @@index([email, purpose])
 }
