@@ -5,7 +5,12 @@ import bcrypt from 'bcryptjs';
 
 const resend = new Resend(process.env.RESEND_API_KEY || 're_dummy_key');
 
-const VENDOR_ALLOWLIST = ['vendor@enjipuli.com'];
+import { validateStudentEmail } from '@/lib/collegeEmail';
+
+const VENDOR_ALLOWLIST = [
+  'vendor@enjipuli.com',
+  ...(process.env.VENDOR_EMAILS?.split(',').map((e) => e.trim().toLowerCase()).filter(Boolean) || []),
+];
 
 export async function POST(req: Request) {
   try {
@@ -17,17 +22,14 @@ export async function POST(req: Request) {
 
     const email = rawEmail.trim().toLowerCase();
 
-    // 1. Validation
+    // 1. Strict Validation
     if (purpose === 'student') {
-      const allowedDomain = process.env.ALLOWED_EMAIL_DOMAIN?.trim();
-      if (allowedDomain) {
-        const emailDomain = email.split('@')[1];
-        if (emailDomain !== allowedDomain) {
-          return NextResponse.json(
-            { error: `Only @${allowedDomain} email addresses are allowed.` },
-            { status: 403 }
-          );
-        }
+      const validation = validateStudentEmail(email);
+      if (!validation.valid) {
+        return NextResponse.json(
+          { error: validation.error || 'Only verified college email addresses are permitted.' },
+          { status: 403 }
+        );
       }
     } else if (purpose === 'vendor') {
       if (!VENDOR_ALLOWLIST.includes(email)) {
@@ -41,6 +43,8 @@ export async function POST(req: Request) {
     }
 
     // 2. Rate Limiting (max 3 requests per 15 minutes)
+    // Count ALL OTPs for this email in the last 15 min (not just this purpose)
+    // to prevent bypass via alternating purposes.
     const fifteenMinutesAgo = new Date(Date.now() - 15 * 60 * 1000);
     const recentRequests = await prisma.otpCode.count({
       where: {
@@ -56,9 +60,11 @@ export async function POST(req: Request) {
       );
     }
 
-    // 3. Invalidate old OTPs for this email+purpose
-    await prisma.otpCode.deleteMany({
-      where: { email, purpose },
+    // 3. Invalidate old UNCONSUMED OTPs for this email+purpose
+    // Use updateMany to soft-expire instead of deleteMany, preserving rate-limit history.
+    await prisma.otpCode.updateMany({
+      where: { email, purpose, consumedAt: null },
+      data: { expiresAt: new Date() },  // expire them immediately
     });
 
     // 4. Generate 6-digit code & Hash

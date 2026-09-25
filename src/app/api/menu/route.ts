@@ -3,6 +3,7 @@ import { prisma } from '@/lib/prisma';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { cleanupExpiredOrders } from '@/app/api/checkout/route';
+import { getTodayIST } from '@/lib/date';
 
 export async function GET(request: Request) {
   try {
@@ -13,7 +14,7 @@ export async function GET(request: Request) {
 
     const { searchParams } = new URL(request.url);
     const includeInactive = searchParams.get('all') === 'true';
-    const todayStr = new Date().toISOString().split('T')[0];
+    const todayStr = getTodayIST();
 
     const menuItems = await prisma.menuItem.findMany({
       where: includeInactive ? {} : { isActive: true },
@@ -79,7 +80,7 @@ export async function POST(request: Request) {
       },
     });
 
-    const todayStr = new Date().toISOString().split('T')[0];
+    const todayStr = getTodayIST();
     await prisma.dailyStock.create({
       data: {
         menuItemId: newItem.id,

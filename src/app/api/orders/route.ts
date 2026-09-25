@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
+import { getTodayStartIST } from '@/lib/date';
 
 export async function GET(request: Request) {
   try {
@@ -14,10 +15,9 @@ export async function GET(request: Request) {
     const { searchParams } = new URL(request.url);
     const mode = searchParams.get('mode'); // 'queue' for vendor
 
-    if (user.role === 'VENDOR' || mode === 'queue') {
+    if (user.role === 'VENDOR') {
       // Return today's active orders for vendor queue
-      const todayStart = new Date();
-      todayStart.setHours(0, 0, 0, 0);
+      const todayStart = getTodayStartIST();
 
       const queueOrders = await prisma.order.findMany({
         where: {

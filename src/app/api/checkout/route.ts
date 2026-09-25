@@ -4,6 +4,7 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import Razorpay from 'razorpay';
 import crypto from 'crypto';
+import { getTodayIST, dateToISTString } from '@/lib/date';
 
 const razorpay = new Razorpay({
   // IMPORTANT: Replace fallback values with real env vars in production.
@@ -33,7 +34,7 @@ export async function cleanupExpiredOrders() {
   for (const order of expiredOrders) {
     // Key fix: use the date the order was CREATED, not today's date,
     // so we always release from the correct DailyStock row.
-    const orderDateStr = order.createdAt.toISOString().split('T')[0];
+    const orderDateStr = dateToISTString(order.createdAt);
 
     await prisma.$transaction(async (tx) => {
       for (const item of order.items) {
@@ -76,10 +77,22 @@ export async function POST(request: Request) {
       );
     }
 
+    // Deduplicate items by menuItemId — combine quantities.
+    const consolidatedMap = new Map<string, { menuItemId: string; quantity: number }>();
+    for (const item of items) {
+      const existing = consolidatedMap.get(item.menuItemId);
+      if (existing) {
+        existing.quantity += item.quantity;
+      } else {
+        consolidatedMap.set(item.menuItemId, { ...item });
+      }
+    }
+    const consolidatedItems = Array.from(consolidatedMap.values());
+
     // Release stock from any expired reservations before reading availability.
     await cleanupExpiredOrders();
 
-    const todayStr = new Date().toISOString().split('T')[0];
+    const todayStr = getTodayIST();
 
     // ── Server-side item validation ──────────────────────────────────────
     // Prices are always taken from the DB; the client total is never trusted.
@@ -91,7 +104,7 @@ export async function POST(request: Request) {
       name: string;
     }[] = [];
 
-    for (const reqItem of items) {
+    for (const reqItem of consolidatedItems) {
       if (
         !reqItem.menuItemId ||
         !Number.isInteger(reqItem.quantity) ||
@@ -252,6 +265,31 @@ export async function POST(request: Request) {
         data: { razorpayOrderId: rzpOrder.id },
       });
     } catch (rzpErr) {
+      const keyId = process.env.RAZORPAY_KEY_ID || '';
+      const isMockEnv = !keyId || keyId.includes('mock');
+      if (!isMockEnv) {
+        // Real keys — propagate the error so checkout fails visibly.
+        console.error('Razorpay order creation failed:', rzpErr);
+        // Release the reservation we just made since payment can't proceed.
+        await prisma.$transaction(async (tx) => {
+          for (const item of itemDetails) {
+            await tx.dailyStock.update({
+              where: {
+                menuItemId_date: { menuItemId: item.menuItemId, date: getTodayIST() },
+              },
+              data: { quantityReserved: { decrement: item.quantity } },
+            });
+          }
+          await tx.order.update({
+            where: { id: resultOrder.id },
+            data: { status: 'EXPIRED' },
+          });
+        });
+        return NextResponse.json(
+          { error: 'Payment gateway is temporarily unavailable. Please try again in a moment.' },
+          { status: 502 }
+        );
+      }
       // Dev / CI fallback when mock keys are in use.
       console.warn('Razorpay SDK mock fallback for local testing:', rzpErr);
       rzpOrder = { id: `rzp_order_mock_${resultOrder.id}` };

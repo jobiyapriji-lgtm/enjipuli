@@ -8,14 +8,18 @@ import { LogoWordmark } from '@/components/LogoWordmark';
 import { ElephantMascot } from '@/components/ElephantMascot';
 import { MuralBackground } from '@/components/MuralBackground';
 import { FloralDivider } from '@/components/FloralDivider';
-import { ShieldCheck, RefreshCw, AlertTriangle } from 'lucide-react';
+import { ShieldCheck, RefreshCw, AlertTriangle, KeyRound, Mail } from 'lucide-react';
+
+type LoginMode = 'password' | 'otp';
 
 export default function VendorLoginPage() {
-  const [step, setStep]       = useState<1 | 2>(1);
-  const [email, setEmail]     = useState('vendor@enjipuli.com');
-  const [code, setCode]       = useState('');
-  const [loading, setLoading] = useState(false);
-  const [error, setError]     = useState<string | null>(null);
+  const [mode, setMode]         = useState<LoginMode>('password');
+  const [step, setStep]         = useState<1 | 2>(1);
+  const [email, setEmail]       = useState('vendor@enjipuli.com');
+  const [password, setPassword] = useState('');
+  const [code, setCode]         = useState('');
+  const [loading, setLoading]   = useState(false);
+  const [error, setError]       = useState<string | null>(null);
   const [countdown, setCountdown] = useState(0);
   const router = useRouter();
 
@@ -26,6 +30,35 @@ export default function VendorLoginPage() {
     }
     return () => clearTimeout(timer);
   }, [countdown]);
+
+  const handlePasswordLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!email.trim() || !password.trim()) return;
+    setLoading(true);
+    setError(null);
+    try {
+      const res = await signIn('credentials', {
+        email: email.trim(),
+        password: password.trim(),
+        purpose: 'vendor',
+        redirect: false,
+      });
+      if (res?.error) {
+        // Map generic NextAuth errors to human-friendly messages
+        const msg = res.error === 'CredentialsSignin'
+          ? 'Invalid email or password.'
+          : res.error;
+        setError(msg);
+        return;
+      }
+      router.push('/vendor/queue');
+      router.refresh();
+    } catch (err: any) {
+      setError(err.message || 'Vendor login failed');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleRequestOtp = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
@@ -67,7 +100,10 @@ export default function VendorLoginPage() {
         redirect: false 
       });
       if (res?.error) { 
-        setError(res.error); 
+        const msg = res.error === 'CredentialsSignin'
+          ? 'Invalid or expired code.'
+          : res.error;
+        setError(msg); 
         return; 
       }
       router.push('/vendor/queue');
@@ -132,12 +168,55 @@ export default function VendorLoginPage() {
           <span>STAFF PORTAL</span>
         </div>
 
+        {/* Login mode toggle */}
+        <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1rem', justifyContent: 'center' }}>
+          <button
+            type="button"
+            onClick={() => { setMode('password'); setError(null); setStep(1); }}
+            style={{
+              display: 'flex', alignItems: 'center', gap: '0.35rem',
+              padding: '0.45rem 0.85rem',
+              borderRadius: 'var(--radius-md)',
+              fontSize: '0.75rem', fontWeight: 700,
+              background: mode === 'password' ? 'var(--ej-gold)' : 'transparent',
+              color: mode === 'password' ? 'var(--ej-ink)' : 'var(--ej-muted)',
+              border: mode === 'password' ? 'none' : '1px solid var(--ej-border)',
+              cursor: 'pointer', transition: 'all 0.15s',
+            }}
+          >
+            <KeyRound style={{ width: 14, height: 14 }} />
+            Password
+          </button>
+          <button
+            type="button"
+            onClick={() => { setMode('otp'); setError(null); setStep(1); }}
+            style={{
+              display: 'flex', alignItems: 'center', gap: '0.35rem',
+              padding: '0.45rem 0.85rem',
+              borderRadius: 'var(--radius-md)',
+              fontSize: '0.75rem', fontWeight: 700,
+              background: mode === 'otp' ? 'var(--ej-gold)' : 'transparent',
+              color: mode === 'otp' ? 'var(--ej-ink)' : 'var(--ej-muted)',
+              border: mode === 'otp' ? 'none' : '1px solid var(--ej-border)',
+              cursor: 'pointer', transition: 'all 0.15s',
+            }}
+          >
+            <Mail style={{ width: 14, height: 14 }} />
+            OTP
+          </button>
+        </div>
+
         <p style={{
           color: 'var(--ej-muted)',
           fontSize: '0.8rem',
           margin: '0 0 1.25rem',
         }}>
-          {step === 1 ? 'Restricted access — order queue & stock management.' : `Verification code sent to ${email}`}
+          {mode === 'password'
+            ? 'Enter your vendor credentials.'
+            : step === 1
+            ? 'Restricted access — order queue & stock management.'
+            : `Verification code sent to ${email}`
+          }
         </p>
 
         {error && (
@@ -160,7 +239,51 @@ export default function VendorLoginPage() {
           </div>
         )}
 
-        {step === 1 ? (
+        {mode === 'password' ? (
+          <form onSubmit={handlePasswordLogin} style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+            <input
+              id="vendor-login-email"
+              type="email"
+              required
+              className="input-field"
+              placeholder="vendor@enjipuli.com"
+              value={email}
+              onChange={e => setEmail(e.target.value)}
+              style={{ textAlign: 'center', fontSize: '0.95rem' }}
+            />
+            <input
+              id="vendor-login-password"
+              type="password"
+              required
+              className="input-field"
+              placeholder="Enter password"
+              value={password}
+              onChange={e => setPassword(e.target.value)}
+              style={{ textAlign: 'center', fontSize: '0.95rem' }}
+            />
+            <button
+              id="vendor-login-submit"
+              type="submit"
+              className="btn-gold"
+              style={{
+                width: '100%',
+                padding: '0.85rem',
+                fontSize: '0.9rem',
+                fontWeight: 800,
+              }}
+              disabled={loading}
+            >
+              {loading ? (
+                <span style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', justifyContent: 'center' }}>
+                  <RefreshCw className="animate-spin" width="16" height="16" />
+                  Logging in…
+                </span>
+              ) : (
+                'Access Dashboard →'
+              )}
+            </button>
+          </form>
+        ) : step === 1 ? (
           <form onSubmit={handleRequestOtp} style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
             <input
               id="vendor-login-email"

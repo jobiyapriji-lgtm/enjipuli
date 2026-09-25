@@ -1,6 +1,6 @@
-import { PrismaClient } from '@prisma/client';
+import { prisma } from '../src/lib/prisma';
+import bcrypt from 'bcryptjs';
 
-const prisma = new PrismaClient();
 
 async function main() {
   console.log('Seeding initial database content...');
@@ -16,13 +16,21 @@ async function main() {
     },
   });
 
+  const defaultVendorPassword = process.env.VENDOR_DEFAULT_PASSWORD || 'Enjipuli@2026';
+  const salt = await bcrypt.genSalt(10);
+  const vendorPasswordHash = await bcrypt.hash(defaultVendorPassword, salt);
+
   const vendorUser = await prisma.user.upsert({
     where: { email: 'vendor@enjipuli.com' },
-    update: {},
+    update: {
+      passwordHash: vendorPasswordHash,
+      role: 'VENDOR',
+    },
     create: {
       email: 'vendor@enjipuli.com',
       name: 'Enjipuli Vendor',
       role: 'VENDOR',
+      passwordHash: vendorPasswordHash,
     },
   });
 

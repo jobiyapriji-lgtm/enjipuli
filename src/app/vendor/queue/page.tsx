@@ -43,8 +43,7 @@ const COLUMNS: { key: VendorStatus; label: string; badgeColor: string; next?: st
     key: 'READY',
     label: 'Ready for Pickup',
     badgeColor: 'bg-ej-teal/20 text-ej-teal border-ej-teal/40',
-    next: 'DELIVERED',
-    nextLabel: 'Mark Delivered',
+    // DELIVERED transition requires QR scan — no direct button here
     btnClass: 'btn-secondary text-xs',
   },
 ];
@@ -71,11 +70,15 @@ export default function VendorQueuePage() {
   const advanceStatus = async (orderId: string, status: string) => {
     setUpdatingId(orderId);
     try {
-      await fetch('/api/vendor/status', {
+      const res = await fetch('/api/vendor/status', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ orderId, status }),
       });
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        alert(data.error || 'Failed to update order status.');
+      }
       fetchQueue();
     } finally {
       setUpdatingId(null);
@@ -137,6 +140,12 @@ export default function VendorQueuePage() {
                           {new Date(order.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                         </span>
                       </div>
+                      
+                      {order.user?.name && (
+                        <p className="text-[11px] text-ej-muted font-medium truncate">
+                          👤 {order.user.name}
+                        </p>
+                      )}
 
                       <ul className="space-y-1 my-1 text-xs text-ej-cream/90 font-medium border-y border-ej-border/50 py-2">
                         {order.items.map(i => (
@@ -158,6 +167,15 @@ export default function VendorQueuePage() {
                             <span>{col.nextLabel}</span>
                           )}
                         </button>
+                      )}
+                      
+                      {col.key === 'READY' && (
+                        <a
+                          href="/vendor/scan"
+                          className="w-full py-2 text-xs font-extrabold rounded-lg transition flex items-center justify-center gap-1 btn-secondary"
+                        >
+                          📷 Scan QR to Deliver
+                        </a>
                       )}
                     </article>
                   ))

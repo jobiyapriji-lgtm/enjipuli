@@ -8,6 +8,7 @@ import { LogoWordmark } from '@/components/LogoWordmark';
 import { ElephantMascot } from '@/components/ElephantMascot';
 import { MuralBackground } from '@/components/MuralBackground';
 import { FloralDivider } from '@/components/FloralDivider';
+import { GraduationCap, ShieldCheck } from 'lucide-react';
 
 export default function StudentLoginPage() {
   const [step, setStep]       = useState<1 | 2>(1);
@@ -28,14 +29,24 @@ export default function StudentLoginPage() {
 
   const handleRequestOtp = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
-    if (!email.trim()) return;
+    const trimmedEmail = email.trim().toLowerCase();
+    if (!trimmedEmail) return;
+
+    // Client-side guard against common public email providers
+    const domain = trimmedEmail.split('@')[1];
+    const publicDomains = ['gmail.com', 'yahoo.com', 'outlook.com', 'hotmail.com', 'icloud.com', 'aol.com', 'protonmail.com', 'zoho.com'];
+    if (domain && publicDomains.includes(domain)) {
+      setError(`Outsider access restricted: Personal accounts (@${domain}) are not permitted. Please use your official college email address (@college.ac.in).`);
+      return;
+    }
+
     setLoading(true);
     setError(null);
     try {
       const res = await fetch('/api/auth/otp/request', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: email.trim(), purpose: 'student' }),
+        body: JSON.stringify({ email: trimmedEmail, purpose: 'student' }),
       });
       const data = await res.json();
       
@@ -66,7 +77,10 @@ export default function StudentLoginPage() {
         redirect: false 
       });
       if (res?.error) { 
-        setError(res.error); 
+        const msg = res.error === 'CredentialsSignin'
+          ? 'Invalid or expired code. Please try again.'
+          : res.error;
+        setError(msg); 
         return; 
       }
       router.push('/');
@@ -130,8 +144,13 @@ export default function StudentLoginPage() {
 
         <FloralDivider width={140} className="mx-auto" />
 
+        <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-ej-teal/15 border border-ej-teal/40 text-ej-teal text-xs font-bold my-4">
+          <GraduationCap className="w-4 h-4" />
+          <span>CAMPUS STUDENTS ONLY (@college.ac.in)</span>
+        </div>
+
         <h1 style={{
-          margin: '1.25rem 0 0.3rem',
+          margin: '0.25rem 0 0.3rem',
           fontSize: '1rem',
           fontWeight: 700,
           color: 'var(--ej-cream)',
@@ -141,9 +160,9 @@ export default function StudentLoginPage() {
         <p style={{
           color: 'var(--ej-muted)',
           fontSize: '0.8rem',
-          margin: '0 0 1.5rem',
+          margin: '0 0 1.25rem',
         }}>
-          {step === 1 ? 'Enter your email to receive a login code.' : `Code sent to ${email}`}
+          {step === 1 ? 'Enter your official college email to receive a login code.' : `Code sent to ${email}`}
         </p>
 
         {/* Error state */}
@@ -170,17 +189,22 @@ export default function StudentLoginPage() {
 
         {step === 1 ? (
           <form onSubmit={handleRequestOtp} style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-            <input
-              id="login-email"
-              type="email"
-              required
-              className="input-field"
-              placeholder="your.email@college.ac.in"
-              value={email}
-              onChange={e => setEmail(e.target.value)}
-              autoComplete="email"
-              style={{ textAlign: 'center', fontSize: '0.95rem' }}
-            />
+            <div>
+              <input
+                id="login-email"
+                type="email"
+                required
+                className="input-field w-full"
+                placeholder="your.email@college.ac.in"
+                value={email}
+                onChange={e => setEmail(e.target.value)}
+                autoComplete="email"
+                style={{ textAlign: 'center', fontSize: '0.95rem' }}
+              />
+              <p style={{ color: 'var(--ej-muted)', fontSize: '0.7rem', marginTop: '0.4rem', textAlign: 'center' }}>
+                🔒 Only verified college accounts (@college.ac.in) can order
+              </p>
+            </div>
             <button
               id="login-submit"
               type="submit"

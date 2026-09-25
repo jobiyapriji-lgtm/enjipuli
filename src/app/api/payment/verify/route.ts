@@ -1,9 +1,21 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { getServerSession } from 'next-auth';
+import { authOptions } from '@/lib/auth';
 import crypto from 'crypto';
+import { getTodayStartIST, dateToISTString } from '@/lib/date';
 
 export async function POST(request: Request) {
   try {
+    // ── Authentication: caller must be logged in ─────────────────────────
+    const session = await getServerSession(authOptions);
+    if (!session?.user) {
+      return NextResponse.json(
+        { error: 'Authentication required to verify payment.' },
+        { status: 401 }
+      );
+    }
+
     const body = await request.json();
     const { orderId, razorpayOrderId, razorpayPaymentId, razorpaySignature } = body;
 
@@ -20,10 +32,23 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Order not found' }, { status: 404 });
     }
 
+    // ── Verify the caller owns this order ─────────────────────────────────
+    const userId = (session.user as any).id;
+    if (order.userId !== userId) {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    }
+
     // ── Guard: reject terminal/invalid states before touching anything ───
     if (order.status === 'EXPIRED') {
       return NextResponse.json(
         { error: 'This order has expired. Stock reservation was released. Please start a new order.' },
+        { status: 400 }
+      );
+    }
+
+    if (order.status === 'CANCELLED') {
+      return NextResponse.json(
+        { error: 'This order has been cancelled.' },
         { status: 400 }
       );
     }
@@ -53,43 +78,56 @@ export async function POST(request: Request) {
         );
       }
 
+      // Validate that the razorpayOrderId matches what we stored at checkout
+      if (order.razorpayOrderId && razorpayOrderId !== order.razorpayOrderId) {
+        return NextResponse.json(
+          { error: 'Razorpay order ID mismatch. Possible tampering detected.' },
+          { status: 400 }
+        );
+      }
+
       const generatedSignature = crypto
         .createHmac('sha256', secret)
         .update(`${razorpayOrderId}|${razorpayPaymentId}`)
         .digest('hex');
 
-      if (!crypto.timingSafeEqual(
-        Buffer.from(generatedSignature, 'utf8'),
-        Buffer.from(razorpaySignature, 'utf8')
-      )) {
-        return NextResponse.json({ error: 'Invalid payment signature. Possible tampering detected.' }, { status: 400 });
+      // Handle length mismatch gracefully instead of crashing
+      const genBuf = Buffer.from(generatedSignature, 'utf8');
+      const sigBuf = Buffer.from(razorpaySignature, 'utf8');
+      if (genBuf.length !== sigBuf.length || !crypto.timingSafeEqual(genBuf, sigBuf)) {
+        return NextResponse.json(
+          { error: 'Invalid payment signature. Possible tampering detected.' },
+          { status: 400 }
+        );
       }
     }
     // In mock/dev mode: signature check is skipped intentionally.
 
-    // ── Generate daily sequential token (EJ-001, EJ-014, …) ─────────────
-    const todayStart = new Date();
-    todayStart.setHours(0, 0, 0, 0);
+    // ── Use IST-based date calculations ──────────────────────────────────
+    const todayStart = getTodayStartIST();
+    // Use order's creation date for stock deduction (handles cross-midnight)
+    const orderDateStr = dateToISTString(order.createdAt);
 
-    const countToday = await prisma.order.count({
-      where: {
-        createdAt: { gte: todayStart },
-        status: { in: ['PAID', 'PREPARING', 'READY', 'DELIVERED'] },
-      },
-    });
-
-    const tokenNumber = (countToday + 1).toString().padStart(3, '0');
-    const token = `EJ-${tokenNumber}`;
-    const todayStr = new Date().toISOString().split('T')[0];
-
-    // ── Transactionally mark paid & convert reservation → permanent deduction
+    // ── Transactionally: generate token, mark paid, convert reservation ─
+    // Token generation is INSIDE the transaction to prevent race collisions.
     const updatedOrder = await prisma.$transaction(async (tx) => {
+      // Generate daily sequential token inside the transaction
+      const countToday = await tx.order.count({
+        where: {
+          createdAt: { gte: todayStart },
+          status: { in: ['PAID', 'PREPARING', 'READY', 'DELIVERED'] },
+        },
+      });
+      const tokenNumber = (countToday + 1).toString().padStart(3, '0');
+      const token = `EJ-${tokenNumber}`;
+
+      // Convert reservation to permanent deduction on the ORDER's date
       for (const item of order.items) {
         await tx.dailyStock.update({
           where: {
             menuItemId_date: {
               menuItemId: item.menuItemId,
-              date: todayStr,
+              date: orderDateStr,
             },
           },
           data: {

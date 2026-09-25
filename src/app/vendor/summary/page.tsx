@@ -27,7 +27,7 @@ export default function VendorSummaryPage() {
 
           const delivered = orders.filter((o: any) => o.status === 'DELIVERED');
           const revenue = orders
-            .filter((o: any) => o.status !== 'EXPIRED' && o.status !== 'PENDING_PAYMENT')
+            .filter((o: any) => o.status !== 'EXPIRED' && o.status !== 'PENDING_PAYMENT' && o.status !== 'CANCELLED')
             .reduce((sum: number, o: any) => sum + o.totalAmount, 0);
 
           const lowStock = menu.filter((i: any) => i.netAvailable <= 3).length;
@@ -46,6 +46,8 @@ export default function VendorSummaryPage() {
       }
     }
     fetchSummary();
+    const id = setInterval(fetchSummary, 15_000);
+    return () => clearInterval(id);
   }, []);
 
   return (

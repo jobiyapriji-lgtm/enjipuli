@@ -105,6 +105,7 @@ export default function OrderConfirmationPage({ params }: { params: Promise<{ id
   );
 
   const currentStep = stepIndex(order.status);
+  const isCancelledOrExpired = order.status === 'CANCELLED' || order.status === 'EXPIRED';
 
   return (
     <div id="order-confirmation-page" className="min-h-screen bg-ej-deep text-ej-cream flex flex-col relative overflow-hidden">
@@ -162,9 +163,23 @@ export default function OrderConfirmationPage({ params }: { params: Promise<{ id
           </div>
         </section>
 
+        {isCancelledOrExpired && (
+          <section className="card p-5 border-ej-vermilion/40 shadow-xl space-y-2 text-center">
+            <p className="text-lg font-black text-ej-vermilion">
+              {order.status === 'CANCELLED' ? '❌ Order Cancelled' : '⏰ Order Expired'}
+            </p>
+            <p className="text-xs text-ej-muted">
+              {order.status === 'CANCELLED'
+                ? 'This order has been cancelled. If you already paid, contact the vendor for a refund.'
+                : 'This order expired because payment was not completed in time. Stock has been released.'}
+            </p>
+          </section>
+        )}
+
         {/* Live Status Tracker */}
-        <section id="order-status-tracker" className="card p-5 border-ej-border/80 shadow-xl space-y-4">
-          <div className="flex justify-between items-center pb-3 border-b border-ej-border">
+        {!isCancelledOrExpired && (
+          <section id="order-status-tracker" className="card p-5 border-ej-border/80 shadow-xl space-y-4">
+            <div className="flex justify-between items-center pb-3 border-b border-ej-border">
             <h2 className="text-sm font-extrabold text-ej-cream flex items-center gap-2">
               <Clock className="w-4 h-4 text-ej-lime" />
               <span>Live Order Tracker</span>
@@ -222,6 +237,7 @@ export default function OrderConfirmationPage({ params }: { params: Promise<{ id
             })}
           </ol>
         </section>
+        )}
 
         {/* Receipt */}
         <section id="order-receipt" className="card p-5 border-ej-border/80 shadow-xl space-y-3">

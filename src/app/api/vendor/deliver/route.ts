@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
+import { getTodayStartIST } from '@/lib/date';
 
 export async function POST(request: Request) {
   try {
@@ -35,8 +36,7 @@ export async function POST(request: Request) {
       // The vendor is assumed to have physical possession of the customer
       // since this path requires being logged in as VENDOR. Token lookup is
       // scoped to today to avoid collisions across days.
-      const todayStart = new Date();
-      todayStart.setHours(0, 0, 0, 0);
+      const todayStart = getTodayStartIST();
 
       order = await prisma.order.findFirst({
         where: {
@@ -70,9 +70,9 @@ export async function POST(request: Request) {
     }
 
     // ── Guard: order must exist in a paid/active state ───────────────────
-    if (order.status === 'PENDING_PAYMENT' || order.status === 'EXPIRED') {
+    if (order.status === 'PENDING_PAYMENT' || order.status === 'EXPIRED' || order.status === 'CANCELLED') {
       return NextResponse.json(
-        { success: false, error: `Order ${order.token} has not been paid yet and cannot be delivered.` },
+        { success: false, error: `Order ${order.token} is ${order.status} and cannot be delivered.` },
         { status: 400 }
       );
     }

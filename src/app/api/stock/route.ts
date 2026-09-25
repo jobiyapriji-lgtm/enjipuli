@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
+import { getTodayIST } from '@/lib/date';
 
 export async function POST(request: Request) {
   try {
@@ -15,7 +16,11 @@ export async function POST(request: Request) {
     const body = await request.json();
     const { menuItemId, quantityAvailable, isActive } = body;
 
-    const todayStr = new Date().toISOString().split('T')[0];
+    if (quantityAvailable != null && (isNaN(Number(quantityAvailable)) || Number(quantityAvailable) < 0)) {
+      return NextResponse.json({ error: 'Stock quantity must be a non-negative number.' }, { status: 400 });
+    }
+
+    const todayStr = getTodayIST();
 
     if (menuItemId && quantityAvailable != null) {
       await prisma.dailyStock.upsert({

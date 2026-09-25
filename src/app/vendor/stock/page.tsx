@@ -45,6 +45,8 @@ export default function VendorStockPage() {
 
   useEffect(() => {
     fetchStock();
+    const id = setInterval(fetchStock, 10_000); // Poll every 10s
+    return () => clearInterval(id);
   }, []);
 
   const handleUpdateStock = async (item: MenuItemStock, newQty: number, isActive: boolean) => {

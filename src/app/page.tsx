@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { Header } from '@/components/Header';
@@ -29,8 +29,6 @@ declare global {
   interface Window { Razorpay: any; }
 }
 
-const CATEGORIES = ['All', 'Snacks', 'Bakery', 'Soft Drinks', 'Ice Creams', 'Tea & Snacks'] as const;
-
 export default function StudentHomePage() {
   const { data: session } = useSession();
   const router = useRouter();
@@ -40,6 +38,11 @@ export default function StudentHomePage() {
   const [menuError, setMenuError]               = useState<string | null>(null);
   const [selectedCategory, setSelectedCategory] = useState<string>('All');
 
+  const categories = useMemo(() => {
+    const cats = Array.from(new Set(menuItems.map(i => i.category))).sort();
+    return ['All', ...cats];
+  }, [menuItems]);
+
   const [cart, setCart]             = useState<CartItem[]>([]);
   const [isCartOpen, setIsCartOpen] = useState(false);
   const cartItemCount = cart.reduce((s, c) => s + c.quantity, 0);
@@ -47,6 +50,7 @@ export default function StudentHomePage() {
 
   const [checkingOut, setCheckingOut]     = useState(false);
   const [checkoutError, setCheckoutError] = useState<string | null>(null);
+  const [razorpayLoaded, setRazorpayLoaded] = useState(false);
 
   const fetchMenu = useCallback(async () => {
     try {
@@ -57,6 +61,21 @@ export default function StudentHomePage() {
       }
       const data: MenuItem[] = await res.json();
       setMenuItems(data);
+      
+      // Re-clamp cart quantities against updated stock
+      setCart(prev => prev
+        .map(c => {
+          const updated = data.find((m: MenuItem) => m.id === c.menuItem.id);
+          if (!updated || !updated.isActive || updated.isSoldOut) return null;
+          return {
+            ...c,
+            menuItem: updated,
+            quantity: Math.min(c.quantity, updated.netAvailable),
+          };
+        })
+        .filter((c): c is CartItem => c !== null && c.quantity > 0)
+      );
+
       setMenuError(null);
     } catch (err: any) {
       setMenuError(err.message);
@@ -75,6 +94,8 @@ export default function StudentHomePage() {
     const s = document.createElement('script');
     s.src = 'https://checkout.razorpay.com/v1/checkout.js';
     s.async = true;
+    s.onload = () => setRazorpayLoaded(true);
+    s.onerror = () => console.warn('Razorpay checkout script failed to load');
     document.body.appendChild(s);
     return () => { document.body.removeChild(s); };
   }, []);
@@ -175,23 +196,10 @@ export default function StudentHomePage() {
         });
         rzp.open();
       } else {
-        const verifyRes = await fetch('/api/payment/verify', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            orderId,
-            razorpayOrderId,
-            razorpayPaymentId: `pay_dev_${Date.now()}`,
-          }),
-        });
-        const verifyData = await verifyRes.json();
-        if (verifyData.success) {
-          setCart([]);
-          setIsCartOpen(false);
-          router.push(`/order/${orderId}`);
-        } else {
-          setCheckoutError(verifyData.error || 'Payment failed');
-        }
+        // Razorpay SDK failed to load — do NOT create mock payments
+        setCheckoutError(
+          'Payment gateway could not be loaded. Please disable any ad-blockers, check your internet connection, and try again.'
+        );
       }
     } catch (err: any) {
       setCheckoutError(err.message || 'Unexpected error during checkout');
@@ -230,7 +238,7 @@ export default function StudentHomePage() {
 
         {/* Category Tabs */}
         <nav id="category-tabs" aria-label="Menu categories" className="flex gap-2 overflow-x-auto pb-3 mb-6 no-scrollbar">
-          {CATEGORIES.map(cat => {
+          {categories.map(cat => {
             const isActive = selectedCategory === cat;
             return (
               <button
