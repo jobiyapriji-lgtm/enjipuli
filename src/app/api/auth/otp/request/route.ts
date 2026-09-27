@@ -99,7 +99,7 @@ export async function POST(req: Request) {
     }
 
     try {
-      await resend.emails.send({
+      const sendResult = await resend.emails.send({
         from: 'ENJIPULI <onboarding@resend.dev>', // Or custom domain if configured
         to: email,
         subject: 'Your ENJIPULI login code',
@@ -113,13 +113,25 @@ export async function POST(req: Request) {
           </div>
         `,
       });
+
+      if (sendResult.error) {
+        console.warn('Resend email delivery error:', sendResult.error);
+        // Fallback: provide previewCode so user is never locked out due to Resend domain/account restrictions
+        return NextResponse.json({
+          success: true,
+          previewCode: code,
+          emailError: sendResult.error.message,
+        });
+      }
+
       return NextResponse.json({ success: true });
     } catch (emailErr: any) {
-      console.error('Resend delivery error:', emailErr);
-      return NextResponse.json(
-        { error: 'Email delivery failed. ' + (emailErr?.message || 'Please check email settings.') },
-        { status: 502 }
-      );
+      console.error('Resend delivery exception:', emailErr);
+      return NextResponse.json({
+        success: true,
+        previewCode: code,
+        emailError: emailErr?.message || 'Email delivery failed',
+      });
     }
   } catch (error: any) {
     console.error('OTP Request Error:', error);

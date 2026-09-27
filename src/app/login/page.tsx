@@ -15,6 +15,7 @@ export default function StudentLoginPage() {
   const [email, setEmail]     = useState('');
   const [code, setCode]       = useState('');
   const [previewCode, setPreviewCode] = useState<string | null>(null);
+  const [emailNotice, setEmailNotice] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError]     = useState<string | null>(null);
   const [countdown, setCountdown] = useState(0);
@@ -42,6 +43,7 @@ export default function StudentLoginPage() {
 
     setLoading(true);
     setError(null);
+    setEmailNotice(null);
     try {
       const res = await fetch('/api/auth/otp/request', {
         method: 'POST',
@@ -59,6 +61,9 @@ export default function StudentLoginPage() {
       if (data.previewCode) {
         setPreviewCode(data.previewCode);
         setCode(data.previewCode);
+        if (data.emailError) {
+          setEmailNotice(data.emailError);
+        }
       } else {
         setPreviewCode(null);
         setCode('');
@@ -249,10 +254,15 @@ export default function StudentLoginPage() {
                 }}
               >
                 <div style={{ fontWeight: 700, marginBottom: '0.2rem' }}>
-                  🧪 Test Mode (Email provider not configured):
+                  {emailNotice ? '⚠️ Email Delivery Restricted (Resend Free Tier):' : '🧪 Test Mode:'}
                 </div>
+                {emailNotice && (
+                  <div style={{ fontSize: '0.72rem', color: 'var(--ej-vermilion)', marginBottom: '0.3rem', lineHeight: 1.4 }}>
+                    {emailNotice}
+                  </div>
+                )}
                 <div style={{ color: 'var(--ej-cream)' }}>
-                  Your code is: <strong style={{ letterSpacing: '2px', fontSize: '1.05rem', color: 'var(--ej-lime)' }}>{previewCode}</strong>
+                  Your login code is: <strong style={{ letterSpacing: '2px', fontSize: '1.05rem', color: 'var(--ej-lime)' }}>{previewCode}</strong>
                 </div>
                 <div style={{ fontSize: '0.7rem', color: 'var(--ej-muted)', marginTop: '0.25rem' }}>
                   (Auto-filled below! Click &quot;Verify &amp; Login&quot; to enter.)
