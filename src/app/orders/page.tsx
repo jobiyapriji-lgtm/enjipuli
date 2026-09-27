@@ -5,7 +5,7 @@ import { useSession } from 'next-auth/react';
 import { Header } from '@/components/Header';
 import { ElephantMascot } from '@/components/ElephantMascot';
 import Link from 'next/link';
-import { ShoppingBag, ArrowRight, Clock } from 'lucide-react';
+import { ShoppingBag, ArrowRight, Clock, User, ChevronRight } from 'lucide-react';
 
 interface OrderItem {
   id: string;
@@ -27,6 +27,11 @@ export default function OrderHistoryPage() {
   const { data: session } = useSession();
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
+
+  const sessionUser = session?.user as any;
+  const userEmail = sessionUser?.email || '';
+  const displayName = sessionUser?.name || (userEmail ? userEmail.split('@')[0] : 'User');
+  const userInitial = (displayName[0] || 'U').toUpperCase();
 
   useEffect(() => {
     async function fetchOrders() {
@@ -50,6 +55,35 @@ export default function OrderHistoryPage() {
       <Header />
 
       <main className="max-w-3xl w-full mx-auto px-4 pt-6 space-y-6 flex-1">
+        {/* Account Holder Profile Summary Banner */}
+        {session && (
+          <div className="card p-4 sm:p-5 border-ej-border/80 bg-gradient-to-r from-ej-indigo/80 via-ej-surface/70 to-ej-indigo/60 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+            <div className="flex items-center gap-3.5">
+              <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-ej-lime via-ej-teal to-ej-gold text-ej-ink font-black flex items-center justify-center text-lg shadow-glow-sm shrink-0">
+                {userInitial}
+              </div>
+              <div className="min-w-0">
+                <div className="flex items-center gap-2">
+                  <h2 className="text-sm font-extrabold text-ej-cream truncate">{displayName}</h2>
+                  <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-ej-lime/15 text-ej-lime border border-ej-lime/30">
+                    {sessionUser?.role === 'VENDOR' ? 'Vendor' : 'Student'}
+                  </span>
+                </div>
+                <p className="text-xs text-ej-muted font-mono truncate">{userEmail}</p>
+              </div>
+            </div>
+
+            <Link
+              href="/profile"
+              className="text-xs font-bold text-ej-lime hover:underline flex items-center gap-1.5 self-end sm:self-center bg-ej-lime/10 px-3 py-1.5 rounded-xl border border-ej-lime/30 hover:bg-ej-lime/20 transition"
+            >
+              <User className="w-3.5 h-3.5" />
+              <span>View Account Profile</span>
+              <ChevronRight className="w-3.5 h-3.5" />
+            </Link>
+          </div>
+        )}
+
         <div>
           <h1 className="text-2xl font-extrabold text-ej-cream">My Orders</h1>
           <p className="text-xs text-ej-muted mt-1">Track current order status or view past receipts</p>
