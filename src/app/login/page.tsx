@@ -32,11 +32,10 @@ export default function StudentLoginPage() {
     const trimmedEmail = email.trim().toLowerCase();
     if (!trimmedEmail) return;
 
-    // Client-side guard against common public email providers
-    const domain = trimmedEmail.split('@')[1];
-    const publicDomains = ['gmail.com', 'yahoo.com', 'outlook.com', 'hotmail.com', 'icloud.com', 'aol.com', 'protonmail.com', 'zoho.com'];
-    if (domain && publicDomains.includes(domain)) {
-      setError(`Outsider access restricted: Personal accounts (@${domain}) are not permitted. Please use your Providence College email address (@student.providence.edu.in).`);
+    // Basic email format validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(trimmedEmail)) {
+      setError('Please enter a valid email address (e.g. name@gmail.com or student@providence.edu.in).');
       return;
     }
 
@@ -146,7 +145,7 @@ export default function StudentLoginPage() {
 
         <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-ej-teal/15 border border-ej-teal/40 text-ej-teal text-xs font-bold my-4">
           <GraduationCap className="w-4 h-4" />
-          <span>PROVIDENCE COLLEGE (@student.providence.edu.in)</span>
+          <span>STUDENT LOGIN</span>
         </div>
 
         <h1 style={{
@@ -155,14 +154,14 @@ export default function StudentLoginPage() {
           fontWeight: 700,
           color: 'var(--ej-cream)',
         }}>
-          Welcome, student!
+          Welcome!
         </h1>
         <p style={{
           color: 'var(--ej-muted)',
           fontSize: '0.8rem',
           margin: '0 0 1.25rem',
         }}>
-          {step === 1 ? 'Enter your official Providence college email to receive a login code.' : `Code sent to ${email}`}
+          {step === 1 ? 'Enter your email to receive a login verification code.' : `Code sent to ${email}`}
         </p>
 
         {/* Error state */}
@@ -195,14 +194,14 @@ export default function StudentLoginPage() {
                 type="email"
                 required
                 className="input-field w-full"
-                placeholder="jobiya.prc23cs055@student.providence.edu.in"
+                placeholder="your.email@gmail.com or student@providence.edu.in"
                 value={email}
                 onChange={e => setEmail(e.target.value)}
                 autoComplete="email"
                 style={{ textAlign: 'center', fontSize: '0.95rem' }}
               />
               <p style={{ color: 'var(--ej-muted)', fontSize: '0.7rem', marginTop: '0.4rem', textAlign: 'center' }}>
-                🔒 Only verified Providence accounts (@student.providence.edu.in) can order
+                ✨ All valid emails and @providence.edu.in accounts accepted
               </p>
             </div>
             <button
