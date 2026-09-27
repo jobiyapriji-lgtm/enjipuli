@@ -36,7 +36,7 @@ export default function StudentLoginPage() {
     const domain = trimmedEmail.split('@')[1];
     const publicDomains = ['gmail.com', 'yahoo.com', 'outlook.com', 'hotmail.com', 'icloud.com', 'aol.com', 'protonmail.com', 'zoho.com'];
     if (domain && publicDomains.includes(domain)) {
-      setError(`Outsider access restricted: Personal accounts (@${domain}) are not permitted. Please use your official college email address (@college.ac.in).`);
+      setError(`Outsider access restricted: Personal accounts (@${domain}) are not permitted. Please use your Providence College email address (@student.providence.edu.in).`);
       return;
     }
 
@@ -146,7 +146,7 @@ export default function StudentLoginPage() {
 
         <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-ej-teal/15 border border-ej-teal/40 text-ej-teal text-xs font-bold my-4">
           <GraduationCap className="w-4 h-4" />
-          <span>CAMPUS STUDENTS ONLY (@college.ac.in)</span>
+          <span>PROVIDENCE COLLEGE (@student.providence.edu.in)</span>
         </div>
 
         <h1 style={{
@@ -162,7 +162,7 @@ export default function StudentLoginPage() {
           fontSize: '0.8rem',
           margin: '0 0 1.25rem',
         }}>
-          {step === 1 ? 'Enter your official college email to receive a login code.' : `Code sent to ${email}`}
+          {step === 1 ? 'Enter your official Providence college email to receive a login code.' : `Code sent to ${email}`}
         </p>
 
         {/* Error state */}
@@ -195,14 +195,14 @@ export default function StudentLoginPage() {
                 type="email"
                 required
                 className="input-field w-full"
-                placeholder="your.email@college.ac.in"
+                placeholder="jobiya.prc23cs055@student.providence.edu.in"
                 value={email}
                 onChange={e => setEmail(e.target.value)}
                 autoComplete="email"
                 style={{ textAlign: 'center', fontSize: '0.95rem' }}
               />
               <p style={{ color: 'var(--ej-muted)', fontSize: '0.7rem', marginTop: '0.4rem', textAlign: 'center' }}>
-                🔒 Only verified college accounts (@college.ac.in) can order
+                🔒 Only verified Providence accounts (@student.providence.edu.in) can order
               </p>
             </div>
             <button

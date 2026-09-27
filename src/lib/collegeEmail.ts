@@ -22,7 +22,9 @@ export const PUBLIC_EMAIL_DOMAINS = [
 ];
 
 export function getAllowedCollegeDomains(): string[] {
-  const envDomains = process.env.ALLOWED_EMAIL_DOMAIN?.trim() || 'college.ac.in';
+  const envDomains =
+    process.env.ALLOWED_EMAIL_DOMAIN?.trim() ||
+    'student.providence.edu.in,providence.edu.in';
   return envDomains
     .split(',')
     .map((d) => d.trim().toLowerCase().replace(/^@/, ''))

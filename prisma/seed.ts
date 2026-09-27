@@ -7,11 +7,11 @@ async function main() {
 
   // Create Users
   const studentUser = await prisma.user.upsert({
-    where: { email: 'student@college.ac.in' },
+    where: { email: 'jobiya.prc23cs055@student.providence.edu.in' },
     update: {},
     create: {
-      email: 'student@college.ac.in',
-      name: 'Rahul V.',
+      email: 'jobiya.prc23cs055@student.providence.edu.in',
+      name: 'Jobiya',
       role: 'STUDENT',
     },
   });
