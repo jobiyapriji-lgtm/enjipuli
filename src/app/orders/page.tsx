@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useSession } from 'next-auth/react';
+import { useRouter } from 'next/navigation';
 import { Header } from '@/components/Header';
 import { ElephantMascot } from '@/components/ElephantMascot';
 import Link from 'next/link';
@@ -24,9 +25,16 @@ interface Order {
 }
 
 export default function OrderHistoryPage() {
-  const { data: session } = useSession();
+  const { data: session, status } = useSession();
+  const router = useRouter();
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (status === 'unauthenticated') {
+      router.replace('/login?callbackUrl=/orders');
+    }
+  }, [status, router]);
 
   const sessionUser = session?.user as any;
   const userEmail = sessionUser?.email || '';
