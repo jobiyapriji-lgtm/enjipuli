@@ -156,13 +156,21 @@ export default function StudentHomePage() {
 
       const { orderId, razorpayOrderId, amount, currency, key } = checkoutData;
 
+      if (!razorpayOrderId || razorpayOrderId.startsWith('rzp_order_mock_')) {
+        setCheckoutError(
+          'Payment gateway initialization failed. Real Razorpay keys must be set in Vercel environment variables.'
+        );
+        setCheckingOut(false);
+        return;
+      }
+
       if (typeof window !== 'undefined' && window.Razorpay) {
         const rzp = new window.Razorpay({
           key,
           amount: Math.round(amount * 100),
-          currency,
-          name: 'ഇഞ്ചിപ്പുളി',
-          description: 'Campus food truck order',
+          currency: currency || 'INR',
+          name: 'Enjipuli',
+          description: 'Campus Food Truck Order',
           order_id: razorpayOrderId,
           handler: async (response: any) => {
             const verifyRes = await fetch('/api/payment/verify', {
@@ -185,7 +193,13 @@ export default function StudentHomePage() {
               setCheckoutError(verifyData.error || 'Payment verification failed. Contact the truck vendor.');
             }
           },
-          prefill: { email: session.user?.email ?? '' },
+          prefill: {
+            email: session.user?.email ?? '',
+            name: session.user?.name ?? '',
+          },
+          theme: {
+            color: '#0f172a',
+          },
           modal: {
             ondismiss: () => { setCheckingOut(false); },
           },

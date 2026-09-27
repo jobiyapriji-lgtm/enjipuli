@@ -251,6 +251,36 @@ export async function POST(request: Request) {
     }
 
     // ── Create Razorpay Order ────────────────────────────────────────────
+    const keyId = process.env.RAZORPAY_KEY_ID || '';
+    const keySecret = process.env.RAZORPAY_KEY_SECRET || '';
+
+    if (!keyId || !keySecret || keyId.includes('mock')) {
+      console.error('Razorpay keys not configured in environment variables.');
+      // Roll back the stock reservation
+      await prisma.$transaction(async (tx) => {
+        for (const item of itemDetails) {
+          await tx.dailyStock.update({
+            where: {
+              menuItemId_date: { menuItemId: item.menuItemId, date: getTodayIST() },
+            },
+            data: { quantityReserved: { decrement: item.quantity } },
+          });
+        }
+        await tx.order.update({
+          where: { id: resultOrder.id },
+          data: { status: 'EXPIRED' },
+        });
+      });
+
+      return NextResponse.json(
+        {
+          error:
+            'Razorpay payment gateway is not configured on the server. Please add RAZORPAY_KEY_ID and RAZORPAY_KEY_SECRET in Vercel Environment Variables.',
+        },
+        { status: 500 }
+      );
+    }
+
     let rzpOrder: { id: string };
     try {
       const created = await razorpay.orders.create({
@@ -264,39 +294,32 @@ export async function POST(request: Request) {
         where: { id: resultOrder.id },
         data: { razorpayOrderId: rzpOrder.id },
       });
-    } catch (rzpErr) {
-      const keyId = process.env.RAZORPAY_KEY_ID || '';
-      const isMockEnv = !keyId || keyId.includes('mock');
-      if (!isMockEnv) {
-        // Real keys — propagate the error so checkout fails visibly.
-        console.error('Razorpay order creation failed:', rzpErr);
-        // Release the reservation we just made since payment can't proceed.
-        await prisma.$transaction(async (tx) => {
-          for (const item of itemDetails) {
-            await tx.dailyStock.update({
-              where: {
-                menuItemId_date: { menuItemId: item.menuItemId, date: getTodayIST() },
-              },
-              data: { quantityReserved: { decrement: item.quantity } },
-            });
-          }
-          await tx.order.update({
-            where: { id: resultOrder.id },
-            data: { status: 'EXPIRED' },
+    } catch (rzpErr: any) {
+      console.error('Razorpay order creation failed:', rzpErr);
+      // Release the reservation we just made since payment can't proceed.
+      await prisma.$transaction(async (tx) => {
+        for (const item of itemDetails) {
+          await tx.dailyStock.update({
+            where: {
+              menuItemId_date: { menuItemId: item.menuItemId, date: getTodayIST() },
+            },
+            data: { quantityReserved: { decrement: item.quantity } },
           });
+        }
+        await tx.order.update({
+          where: { id: resultOrder.id },
+          data: { status: 'EXPIRED' },
         });
-        return NextResponse.json(
-          { error: 'Payment gateway is temporarily unavailable. Please try again in a moment.' },
-          { status: 502 }
-        );
-      }
-      // Dev / CI fallback when mock keys are in use.
-      console.warn('Razorpay SDK mock fallback for local testing:', rzpErr);
-      rzpOrder = { id: `rzp_order_mock_${resultOrder.id}` };
-      await prisma.order.update({
-        where: { id: resultOrder.id },
-        data: { razorpayOrderId: rzpOrder.id },
       });
+
+      return NextResponse.json(
+        {
+          error:
+            rzpErr?.error?.description ||
+            'Payment gateway order creation failed. Please check Razorpay keys or try again.',
+        },
+        { status: 502 }
+      );
     }
 
     return NextResponse.json({
