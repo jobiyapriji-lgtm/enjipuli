@@ -85,10 +85,20 @@ export async function POST(req: Request) {
     });
 
     // 5. Send Email
-    // If RESEND_API_KEY is not set or dummy, just log it for local dev debugging
-    if (!process.env.RESEND_API_KEY || process.env.RESEND_API_KEY === 're_dummy_key') {
+    const hasEmailService = Boolean(
+      process.env.RESEND_API_KEY && process.env.RESEND_API_KEY !== 're_dummy_key'
+    );
+
+    if (!hasEmailService) {
       console.log(`\n\n=== OTP GENERATED FOR ${email} ===\nCODE: ${code}\n===============================\n`);
-    } else {
+      return NextResponse.json({
+        success: true,
+        previewCode: code,
+        message: 'Email service not configured. Test preview code provided.',
+      });
+    }
+
+    try {
       await resend.emails.send({
         from: 'ENJIPULI <onboarding@resend.dev>', // Or custom domain if configured
         to: email,
@@ -103,9 +113,14 @@ export async function POST(req: Request) {
           </div>
         `,
       });
+      return NextResponse.json({ success: true });
+    } catch (emailErr: any) {
+      console.error('Resend delivery error:', emailErr);
+      return NextResponse.json(
+        { error: 'Email delivery failed. ' + (emailErr?.message || 'Please check email settings.') },
+        { status: 502 }
+      );
     }
-
-    return NextResponse.json({ success: true });
   } catch (error: any) {
     console.error('OTP Request Error:', error);
     return NextResponse.json({ error: 'Internal server error.' }, { status: 500 });

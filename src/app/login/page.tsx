@@ -14,6 +14,7 @@ export default function StudentLoginPage() {
   const [step, setStep]       = useState<1 | 2>(1);
   const [email, setEmail]     = useState('');
   const [code, setCode]       = useState('');
+  const [previewCode, setPreviewCode] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError]     = useState<string | null>(null);
   const [countdown, setCountdown] = useState(0);
@@ -55,7 +56,13 @@ export default function StudentLoginPage() {
       
       setStep(2);
       setCountdown(60);
-      setCode('');
+      if (data.previewCode) {
+        setPreviewCode(data.previewCode);
+        setCode(data.previewCode);
+      } else {
+        setPreviewCode(null);
+        setCode('');
+      }
     } catch (err: any) {
       setError(err.message || 'Failed to send code.');
     } finally {
@@ -228,6 +235,30 @@ export default function StudentLoginPage() {
           </form>
         ) : (
           <form onSubmit={handleVerifyOtp} style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+            {previewCode && (
+              <div
+                style={{
+                  padding: '0.65rem 0.85rem',
+                  background: 'rgba(234, 179, 8, 0.12)',
+                  border: '1px solid rgba(234, 179, 8, 0.35)',
+                  borderRadius: 'var(--radius-md)',
+                  textAlign: 'left',
+                  fontSize: '0.78rem',
+                  color: 'var(--ej-gold)',
+                  marginBottom: '0.25rem',
+                }}
+              >
+                <div style={{ fontWeight: 700, marginBottom: '0.2rem' }}>
+                  🧪 Test Mode (Email provider not configured):
+                </div>
+                <div style={{ color: 'var(--ej-cream)' }}>
+                  Your code is: <strong style={{ letterSpacing: '2px', fontSize: '1.05rem', color: 'var(--ej-lime)' }}>{previewCode}</strong>
+                </div>
+                <div style={{ fontSize: '0.7rem', color: 'var(--ej-muted)', marginTop: '0.25rem' }}>
+                  (Auto-filled below! Click &quot;Verify &amp; Login&quot; to enter.)
+                </div>
+              </div>
+            )}
             <input
               id="login-code"
               type="text"
