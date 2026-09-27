@@ -24,14 +24,16 @@ enum OrderStatus {
 }
 
 model User {
-  id        String   @id @default(cuid())
-  email     String   @unique
-  name      String?
-  role      String   @default("STUDENT") // "STUDENT" | "VENDOR"
+  id           String   @id @default(cuid())
+  email        String   @unique
+  name         String?
+  collegeId    String?  // College ID / Roll Number (e.g. PRC22CS045)
+  phone        String?  // Optional contact phone number
+  role         String   @default("STUDENT") // "STUDENT" | "VENDOR"
   passwordHash String?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  orders    Order[]
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  orders       Order[]
 }
 
 model MenuItem {

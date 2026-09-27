@@ -5,32 +5,32 @@ import { useSession, signOut } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Header } from '@/components/Header';
-import { ElephantMascot } from '@/components/ElephantMascot';
 import {
   User,
   Mail,
   GraduationCap,
   ShieldCheck,
-  Calendar,
-  ShoppingBag,
+  IdCard,
+  Phone,
   Receipt,
-  CheckCircle2,
-  Clock,
+  ShoppingBag,
   LogOut,
   Edit2,
   Check,
   X,
-  ArrowRight,
-  Sparkles,
-  ExternalLink,
+  CheckCircle2,
   ChevronRight,
-  Flame,
+  ExternalLink,
+  Clock,
+  Sparkles,
 } from 'lucide-react';
 
 interface ProfileData {
   id: string;
   email: string;
   name: string;
+  collegeId: string;
+  phone: string;
   role: string;
   createdAt: string;
   isProvidence: boolean;
@@ -55,9 +55,14 @@ export default function ProfilePage() {
 
   const [profile, setProfile] = useState<ProfileData | null>(null);
   const [loading, setLoading] = useState(true);
-  const [isEditingName, setIsEditingName] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
+
+  // Form states
   const [nameInput, setNameInput] = useState('');
-  const [savingName, setSavingName] = useState(false);
+  const [collegeIdInput, setCollegeIdInput] = useState('');
+  const [phoneInput, setPhoneInput] = useState('');
+
+  const [saving, setSaving] = useState(false);
   const [successMessage, setSuccessMessage] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
 
@@ -77,6 +82,8 @@ export default function ProfilePage() {
           const data = await res.json();
           setProfile(data);
           setNameInput(data.name || '');
+          setCollegeIdInput(data.collegeId || '');
+          setPhoneInput(data.phone || '');
         } else {
           setErrorMessage('Unable to load profile information');
         }
@@ -91,7 +98,7 @@ export default function ProfilePage() {
     loadProfile();
   }, [status]);
 
-  async function handleUpdateName(e: React.FormEvent) {
+  async function handleSaveProfile(e: React.FormEvent) {
     e.preventDefault();
     if (!nameInput.trim() || nameInput.trim().length < 2) {
       setErrorMessage('Name must be at least 2 characters');
@@ -99,378 +106,345 @@ export default function ProfilePage() {
     }
 
     try {
-      setSavingName(true);
+      setSaving(true);
       setErrorMessage('');
       const res = await fetch('/api/user/profile', {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name: nameInput.trim() }),
+        body: JSON.stringify({
+          name: nameInput.trim(),
+          collegeId: collegeIdInput.trim(),
+          phone: phoneInput.trim(),
+        }),
       });
 
       if (res.ok) {
         const data = await res.json();
-        setProfile((prev) => (prev ? { ...prev, name: data.user.name } : null));
-        setIsEditingName(false);
-        setSuccessMessage('Profile name updated successfully!');
+        setProfile((prev) =>
+          prev
+            ? {
+                ...prev,
+                name: data.user.name,
+                collegeId: data.user.collegeId || '',
+                phone: data.user.phone || '',
+              }
+            : null
+        );
+        setIsEditing(false);
+        setSuccessMessage('Profile details updated successfully!');
         setTimeout(() => setSuccessMessage(''), 3000);
       } else {
         const err = await res.json();
-        setErrorMessage(err.error || 'Failed to update name');
+        setErrorMessage(err.error || 'Failed to update profile');
       }
     } catch {
-      setErrorMessage('Network error while updating name');
+      setErrorMessage('Network error while saving profile');
     } finally {
-      setSavingName(false);
+      setSaving(false);
     }
   }
 
   const isVendor = profile?.role === 'VENDOR';
-  const displayName = profile?.name || session?.user?.name || (profile?.email ? profile.email.split('@')[0] : 'User');
+  const displayName =
+    profile?.name || session?.user?.name || (profile?.email ? profile.email.split('@')[0] : 'User');
   const userInitial = (displayName[0] || 'U').toUpperCase();
-
-  const formattedJoinDate = profile?.createdAt
-    ? new Date(profile.createdAt).toLocaleDateString('en-IN', {
-        month: 'long',
-        year: 'numeric',
-      })
-    : 'Recent Member';
 
   return (
     <div className="min-h-screen bg-ej-deep text-ej-cream flex flex-col">
       <Header />
 
-      <main className="max-w-3xl w-full mx-auto px-4 py-8 space-y-6 flex-1">
-        {/* Breadcrumb / Top Bar */}
+      <main className="max-w-xl w-full mx-auto px-4 py-8 space-y-5 flex-1">
+        {/* Top Header Bar */}
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2 text-xs text-ej-muted">
-            <Link href="/" className="hover:text-ej-lime transition">Home</Link>
-            <ChevronRight className="w-3 h-3" />
-            <span className="text-ej-cream font-semibold">Account Holder Profile</span>
+          <div>
+            <h1 className="text-xl font-bold text-ej-cream">Account Profile</h1>
+            <p className="text-xs text-ej-muted">Campus ID &amp; Student Details</p>
           </div>
 
           <Link
             href="/orders"
-            className="text-xs font-bold text-ej-gold hover:underline flex items-center gap-1"
+            className="text-xs font-bold text-ej-lime hover:underline flex items-center gap-1.5 bg-ej-lime/10 px-3 py-1.5 rounded-xl border border-ej-lime/25 hover:bg-ej-lime/20 transition"
           >
             <Receipt className="w-3.5 h-3.5" />
             <span>My Orders</span>
           </Link>
         </div>
 
-        {/* Loading State Skeleton */}
+        {/* Feedback Alerts */}
+        {successMessage && (
+          <div className="p-3 rounded-xl bg-ej-lime/15 border border-ej-lime/30 text-ej-lime text-xs font-bold flex items-center gap-2 animate-fade-in-up">
+            <CheckCircle2 className="w-4 h-4 shrink-0" />
+            <span>{successMessage}</span>
+          </div>
+        )}
+
+        {errorMessage && (
+          <div className="p-3 rounded-xl bg-ej-vermilion/15 border border-ej-vermilion/30 text-ej-vermilion text-xs font-bold flex items-center gap-2 animate-fade-in-up">
+            <X className="w-4 h-4 shrink-0" />
+            <span>{errorMessage}</span>
+          </div>
+        )}
+
+        {/* Loading Skeleton */}
         {loading ? (
-          <div className="space-y-6 animate-pulse">
-            <div className="h-44 bg-ej-indigo/60 rounded-3xl border border-ej-border/60" />
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-              {[1, 2, 3, 4].map((i) => (
-                <div key={i} className="h-24 bg-ej-indigo/60 rounded-2xl border border-ej-border/60" />
-              ))}
+          <div className="card p-6 border-ej-border/60 space-y-4 animate-pulse">
+            <div className="flex items-center gap-4">
+              <div className="w-16 h-16 rounded-2xl bg-ej-indigo/60" />
+              <div className="space-y-2 flex-1">
+                <div className="h-5 bg-ej-indigo/60 rounded w-1/2" />
+                <div className="h-4 bg-ej-indigo/60 rounded w-3/4" />
+              </div>
             </div>
-            <div className="h-48 bg-ej-indigo/60 rounded-2xl border border-ej-border/60" />
+            <div className="h-32 bg-ej-indigo/40 rounded-xl" />
           </div>
         ) : profile ? (
           <>
-            {/* Feedback Notifications */}
-            {successMessage && (
-              <div className="p-3.5 rounded-2xl bg-ej-lime/15 border border-ej-lime/30 text-ej-lime text-xs font-bold flex items-center gap-2 animate-fade-in-up">
-                <CheckCircle2 className="w-4 h-4 shrink-0" />
-                <span>{successMessage}</span>
-              </div>
-            )}
-
-            {errorMessage && (
-              <div className="p-3.5 rounded-2xl bg-ej-vermilion/15 border border-ej-vermilion/30 text-ej-vermilion text-xs font-bold flex items-center gap-2 animate-fade-in-up">
-                <X className="w-4 h-4 shrink-0" />
-                <span>{errorMessage}</span>
-              </div>
-            )}
-
-            {/* Profile Hero Card */}
-            <div className="card p-6 sm:p-8 border-ej-border/80 relative overflow-hidden bg-gradient-to-br from-ej-indigo via-ej-deep to-ej-surface shadow-2xl">
-              {/* Background ambient glow */}
-              <div className="absolute top-0 right-0 w-64 h-64 bg-ej-lime/5 rounded-full blur-3xl pointer-events-none" />
-
-              <div className="flex flex-col sm:flex-row items-center sm:items-start gap-6 relative z-10 text-center sm:text-left">
-                {/* Large Avatar */}
-                <div className="relative shrink-0">
-                  <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-3xl bg-gradient-to-tr from-ej-lime via-ej-teal to-ej-gold text-ej-ink font-black flex items-center justify-center text-4xl shadow-glow-md">
+            {/* Main Campus Profile Card */}
+            <div className="card p-6 border-ej-border/80 bg-gradient-to-b from-ej-indigo/90 to-ej-surface/90 shadow-2xl rounded-2xl space-y-6">
+              {/* Header Info with Avatar and Edit Toggle */}
+              <div className="flex items-center justify-between gap-4 border-b border-ej-border/60 pb-5">
+                <div className="flex items-center gap-4">
+                  <div className="w-16 h-16 rounded-2xl bg-gradient-to-tr from-ej-lime via-ej-teal to-ej-gold text-ej-ink font-black flex items-center justify-center text-2xl shadow-glow-sm shrink-0">
                     {userInitial}
                   </div>
-                  <span className="absolute bottom-1 right-1 w-5 h-5 rounded-full bg-ej-lime border-4 border-ej-deep shadow-md" title="Active Account" />
+                  <div className="min-w-0">
+                    <h2 className="text-lg font-black text-ej-cream truncate">{displayName}</h2>
+                    <div className="flex items-center gap-1.5 mt-1">
+                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-ej-lime/15 border border-ej-lime/30 text-ej-lime">
+                        {isVendor ? (
+                          <>
+                            <ShieldCheck className="w-3 h-3" /> Food Truck Vendor
+                          </>
+                        ) : (
+                          <>
+                            <GraduationCap className="w-3 h-3" /> Student
+                          </>
+                        )}
+                      </span>
+
+                      {profile.isProvidence ? (
+                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-ej-teal/20 text-ej-teal border border-ej-teal/30">
+                          <Sparkles className="w-2.5 h-2.5" /> Providence
+                        </span>
+                      ) : (
+                        <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium bg-ej-surface text-ej-muted border border-ej-border">
+                          Campus Member
+                        </span>
+                      )}
+                    </div>
+                  </div>
                 </div>
 
-                {/* Account Details */}
-                <div className="flex-1 min-w-0 space-y-2">
-                  <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2">
-                    <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-ej-lime/15 border border-ej-lime/30 text-ej-lime">
-                      {isVendor ? (
-                        <>
-                          <ShieldCheck className="w-3.5 h-3.5" /> Food Truck Vendor
-                        </>
-                      ) : (
-                        <>
-                          <GraduationCap className="w-3.5 h-3.5" /> Student Member
-                        </>
-                      )}
-                    </span>
+                {!isEditing && (
+                  <button
+                    onClick={() => {
+                      setNameInput(profile.name || '');
+                      setCollegeIdInput(profile.collegeId || '');
+                      setPhoneInput(profile.phone || '');
+                      setIsEditing(true);
+                    }}
+                    className="p-2 rounded-xl text-ej-muted hover:text-ej-lime hover:bg-ej-indigo border border-ej-border hover:border-ej-lime/40 transition flex items-center gap-1.5 text-xs font-semibold shrink-0"
+                    title="Edit Profile Details"
+                  >
+                    <Edit2 className="w-3.5 h-3.5" />
+                    <span className="hidden sm:inline">Edit Details</span>
+                  </button>
+                )}
+              </div>
 
-                    {profile.isProvidence ? (
-                      <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-bold bg-ej-teal/20 text-ej-teal border border-ej-teal/40">
-                        <Sparkles className="w-3 h-3" /> Providence Campus
+              {/* Profile Details (View Mode vs Edit Mode) */}
+              {!isEditing ? (
+                <div className="space-y-3.5 text-sm">
+                  {/* Full Name */}
+                  <div className="flex items-center justify-between p-3 rounded-xl bg-ej-deep/60 border border-ej-border/50">
+                    <div className="flex items-center gap-2.5 text-ej-muted">
+                      <User className="w-4 h-4 text-ej-lime shrink-0" />
+                      <span className="text-xs font-semibold">Name</span>
+                    </div>
+                    <span className="font-bold text-ej-cream text-right">{profile.name || 'Not set'}</span>
+                  </div>
+
+                  {/* College ID / Roll Number */}
+                  <div className="flex items-center justify-between p-3 rounded-xl bg-ej-deep/60 border border-ej-border/50">
+                    <div className="flex items-center gap-2.5 text-ej-muted">
+                      <IdCard className="w-4 h-4 text-ej-gold shrink-0" />
+                      <span className="text-xs font-semibold">
+                        {isVendor ? 'Vendor ID' : 'College ID / Roll No'}
+                      </span>
+                    </div>
+                    {profile.collegeId ? (
+                      <span className="font-mono font-bold text-ej-gold text-right uppercase">
+                        {profile.collegeId}
                       </span>
                     ) : (
-                      <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-semibold bg-ej-surface text-ej-muted border border-ej-border">
-                        Campus Guest
-                      </span>
+                      <button
+                        onClick={() => setIsEditing(true)}
+                        className="text-xs font-bold text-ej-lime hover:underline"
+                      >
+                        + Add College ID
+                      </button>
                     )}
+                  </div>
 
-                    <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] text-ej-muted border border-ej-border/60">
-                      <Calendar className="w-3 h-3" /> Member since {formattedJoinDate}
+                  {/* Email */}
+                  <div className="flex items-center justify-between p-3 rounded-xl bg-ej-deep/60 border border-ej-border/50">
+                    <div className="flex items-center gap-2.5 text-ej-muted">
+                      <Mail className="w-4 h-4 text-ej-teal shrink-0" />
+                      <span className="text-xs font-semibold">Email</span>
+                    </div>
+                    <span className="font-mono text-xs text-ej-cream text-right truncate max-w-[200px] sm:max-w-none">
+                      {profile.email}
                     </span>
                   </div>
 
-                  {/* Name Edit / View */}
-                  {isEditingName ? (
-                    <form onSubmit={handleUpdateName} className="flex items-center gap-2 pt-1 max-w-sm mx-auto sm:mx-0">
-                      <input
-                        type="text"
-                        value={nameInput}
-                        onChange={(e) => setNameInput(e.target.value)}
-                        placeholder="Your full name"
-                        className="input-field py-1.5 px-3 text-sm flex-1 bg-ej-deep border border-ej-lime/50 rounded-xl"
-                        autoFocus
-                      />
-                      <button
-                        type="submit"
-                        disabled={savingName}
-                        className="btn-primary py-1.5 px-3 text-xs flex items-center gap-1 shrink-0"
-                      >
-                        <Check className="w-3.5 h-3.5" />
-                        <span>{savingName ? 'Saving...' : 'Save'}</span>
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setNameInput(profile.name || '');
-                          setIsEditingName(false);
-                        }}
-                        className="p-2 rounded-xl text-ej-muted hover:text-ej-cream border border-ej-border hover:bg-ej-surface transition"
-                      >
-                        <X className="w-3.5 h-3.5" />
-                      </button>
-                    </form>
-                  ) : (
-                    <div className="flex items-center justify-center sm:justify-start gap-2 pt-1">
-                      <h1 className="text-2xl sm:text-3xl font-black text-ej-cream truncate">
-                        {displayName}
-                      </h1>
-                      <button
-                        onClick={() => setIsEditingName(true)}
-                        className="p-1.5 rounded-lg text-ej-muted hover:text-ej-lime hover:bg-ej-surface transition"
-                        title="Edit Name"
-                      >
-                        <Edit2 className="w-4 h-4" />
-                      </button>
+                  {/* Phone (Optional) */}
+                  <div className="flex items-center justify-between p-3 rounded-xl bg-ej-deep/60 border border-ej-border/50">
+                    <div className="flex items-center gap-2.5 text-ej-muted">
+                      <Phone className="w-4 h-4 text-ej-lime shrink-0" />
+                      <span className="text-xs font-semibold">Phone</span>
                     </div>
-                  )}
-
-                  {/* Email address */}
-                  <div className="flex items-center justify-center sm:justify-start gap-2 text-xs text-ej-muted font-mono">
-                    <Mail className="w-3.5 h-3.5 text-ej-teal shrink-0" />
-                    <span className="truncate">{profile.email}</span>
+                    {profile.phone ? (
+                      <span className="font-mono text-xs font-semibold text-ej-cream text-right">
+                        {profile.phone}
+                      </span>
+                    ) : (
+                      <button
+                        onClick={() => setIsEditing(true)}
+                        className="text-xs text-ej-muted hover:text-ej-lime hover:underline"
+                      >
+                        + Add Phone
+                      </button>
+                    )}
                   </div>
+                </div>
+              ) : (
+                /* Edit Form */
+                <form onSubmit={handleSaveProfile} className="space-y-4">
+                  <div className="space-y-1">
+                    <label className="text-xs font-bold text-ej-cream flex items-center gap-1.5">
+                      <User className="w-3.5 h-3.5 text-ej-lime" />
+                      <span>Full Name</span>
+                    </label>
+                    <input
+                      type="text"
+                      value={nameInput}
+                      onChange={(e) => setNameInput(e.target.value)}
+                      placeholder="e.g. Jobiy Apriji"
+                      className="w-full py-2 px-3 text-sm rounded-xl bg-ej-deep border border-ej-border focus:border-ej-lime focus:outline-none text-ej-cream"
+                      required
+                    />
+                  </div>
+
+                  <div className="space-y-1">
+                    <label className="text-xs font-bold text-ej-cream flex items-center gap-1.5">
+                      <IdCard className="w-3.5 h-3.5 text-ej-gold" />
+                      <span>{isVendor ? 'Vendor ID' : 'College ID / Roll No'}</span>
+                    </label>
+                    <input
+                      type="text"
+                      value={collegeIdInput}
+                      onChange={(e) => setCollegeIdInput(e.target.value.toUpperCase())}
+                      placeholder="e.g. PRC22CS045 or Roll Number"
+                      className="w-full py-2 px-3 text-sm font-mono uppercase rounded-xl bg-ej-deep border border-ej-border focus:border-ej-gold focus:outline-none text-ej-cream"
+                    />
+                    <p className="text-[10px] text-ej-muted">Used for campus food truck order identification</p>
+                  </div>
+
+                  <div className="space-y-1">
+                    <label className="text-xs font-bold text-ej-cream flex items-center gap-1.5">
+                      <Phone className="w-3.5 h-3.5 text-ej-teal" />
+                      <span>Phone Number (Optional)</span>
+                    </label>
+                    <input
+                      type="tel"
+                      value={phoneInput}
+                      onChange={(e) => setPhoneInput(e.target.value)}
+                      placeholder="e.g. 9876543210"
+                      className="w-full py-2 px-3 text-sm font-mono rounded-xl bg-ej-deep border border-ej-border focus:border-ej-teal focus:outline-none text-ej-cream"
+                    />
+                  </div>
+
+                  <div className="flex items-center gap-2 pt-2">
+                    <button
+                      type="submit"
+                      disabled={saving}
+                      className="btn-primary py-2 px-4 text-xs font-bold flex items-center justify-center gap-1.5 flex-1"
+                    >
+                      <Check className="w-3.5 h-3.5" />
+                      <span>{saving ? 'Saving...' : 'Save Changes'}</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setIsEditing(false)}
+                      className="py-2 px-4 text-xs font-semibold rounded-xl border border-ej-border text-ej-muted hover:text-ej-cream hover:bg-ej-indigo transition"
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </form>
+              )}
+
+              {/* Compact Stats Summary */}
+              <div className="pt-2 border-t border-ej-border/60 grid grid-cols-2 gap-3 text-center">
+                <div className="p-2.5 rounded-xl bg-ej-deep/40 border border-ej-border/40">
+                  <p className="text-[11px] text-ej-muted font-semibold">Total Orders</p>
+                  <p className="text-lg font-black text-ej-cream">{profile.stats.totalOrders}</p>
+                </div>
+                <div className="p-2.5 rounded-xl bg-ej-deep/40 border border-ej-border/40">
+                  <p className="text-[11px] text-ej-muted font-semibold">Total Spent</p>
+                  <p className="text-lg font-black text-ej-lime">₹{profile.stats.totalSpent.toFixed(0)}</p>
                 </div>
               </div>
             </div>
 
-            {/* Quick Stats Grid */}
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-              <div className="card p-4 border-ej-border/60 bg-ej-indigo/40 text-center space-y-1">
-                <span className="text-[11px] font-bold text-ej-muted uppercase tracking-wider">Total Orders</span>
-                <p className="text-2xl font-black text-ej-cream">{profile.stats.totalOrders}</p>
-                <span className="text-[10px] text-ej-muted">Lifetime orders placed</span>
-              </div>
-
-              <div className="card p-4 border-ej-border/60 bg-ej-indigo/40 text-center space-y-1">
-                <span className="text-[11px] font-bold text-ej-gold uppercase tracking-wider">Active Tokens</span>
-                <p className="text-2xl font-black text-ej-gold">{profile.stats.activeOrders}</p>
-                <span className="text-[10px] text-ej-muted">Currently preparing</span>
-              </div>
-
-              <div className="card p-4 border-ej-border/60 bg-ej-indigo/40 text-center space-y-1">
-                <span className="text-[11px] font-bold text-ej-lime uppercase tracking-wider">Total Spent</span>
-                <p className="text-2xl font-black text-ej-lime">₹{profile.stats.totalSpent.toFixed(0)}</p>
-                <span className="text-[10px] text-ej-muted">Campus treats enjoyed</span>
-              </div>
-
-              <div className="card p-4 border-ej-border/60 bg-ej-indigo/40 text-center space-y-1">
-                <span className="text-[11px] font-bold text-ej-teal uppercase tracking-wider">Completed</span>
-                <p className="text-2xl font-black text-ej-teal">{profile.stats.completedOrders}</p>
-                <span className="text-[10px] text-ej-muted">Successfully collected</span>
-              </div>
-            </div>
-
-            {/* Action Cards */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            {/* Quick Actions */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <Link
-                href="/orders"
-                className="card card-hover p-5 border-ej-border/60 bg-ej-indigo/50 flex items-center justify-between group transition hover:border-ej-gold/50"
+                href="/"
+                className="card card-hover p-4 border-ej-border/70 bg-ej-indigo/40 flex items-center justify-between group hover:border-ej-lime/50 transition"
               >
-                <div className="flex items-center gap-3.5">
-                  <div className="w-10 h-10 rounded-xl bg-ej-gold/15 text-ej-gold flex items-center justify-center font-bold">
-                    <Receipt className="w-5 h-5" />
+                <div className="flex items-center gap-3">
+                  <div className="w-9 h-9 rounded-xl bg-ej-lime/15 text-ej-lime flex items-center justify-center font-bold">
+                    <ShoppingBag className="w-4 h-4" />
                   </div>
                   <div>
-                    <h3 className="text-sm font-bold text-ej-cream group-hover:text-ej-gold transition">
-                      My Orders &amp; Receipts
+                    <h3 className="text-xs font-bold text-ej-cream group-hover:text-ej-lime transition">
+                      Browse Food Truck Menu
                     </h3>
-                    <p className="text-[11px] text-ej-muted">
-                      View QR pickup tokens &amp; past order bills
-                    </p>
+                    <p className="text-[10px] text-ej-muted">Order snacks &amp; meals</p>
                   </div>
                 </div>
-                <ArrowRight className="w-4 h-4 text-ej-muted group-hover:text-ej-gold group-hover:translate-x-1 transition" />
+                <ChevronRight className="w-4 h-4 text-ej-muted group-hover:text-ej-lime group-hover:translate-x-0.5 transition" />
               </Link>
 
-              {isVendor ? (
-                <Link
-                  href="/vendor/queue"
-                  className="card card-hover p-5 border-ej-border/60 bg-ej-indigo/50 flex items-center justify-between group transition hover:border-ej-lime/50"
-                >
-                  <div className="flex items-center gap-3.5">
-                    <div className="w-10 h-10 rounded-xl bg-ej-lime/15 text-ej-lime flex items-center justify-center font-bold">
-                      <ShieldCheck className="w-5 h-5" />
-                    </div>
-                    <div>
-                      <h3 className="text-sm font-bold text-ej-cream group-hover:text-ej-lime transition">
-                        Vendor Kitchen Queue
-                      </h3>
-                      <p className="text-[11px] text-ej-muted">
-                        Manage live tokens, prep &amp; delivery
-                      </p>
-                    </div>
+              <Link
+                href="/orders"
+                className="card card-hover p-4 border-ej-border/70 bg-ej-indigo/40 flex items-center justify-between group hover:border-ej-gold/50 transition"
+              >
+                <div className="flex items-center gap-3">
+                  <div className="w-9 h-9 rounded-xl bg-ej-gold/15 text-ej-gold flex items-center justify-center font-bold">
+                    <Receipt className="w-4 h-4" />
                   </div>
-                  <ArrowRight className="w-4 h-4 text-ej-muted group-hover:text-ej-lime group-hover:translate-x-1 transition" />
-                </Link>
-              ) : (
-                <Link
-                  href="/"
-                  className="card card-hover p-5 border-ej-border/60 bg-ej-indigo/50 flex items-center justify-between group transition hover:border-ej-teal/50"
-                >
-                  <div className="flex items-center gap-3.5">
-                    <div className="w-10 h-10 rounded-xl bg-ej-teal/15 text-ej-teal flex items-center justify-center font-bold">
-                      <ShoppingBag className="w-5 h-5" />
-                    </div>
-                    <div>
-                      <h3 className="text-sm font-bold text-ej-cream group-hover:text-ej-teal transition">
-                        Browse Food Truck Menu
-                      </h3>
-                      <p className="text-[11px] text-ej-muted">
-                        Order fresh snacks, shakes &amp; meals
-                      </p>
-                    </div>
+                  <div>
+                    <h3 className="text-xs font-bold text-ej-cream group-hover:text-ej-gold transition">
+                      Order History &amp; Tokens
+                    </h3>
+                    <p className="text-[10px] text-ej-muted">View receipts &amp; QR status</p>
                   </div>
-                  <ArrowRight className="w-4 h-4 text-ej-muted group-hover:text-ej-teal group-hover:translate-x-1 transition" />
-                </Link>
-              )}
+                </div>
+                <ChevronRight className="w-4 h-4 text-ej-muted group-hover:text-ej-gold group-hover:translate-x-0.5 transition" />
+              </Link>
             </div>
 
-            {/* Recent Orders Section */}
-            <div className="card p-6 border-ej-border/60 bg-ej-indigo/30 space-y-4">
-              <div className="flex items-center justify-between border-b border-ej-border/60 pb-3">
-                <div className="flex items-center gap-2">
-                  <Flame className="w-4 h-4 text-ej-lime" />
-                  <h3 className="text-sm font-bold text-ej-cream">Recent Activity</h3>
-                </div>
-                <Link
-                  href="/orders"
-                  className="text-xs text-ej-lime hover:underline font-semibold flex items-center gap-1"
-                >
-                  <span>View All History</span>
-                  <ChevronRight className="w-3.5 h-3.5" />
-                </Link>
-              </div>
-
-              {profile.recentOrders.length === 0 ? (
-                <div className="py-6 text-center text-xs text-ej-muted space-y-2">
-                  <p>You haven&apos;t placed any orders yet.</p>
-                  <Link href="/" className="btn-primary inline-flex text-xs py-1.5 px-3">
-                    Start Your First Order
-                  </Link>
-                </div>
-              ) : (
-                <div className="space-y-2.5">
-                  {profile.recentOrders.map((ord) => (
-                    <div
-                      key={ord.id}
-                      className="flex items-center justify-between p-3 rounded-xl bg-ej-surface/70 border border-ej-border/40 hover:border-ej-border text-xs"
-                    >
-                      <div className="flex items-center gap-3">
-                        <span className="font-black text-ej-lime bg-ej-indigo px-2.5 py-1 rounded-lg border border-ej-lime/20 font-mono">
-                          {ord.token}
-                        </span>
-                        <div>
-                          <p className="font-bold text-ej-cream">₹{ord.totalAmount.toFixed(0)}</p>
-                          <p className="text-[10px] text-ej-muted font-mono flex items-center gap-1">
-                            <Clock className="w-3 h-3" />
-                            {new Date(ord.createdAt).toLocaleDateString([], {
-                              day: 'numeric',
-                              month: 'short',
-                              hour: '2-digit',
-                              minute: '2-digit',
-                            })}
-                          </p>
-                        </div>
-                      </div>
-
-                      <div className="flex items-center gap-2">
-                        <span
-                          className={`px-2.5 py-0.5 rounded-full text-[10px] font-extrabold ${
-                            ord.status === 'DELIVERED'
-                              ? 'bg-ej-surface text-ej-muted border border-ej-border'
-                              : ord.status === 'READY'
-                              ? 'bg-ej-lime/20 text-ej-lime border border-ej-lime animate-pulse'
-                              : 'bg-ej-gold/20 text-ej-gold border border-ej-gold/50'
-                          }`}
-                        >
-                          {ord.status}
-                        </span>
-                        <Link
-                          href={`/order/${ord.id}`}
-                          className="p-1.5 rounded-lg text-ej-muted hover:text-ej-lime hover:bg-ej-indigo transition"
-                          title="View Token & Receipt"
-                        >
-                          <ExternalLink className="w-3.5 h-3.5" />
-                        </Link>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-
-            {/* Account Settings / Sign Out */}
-            <div className="card p-6 border-ej-border/60 bg-ej-indigo/30 space-y-4">
-              <h3 className="text-sm font-bold text-ej-cream border-b border-ej-border/60 pb-3">
-                Account &amp; Security
-              </h3>
-
-              <div className="flex flex-col sm:flex-row items-center justify-between gap-4 text-xs">
-                <div className="text-left w-full sm:w-auto">
-                  <p className="font-semibold text-ej-cream">Session Authentication</p>
-                  <p className="text-[11px] text-ej-muted">
-                    Logged in via {isVendor ? 'Vendor Passkey' : 'One-Time Password (OTP)'}
-                  </p>
-                </div>
-
-                <button
-                  onClick={() => signOut({ callbackUrl: '/' })}
-                  className="w-full sm:w-auto flex items-center justify-center gap-2 py-2 px-4 rounded-xl text-xs font-bold text-ej-vermilion hover:bg-ej-vermilion/10 border border-ej-vermilion/30 transition shrink-0"
-                >
-                  <LogOut className="w-3.5 h-3.5" />
-                  <span>Log Out of Enjipuli</span>
-                </button>
-              </div>
+            {/* Log Out */}
+            <div className="pt-2">
+              <button
+                onClick={() => signOut({ callbackUrl: '/' })}
+                className="w-full flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl text-xs font-bold text-ej-vermilion hover:bg-ej-vermilion/10 border border-ej-vermilion/30 transition"
+              >
+                <LogOut className="w-3.5 h-3.5" />
+                <span>Log Out of Enjipuli</span>
+              </button>
             </div>
           </>
         ) : null}

@@ -18,6 +18,8 @@ export async function GET() {
         id: true,
         email: true,
         name: true,
+        collegeId: true,
+        phone: true,
         role: true,
         createdAt: true,
         orders: {
@@ -53,6 +55,8 @@ export async function GET() {
       id: user.id,
       email: user.email,
       name: user.name || user.email.split('@')[0],
+      collegeId: user.collegeId || '',
+      phone: user.phone || '',
       role: user.role,
       createdAt: user.createdAt,
       isProvidence,
@@ -79,24 +83,47 @@ export async function PATCH(request: Request) {
 
     const sessionUser = session.user as any;
     const body = await request.json();
-    const { name } = body;
+    const { name, collegeId, phone } = body;
 
-    if (!name || typeof name !== 'string') {
-      return NextResponse.json({ error: 'Name is required' }, { status: 400 });
+    const updateData: { name?: string; collegeId?: string; phone?: string } = {};
+
+    if (name !== undefined) {
+      const trimmedName = String(name).trim();
+      if (trimmedName.length < 2 || trimmedName.length > 50) {
+        return NextResponse.json({ error: 'Name must be between 2 and 50 characters' }, { status: 400 });
+      }
+      updateData.name = trimmedName;
     }
 
-    const trimmedName = name.trim();
-    if (trimmedName.length < 2 || trimmedName.length > 50) {
-      return NextResponse.json({ error: 'Name must be between 2 and 50 characters' }, { status: 400 });
+    if (collegeId !== undefined) {
+      const trimmedId = String(collegeId).trim().toUpperCase();
+      if (trimmedId.length > 30) {
+        return NextResponse.json({ error: 'College ID cannot exceed 30 characters' }, { status: 400 });
+      }
+      updateData.collegeId = trimmedId;
+    }
+
+    if (phone !== undefined) {
+      const trimmedPhone = String(phone).trim();
+      if (trimmedPhone.length > 15) {
+        return NextResponse.json({ error: 'Phone number cannot exceed 15 digits' }, { status: 400 });
+      }
+      updateData.phone = trimmedPhone;
+    }
+
+    if (Object.keys(updateData).length === 0) {
+      return NextResponse.json({ error: 'No valid fields provided to update' }, { status: 400 });
     }
 
     const updated = await prisma.user.update({
       where: { id: sessionUser.id },
-      data: { name: trimmedName },
+      data: updateData,
       select: {
         id: true,
         email: true,
         name: true,
+        collegeId: true,
+        phone: true,
         role: true,
       },
     });
