@@ -1,8 +1,8 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { useSession, signOut } from 'next-auth/react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { Header } from '@/components/Header';
 import {
@@ -20,9 +20,8 @@ import {
   X,
   CheckCircle2,
   ChevronRight,
-  ExternalLink,
-  Clock,
   Sparkles,
+  ArrowRight,
 } from 'lucide-react';
 
 interface ProfileData {
@@ -49,13 +48,16 @@ interface ProfileData {
   }>;
 }
 
-export default function ProfilePage() {
+function ProfileContent() {
   const { data: session, status } = useSession();
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const isFirstTimeUrl = searchParams.get('firstTime') === 'true';
 
   const [profile, setProfile] = useState<ProfileData | null>(null);
   const [loading, setLoading] = useState(true);
   const [isEditing, setIsEditing] = useState(false);
+  const [isFirstTimeSetup, setIsFirstTimeSetup] = useState(false);
 
   // Form states
   const [nameInput, setNameInput] = useState('');
@@ -79,11 +81,23 @@ export default function ProfilePage() {
         setLoading(true);
         const res = await fetch('/api/user/profile');
         if (res.ok) {
-          const data = await res.json();
+          const data: ProfileData = await res.json();
           setProfile(data);
-          setNameInput(data.name || '');
+
+          const emailPrefix = data.email ? data.email.split('@')[0] : '';
+          const isDefaultName = !data.name || data.name.toLowerCase() === emailPrefix.toLowerCase();
+
+          // Prefill inputs
+          setNameInput(isDefaultName ? '' : data.name);
           setCollegeIdInput(data.collegeId || '');
           setPhoneInput(data.phone || '');
+
+          // Check if this is a first-time setup (either via query param or missing college ID)
+          const needsSetup = isFirstTimeUrl || !data.collegeId || isDefaultName;
+          if (needsSetup && data.role !== 'VENDOR') {
+            setIsEditing(true);
+            setIsFirstTimeSetup(true);
+          }
         } else {
           setErrorMessage('Unable to load profile information');
         }
@@ -96,12 +110,17 @@ export default function ProfilePage() {
     }
 
     loadProfile();
-  }, [status]);
+  }, [status, isFirstTimeUrl]);
 
   async function handleSaveProfile(e: React.FormEvent) {
     e.preventDefault();
     if (!nameInput.trim() || nameInput.trim().length < 2) {
-      setErrorMessage('Name must be at least 2 characters');
+      setErrorMessage('Please enter your full name (at least 2 characters)');
+      return;
+    }
+
+    if (profile?.role !== 'VENDOR' && (!collegeIdInput.trim() || collegeIdInput.trim().length < 2)) {
+      setErrorMessage('Please enter your College ID or Roll Number');
       return;
     }
 
@@ -113,7 +132,7 @@ export default function ProfilePage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           name: nameInput.trim(),
-          collegeId: collegeIdInput.trim(),
+          collegeId: collegeIdInput.trim().toUpperCase(),
           phone: phoneInput.trim(),
         }),
       });
@@ -130,9 +149,23 @@ export default function ProfilePage() {
               }
             : null
         );
+
         setIsEditing(false);
-        setSuccessMessage('Profile details updated successfully!');
-        setTimeout(() => setSuccessMessage(''), 3000);
+        setSuccessMessage(
+          isFirstTimeSetup
+            ? 'Profile created successfully! Ready to order 🍔'
+            : 'Profile details updated successfully!'
+        );
+
+        // If first time setup, redirect smoothly to home menu after a short delay
+        if (isFirstTimeSetup) {
+          setTimeout(() => {
+            router.push('/');
+            router.refresh();
+          }, 1500);
+        } else {
+          setTimeout(() => setSuccessMessage(''), 3000);
+        }
       } else {
         const err = await res.json();
         setErrorMessage(err.error || 'Failed to update profile');
@@ -157,29 +190,46 @@ export default function ProfilePage() {
         {/* Top Header Bar */}
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-xl font-bold text-ej-cream">Account Profile</h1>
+            <h1 className="text-xl font-bold text-ej-cream">
+              {isFirstTimeSetup && isEditing ? 'Complete Your Profile' : 'Account Profile'}
+            </h1>
             <p className="text-xs text-ej-muted">Campus ID &amp; Student Details</p>
           </div>
 
-          <Link
-            href="/orders"
-            className="text-xs font-bold text-ej-lime hover:underline flex items-center gap-1.5 bg-ej-lime/10 px-3 py-1.5 rounded-xl border border-ej-lime/25 hover:bg-ej-lime/20 transition"
-          >
-            <Receipt className="w-3.5 h-3.5" />
-            <span>My Orders</span>
-          </Link>
+          {!isFirstTimeSetup && (
+            <Link
+              href="/orders"
+              className="text-xs font-bold text-ej-lime hover:underline flex items-center gap-1.5 bg-ej-lime/10 px-3 py-1.5 rounded-xl border border-ej-lime/25 hover:bg-ej-lime/20 transition"
+            >
+              <Receipt className="w-3.5 h-3.5" />
+              <span>My Orders</span>
+            </Link>
+          )}
         </div>
+
+        {/* First Time Setup Banner */}
+        {isFirstTimeSetup && isEditing && (
+          <div className="p-4 rounded-2xl bg-gradient-to-r from-ej-lime/20 via-ej-teal/15 to-ej-indigo/60 border border-ej-lime/40 text-ej-cream space-y-1.5 animate-fade-in-up">
+            <div className="flex items-center gap-2 text-ej-lime font-black text-sm">
+              <Sparkles className="w-4 h-4" />
+              <span>Welcome to Enjipuli! Set up your Campus Profile</span>
+            </div>
+            <p className="text-xs text-ej-muted">
+              Please enter your full name and College ID / Roll Number below. This helps the food truck staff identify your orders and issue your tokens.
+            </p>
+          </div>
+        )}
 
         {/* Feedback Alerts */}
         {successMessage && (
-          <div className="p-3 rounded-xl bg-ej-lime/15 border border-ej-lime/30 text-ej-lime text-xs font-bold flex items-center gap-2 animate-fade-in-up">
+          <div className="p-3.5 rounded-xl bg-ej-lime/20 border border-ej-lime/40 text-ej-lime text-xs font-bold flex items-center gap-2 animate-fade-in-up">
             <CheckCircle2 className="w-4 h-4 shrink-0" />
             <span>{successMessage}</span>
           </div>
         )}
 
         {errorMessage && (
-          <div className="p-3 rounded-xl bg-ej-vermilion/15 border border-ej-vermilion/30 text-ej-vermilion text-xs font-bold flex items-center gap-2 animate-fade-in-up">
+          <div className="p-3.5 rounded-xl bg-ej-vermilion/20 border border-ej-vermilion/40 text-ej-vermilion text-xs font-bold flex items-center gap-2 animate-fade-in-up">
             <X className="w-4 h-4 shrink-0" />
             <span>{errorMessage}</span>
           </div>
@@ -242,6 +292,7 @@ export default function ProfilePage() {
                       setCollegeIdInput(profile.collegeId || '');
                       setPhoneInput(profile.phone || '');
                       setIsEditing(true);
+                      setIsFirstTimeSetup(false);
                     }}
                     className="p-2 rounded-xl text-ej-muted hover:text-ej-lime hover:bg-ej-indigo border border-ej-border hover:border-ej-lime/40 transition flex items-center gap-1.5 text-xs font-semibold shrink-0"
                     title="Edit Profile Details"
@@ -278,7 +329,10 @@ export default function ProfilePage() {
                       </span>
                     ) : (
                       <button
-                        onClick={() => setIsEditing(true)}
+                        onClick={() => {
+                          setIsEditing(true);
+                          setIsFirstTimeSetup(true);
+                        }}
                         className="text-xs font-bold text-ej-lime hover:underline"
                       >
                         + Add College ID
@@ -318,36 +372,39 @@ export default function ProfilePage() {
                   </div>
                 </div>
               ) : (
-                /* Edit Form */
+                /* Edit / First-Time Setup Form */
                 <form onSubmit={handleSaveProfile} className="space-y-4">
                   <div className="space-y-1">
                     <label className="text-xs font-bold text-ej-cream flex items-center gap-1.5">
                       <User className="w-3.5 h-3.5 text-ej-lime" />
-                      <span>Full Name</span>
+                      <span>Full Name *</span>
                     </label>
                     <input
                       type="text"
                       value={nameInput}
                       onChange={(e) => setNameInput(e.target.value)}
                       placeholder="e.g. Jobiy Apriji"
-                      className="w-full py-2 px-3 text-sm rounded-xl bg-ej-deep border border-ej-border focus:border-ej-lime focus:outline-none text-ej-cream"
+                      className="w-full py-2.5 px-3.5 text-sm rounded-xl bg-ej-deep border border-ej-border focus:border-ej-lime focus:outline-none text-ej-cream"
                       required
+                      autoFocus
                     />
+                    <p className="text-[10px] text-ej-muted">Your actual name as recognized on campus</p>
                   </div>
 
                   <div className="space-y-1">
                     <label className="text-xs font-bold text-ej-cream flex items-center gap-1.5">
                       <IdCard className="w-3.5 h-3.5 text-ej-gold" />
-                      <span>{isVendor ? 'Vendor ID' : 'College ID / Roll No'}</span>
+                      <span>{isVendor ? 'Vendor ID' : 'College ID / Roll No *'}</span>
                     </label>
                     <input
                       type="text"
                       value={collegeIdInput}
                       onChange={(e) => setCollegeIdInput(e.target.value.toUpperCase())}
-                      placeholder="e.g. PRC22CS045 or Roll Number"
-                      className="w-full py-2 px-3 text-sm font-mono uppercase rounded-xl bg-ej-deep border border-ej-border focus:border-ej-gold focus:outline-none text-ej-cream"
+                      placeholder={isVendor ? 'e.g. VENDOR-01' : 'e.g. PRC22CS045 or Roll Number'}
+                      className="w-full py-2.5 px-3.5 text-sm font-mono uppercase rounded-xl bg-ej-deep border border-ej-border focus:border-ej-gold focus:outline-none text-ej-cream"
+                      required={!isVendor}
                     />
-                    <p className="text-[10px] text-ej-muted">Used for campus food truck order identification</p>
+                    <p className="text-[10px] text-ej-muted">Shown to vendor for token and order collection</p>
                   </div>
 
                   <div className="space-y-1">
@@ -360,7 +417,7 @@ export default function ProfilePage() {
                       value={phoneInput}
                       onChange={(e) => setPhoneInput(e.target.value)}
                       placeholder="e.g. 9876543210"
-                      className="w-full py-2 px-3 text-sm font-mono rounded-xl bg-ej-deep border border-ej-border focus:border-ej-teal focus:outline-none text-ej-cream"
+                      className="w-full py-2.5 px-3.5 text-sm font-mono rounded-xl bg-ej-deep border border-ej-border focus:border-ej-teal focus:outline-none text-ej-cream"
                     />
                   </div>
 
@@ -368,18 +425,26 @@ export default function ProfilePage() {
                     <button
                       type="submit"
                       disabled={saving}
-                      className="btn-primary py-2 px-4 text-xs font-bold flex items-center justify-center gap-1.5 flex-1"
+                      className="btn-primary py-2.5 px-5 text-xs font-bold flex items-center justify-center gap-1.5 flex-1 shadow-glow-sm"
                     >
-                      <Check className="w-3.5 h-3.5" />
-                      <span>{saving ? 'Saving...' : 'Save Changes'}</span>
+                      <Check className="w-4 h-4" />
+                      <span>
+                        {saving
+                          ? 'Saving...'
+                          : isFirstTimeSetup
+                          ? 'Save & Continue to Menu 🍔'
+                          : 'Save Changes'}
+                      </span>
                     </button>
-                    <button
-                      type="button"
-                      onClick={() => setIsEditing(false)}
-                      className="py-2 px-4 text-xs font-semibold rounded-xl border border-ej-border text-ej-muted hover:text-ej-cream hover:bg-ej-indigo transition"
-                    >
-                      Cancel
-                    </button>
+                    {!isFirstTimeSetup && (
+                      <button
+                        type="button"
+                        onClick={() => setIsEditing(false)}
+                        className="py-2.5 px-4 text-xs font-semibold rounded-xl border border-ej-border text-ej-muted hover:text-ej-cream hover:bg-ej-indigo transition"
+                      >
+                        Cancel
+                      </button>
+                    )}
                   </div>
                 </form>
               )}
@@ -450,5 +515,22 @@ export default function ProfilePage() {
         ) : null}
       </main>
     </div>
+  );
+}
+
+export default function ProfilePage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen bg-ej-deep text-ej-cream flex items-center justify-center">
+          <div className="text-xs text-ej-muted flex items-center gap-2">
+            <span className="w-3 h-3 rounded-full border-2 border-ej-lime border-t-transparent animate-spin" />
+            <span>Loading Profile...</span>
+          </div>
+        </div>
+      }
+    >
+      <ProfileContent />
+    </Suspense>
   );
 }

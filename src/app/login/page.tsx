@@ -94,6 +94,24 @@ export default function StudentLoginPage() {
         setError(msg); 
         return; 
       }
+
+      // Check if user has completed their profile (has College ID and custom name)
+      try {
+        const profileRes = await fetch('/api/user/profile');
+        if (profileRes.ok) {
+          const profileData = await profileRes.json();
+          const emailPrefix = email.trim().toLowerCase().split('@')[0];
+          const isDefaultName = !profileData.name || profileData.name.toLowerCase() === emailPrefix;
+          if (!profileData.collegeId || isDefaultName) {
+            router.push('/profile?firstTime=true');
+            router.refresh();
+            return;
+          }
+        }
+      } catch (checkErr) {
+        console.error('Failed to check profile completion:', checkErr);
+      }
+
       router.push('/');
       router.refresh();
     } catch (err: any) {

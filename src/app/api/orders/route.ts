@@ -29,7 +29,7 @@ export async function GET(request: Request) {
             include: { menuItem: true },
           },
           user: {
-            select: { name: true, email: true },
+            select: { name: true, email: true, collegeId: true, phone: true },
           },
         },
         orderBy: { createdAt: 'desc' },
