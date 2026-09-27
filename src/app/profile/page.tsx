@@ -178,9 +178,16 @@ function ProfileContent() {
   }
 
   const isVendor = profile?.role === 'VENDOR';
-  const displayName =
-    profile?.name || session?.user?.name || (profile?.email ? profile.email.split('@')[0] : 'User');
-  const userInitial = (displayName[0] || 'U').toUpperCase();
+  const emailPrefix = profile?.email ? profile.email.split('@')[0].toLowerCase() : '';
+  const hasRealName = Boolean(profile?.name && profile.name.trim().toLowerCase() !== emailPrefix);
+  const displayName = hasRealName
+    ? profile!.name.trim()
+    : profile?.collegeId
+    ? profile.collegeId
+    : isVendor
+    ? 'Vendor Account'
+    : 'Student Account';
+  const userInitial = hasRealName ? profile!.name.trim()[0].toUpperCase() : '';
 
   return (
     <div className="min-h-screen bg-ej-deep text-ej-cream flex flex-col">
@@ -255,7 +262,7 @@ function ProfileContent() {
               <div className="flex items-center justify-between gap-4 border-b border-ej-border/60 pb-5">
                 <div className="flex items-center gap-4">
                   <div className="w-16 h-16 rounded-2xl bg-gradient-to-tr from-ej-lime via-ej-teal to-ej-gold text-ej-ink font-black flex items-center justify-center text-2xl shadow-glow-sm shrink-0">
-                    {userInitial}
+                    {userInitial || (isVendor ? <ShieldCheck className="w-8 h-8" /> : <GraduationCap className="w-8 h-8" />)}
                   </div>
                   <div className="min-w-0">
                     <h2 className="text-lg font-black text-ej-cream truncate">{displayName}</h2>
@@ -288,7 +295,7 @@ function ProfileContent() {
                 {!isEditing && (
                   <button
                     onClick={() => {
-                      setNameInput(profile.name || '');
+                      setNameInput(hasRealName ? profile.name : '');
                       setCollegeIdInput(profile.collegeId || '');
                       setPhoneInput(profile.phone || '');
                       setIsEditing(true);
@@ -312,7 +319,19 @@ function ProfileContent() {
                       <User className="w-4 h-4 text-ej-lime shrink-0" />
                       <span className="text-xs font-semibold">Name</span>
                     </div>
-                    <span className="font-bold text-ej-cream text-right">{profile.name || 'Not set'}</span>
+                    {hasRealName ? (
+                      <span className="font-bold text-ej-cream text-right">{profile.name}</span>
+                    ) : (
+                      <button
+                        onClick={() => {
+                          setIsEditing(true);
+                          setIsFirstTimeSetup(true);
+                        }}
+                        className="text-xs font-bold text-ej-lime hover:underline"
+                      >
+                        + Add Full Name
+                      </button>
+                    )}
                   </div>
 
                   {/* College ID / Roll Number */}

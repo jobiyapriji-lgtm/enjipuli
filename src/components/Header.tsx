@@ -29,9 +29,10 @@ export function Header({ cartItemCount = 0, onOpenCart }: HeaderProps) {
   const isVendor = user?.role === 'VENDOR';
 
   const userEmail: string = user?.email || '';
-  const displayName: string =
-    user?.name || (userEmail ? userEmail.split('@')[0] : 'User');
-  const userInitial: string = (displayName[0] || 'U').toUpperCase();
+  const emailPrefix = userEmail ? userEmail.split('@')[0].toLowerCase() : '';
+  const hasRealName = Boolean(user?.name && user.name.trim().toLowerCase() !== emailPrefix);
+  const displayName: string = hasRealName ? user.name.trim() : (isVendor ? 'Vendor' : 'Student');
+  const userInitial: string = hasRealName ? user.name.trim()[0].toUpperCase() : '';
   const isProvidence: boolean = userEmail.includes('providence.edu.in');
 
   // Close dropdown when clicking outside
@@ -163,7 +164,7 @@ export function Header({ cartItemCount = 0, onOpenCart }: HeaderProps) {
               {/* User Avatar Circle with Online Dot */}
               <div className="relative">
                 <div className="w-7 h-7 rounded-full bg-gradient-to-tr from-ej-lime to-ej-teal text-ej-ink font-black flex items-center justify-center text-xs shadow-glow-sm">
-                  {userInitial}
+                  {userInitial || <User className="w-3.5 h-3.5" />}
                 </div>
                 <span className="absolute bottom-0 right-0 w-2 h-2 rounded-full bg-ej-lime border-2 border-ej-deep" />
               </div>
@@ -189,7 +190,7 @@ export function Header({ cartItemCount = 0, onOpenCart }: HeaderProps) {
                 {/* Account Details Header */}
                 <div className="flex items-center gap-3 pb-3 border-b border-ej-border/60">
                   <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-ej-lime via-ej-teal to-ej-gold text-ej-ink font-extrabold flex items-center justify-center text-lg shadow-md shrink-0">
-                    {userInitial}
+                    {userInitial || <User className="w-6 h-6" />}
                   </div>
                   <div className="min-w-0 flex-1">
                     <p className="text-sm font-extrabold text-ej-cream truncate">

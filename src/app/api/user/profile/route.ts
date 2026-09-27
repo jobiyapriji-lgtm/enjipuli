@@ -51,10 +51,14 @@ export async function GET() {
 
     const isProvidence = user.email.toLowerCase().includes('providence.edu.in');
 
+    const emailPrefix = user.email.split('@')[0].toLowerCase();
+    const hasRealName = Boolean(user.name && user.name.trim().toLowerCase() !== emailPrefix);
+    const cleanName = hasRealName ? user.name!.trim() : null;
+
     return NextResponse.json({
       id: user.id,
       email: user.email,
-      name: user.name || user.email.split('@')[0],
+      name: cleanName,
       collegeId: user.collegeId || '',
       phone: user.phone || '',
       role: user.role,

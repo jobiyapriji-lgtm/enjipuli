@@ -30,8 +30,10 @@ export default function OrderHistoryPage() {
 
   const sessionUser = session?.user as any;
   const userEmail = sessionUser?.email || '';
-  const displayName = sessionUser?.name || (userEmail ? userEmail.split('@')[0] : 'User');
-  const userInitial = (displayName[0] || 'U').toUpperCase();
+  const emailPrefix = userEmail ? userEmail.split('@')[0].toLowerCase() : '';
+  const hasRealName = Boolean(sessionUser?.name && sessionUser.name.trim().toLowerCase() !== emailPrefix);
+  const displayName = hasRealName ? sessionUser.name.trim() : (sessionUser?.role === 'VENDOR' ? 'Vendor Account' : 'Student Account');
+  const userInitial = hasRealName ? sessionUser.name.trim()[0].toUpperCase() : '';
 
   useEffect(() => {
     async function fetchOrders() {
@@ -60,7 +62,7 @@ export default function OrderHistoryPage() {
           <div className="card p-4 sm:p-5 border-ej-border/80 bg-gradient-to-r from-ej-indigo/80 via-ej-surface/70 to-ej-indigo/60 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
             <div className="flex items-center gap-3.5">
               <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-ej-lime via-ej-teal to-ej-gold text-ej-ink font-black flex items-center justify-center text-lg shadow-glow-sm shrink-0">
-                {userInitial}
+                {userInitial || <User className="w-6 h-6" />}
               </div>
               <div className="min-w-0">
                 <div className="flex items-center gap-2">

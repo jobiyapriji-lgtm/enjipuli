@@ -151,7 +151,7 @@ export const authOptions: NextAuthOptions = {
           user = await prisma.user.create({
             data: {
               email,
-              name: email.split('@')[0],
+              name: null,
               role: requestedRole,
             },
           });
