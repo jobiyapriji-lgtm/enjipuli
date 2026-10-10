@@ -22,6 +22,7 @@ interface StudentDashboardLayoutProps {
   cartItemCount?: number;
   onOpenCart?: () => void;
   children: React.ReactNode;
+  hideHeader?: boolean;
 }
 
 export function StudentDashboardLayout({
@@ -31,6 +32,7 @@ export function StudentDashboardLayout({
   cartItemCount = 0,
   onOpenCart,
   children,
+  hideHeader = false,
 }: StudentDashboardLayoutProps) {
   const pathname = usePathname();
   const { data: session } = useSession();
@@ -177,33 +179,35 @@ export function StudentDashboardLayout({
           ───────────────────────────────────────────────────────────── */}
       <div className="lg:pl-64 flex-1 flex flex-col min-h-screen pb-24 lg:pb-10">
         {/* Dashboard Header Bar */}
-        <section className="p-4 sm:p-6 md:p-8 pb-4 border-b border-ej-border/60 bg-gradient-to-b from-ej-indigo/30 via-ej-surface/10 to-transparent">
-          <div className="max-w-7xl mx-auto flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-            <div className="space-y-1">
-              <p className="text-xs font-semibold text-ej-muted flex items-center gap-1.5">
-                <Sparkles className="w-3.5 h-3.5 text-ej-gold" />
-                <span>{greeting}</span>
-              </p>
-              <h1 className="text-2xl sm:text-3xl font-black text-ej-cream tracking-tight">
-                {title}
-              </h1>
-              {subtitle && <p className="text-xs text-ej-muted/80">{subtitle}</p>}
-            </div>
+        {!hideHeader && (
+          <section className="p-4 sm:p-6 md:p-8 pb-4 border-b border-ej-border/60 bg-gradient-to-b from-ej-indigo/30 via-ej-surface/10 to-transparent">
+            <div className="max-w-7xl mx-auto flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div className="space-y-1">
+                <p className="text-xs font-semibold text-ej-muted flex items-center gap-1.5">
+                  <Sparkles className="w-3.5 h-3.5 text-ej-gold" />
+                  <span>{greeting}</span>
+                </p>
+                <h1 className="text-2xl sm:text-3xl font-black text-ej-cream tracking-tight">
+                  {title}
+                </h1>
+                {subtitle && <p className="text-xs text-ej-muted/80">{subtitle}</p>}
+              </div>
 
-            {/* Contextual Action (e.g. View Cart) */}
-            {action ? (
-              <div className="shrink-0">{action}</div>
-            ) : onOpenCart ? (
-              <button
-                onClick={onOpenCart}
-                className="btn-primary py-2.5 px-4 text-xs font-black flex items-center gap-2 shadow-glow-sm self-start sm:self-auto"
-              >
-                <ShoppingCart className="w-4 h-4" />
-                <span>View Cart ({cartItemCount})</span>
-              </button>
-            ) : null}
-          </div>
-        </section>
+              {/* Contextual Action (e.g. View Cart) */}
+              {action ? (
+                <div className="shrink-0">{action}</div>
+              ) : onOpenCart ? (
+                <button
+                  onClick={onOpenCart}
+                  className="btn-primary py-2.5 px-4 text-xs font-black flex items-center gap-2 shadow-glow-sm self-start sm:self-auto"
+                >
+                  <ShoppingCart className="w-4 h-4" />
+                  <span>View Cart ({cartItemCount})</span>
+                </button>
+              ) : null}
+            </div>
+          </section>
+        )}
 
         {/* Dynamic Page Content */}
         <main className="flex-1 p-4 sm:p-6 md:p-8 pt-6 max-w-7xl w-full mx-auto space-y-6">

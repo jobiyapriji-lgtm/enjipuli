@@ -24,6 +24,8 @@ import {
   Coffee,
   Cookie,
   CheckCircle2,
+  SlidersHorizontal,
+  Check,
 } from 'lucide-react';
 
 /* ─── Types ───────────────────────────────────────────────────────────── */
@@ -106,6 +108,10 @@ function StudentMenuDashboard({ session }: { session: any }) {
   // Filter & Search states
   const [selectedCategory, setSelectedCategory] = useState<string>('All');
   const [searchQuery, setSearchQuery] = useState<string>('');
+  const [isFilterOpen, setIsFilterOpen] = useState<boolean>(false);
+  const [dietaryFilter, setDietaryFilter] = useState<'ALL' | 'VEG' | 'NON_VEG'>('ALL');
+  const [sortBy, setSortBy] = useState<'RECOMMENDED' | 'PRICE_LOW' | 'PRICE_HIGH'>('RECOMMENDED');
+  const [inStockOnly, setInStockOnly] = useState<boolean>(false);
 
   // Reorder last meal state
   const [lastDeliveredOrder, setLastDeliveredOrder] = useState<any | null>(null);
@@ -203,19 +209,67 @@ function StudentMenuDashboard({ session }: { session: any }) {
     return ['All', ...cats];
   }, [menuItems]);
 
-  // Filtered menu items by category & search query
+  // Helper: Detect vegetarian dishes by keyword
+  const isVegItem = useCallback((item: MenuItem): boolean => {
+    const text = `${item.name} ${item.description || ''} ${item.category}`.toLowerCase();
+    const nonVegKeywords = ['chicken', 'egg', 'mutton', 'beef', 'fish', 'meat', 'കട്ലറ്റ്', 'മുട്ട', 'ചിക്കൻ'];
+    return !nonVegKeywords.some((kw) => text.includes(kw));
+  }, []);
+
+  // Count active filters (excluding defaults)
+  const activeFilterCount = useMemo(() => {
+    let count = 0;
+    if (dietaryFilter !== 'ALL') count++;
+    if (sortBy !== 'RECOMMENDED') count++;
+    if (inStockOnly) count++;
+    return count;
+  }, [dietaryFilter, sortBy, inStockOnly]);
+
+  // Reset all filters back to defaults
+  const handleClearFilters = useCallback(() => {
+    setDietaryFilter('ALL');
+    setSortBy('RECOMMENDED');
+    setInStockOnly(false);
+    setSelectedCategory('All');
+    setSearchQuery('');
+  }, []);
+
+  // Filtered and sorted menu items
   const filteredItems = useMemo(() => {
-    return menuItems.filter((item) => {
+    let items = menuItems.filter((item) => {
+      // 1. Category filter
       const matchesCategory = selectedCategory === 'All' || item.category === selectedCategory;
+      if (!matchesCategory) return false;
+
+      // 2. Search query filter
       const query = searchQuery.trim().toLowerCase();
-      const matchesQuery =
-        query === '' ||
-        item.name.toLowerCase().includes(query) ||
-        (item.description && item.description.toLowerCase().includes(query)) ||
-        item.category.toLowerCase().includes(query);
-      return matchesCategory && matchesQuery;
+      if (query !== '') {
+        const matchesQuery =
+          item.name.toLowerCase().includes(query) ||
+          (item.description && item.description.toLowerCase().includes(query)) ||
+          item.category.toLowerCase().includes(query);
+        if (!matchesQuery) return false;
+      }
+
+      // 3. Dietary filter
+      if (dietaryFilter === 'VEG' && !isVegItem(item)) return false;
+      if (dietaryFilter === 'NON_VEG' && isVegItem(item)) return false;
+
+      // 4. Availability filter
+      if (inStockOnly && (item.isSoldOut || item.netAvailable <= 0)) return false;
+
+      return true;
     });
-  }, [menuItems, selectedCategory, searchQuery]);
+
+    // 5. Sorting
+    if (sortBy === 'PRICE_LOW') {
+      items = [...items].sort((a, b) => a.price - b.price);
+    } else if (sortBy === 'PRICE_HIGH') {
+      items = [...items].sort((a, b) => b.price - a.price);
+    }
+
+    return items;
+  }, [menuItems, selectedCategory, searchQuery, dietaryFilter, inStockOnly, sortBy, isVegItem]);
 
   // Cart operations
   function addToCart(item: MenuItem) {
@@ -402,8 +456,8 @@ function StudentMenuDashboard({ session }: { session: any }) {
 
   return (
     <StudentDashboardLayout
-      title="Order Menu"
-      subtitle="Order online & pick up hot at the food truck counter"
+      hideHeader={true}
+      title="What are you going to eat today?"
       cartItemCount={cartItemCount}
       onOpenCart={() => setIsCartOpen(true)}
       action={
@@ -418,7 +472,273 @@ function StudentMenuDashboard({ session }: { session: any }) {
       }
     >
       {/* ─────────────────────────────────────────────────────────────
-          1. "REORDER YOUR LAST MEAL" BANNER (Omitted for first-time users)
+          1. HERO BLOCK: "What are you going to eat today?" & SEARCH+FILTER
+          ───────────────────────────────────────────────────────────── */}
+      <section className="space-y-4 pt-1 sm:pt-2">
+        <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
+          <div className="space-y-2">
+            {/* Live Campus Badge */}
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-ej-surface/80 border border-ej-border/80 text-xs font-semibold text-ej-lime shadow-sm">
+              <span className="w-2 h-2 rounded-full bg-ej-lime animate-pulse" />
+              <span className="tracking-wide uppercase font-mono text-[11px]">
+                Campus Food Truck • Live Counter
+              </span>
+            </div>
+
+            {/* The Main Question from Reference Image */}
+            <h1 className="text-3xl sm:text-4xl md:text-5xl font-black text-ej-cream tracking-tight leading-[1.12]">
+              What are you going<br className="sm:inline" /> to eat today?
+            </h1>
+
+            <p className="text-xs sm:text-sm text-ej-muted/80 font-medium">
+              Order hot snacks, fresh bites & cold sips • Pickup ready with your token
+            </p>
+          </div>
+
+          {/* Desktop View Cart CTA */}
+          <div className="hidden sm:flex items-center gap-3 shrink-0">
+            <button
+              onClick={() => setIsCartOpen(true)}
+              className="btn-primary py-3 px-5 text-xs font-black flex items-center gap-2.5 shadow-glow-sm hover:scale-[1.02] transition"
+            >
+              <ShoppingBag className="w-4 h-4" />
+              <span>View Cart ({cartItemCount})</span>
+              {cartTotal > 0 && <span className="opacity-90">• ₹{cartTotal}</span>}
+            </button>
+          </div>
+        </div>
+
+        {/* ─────────────────────────────────────────────────────────────
+            2. SEARCH BAR & DOCKED FILTER BUTTON (Recreated from screenshot)
+            ───────────────────────────────────────────────────────────── */}
+        <div className="relative max-w-2xl w-full">
+          <div className="w-full rounded-2xl sm:rounded-full bg-ej-surface/90 border border-ej-border/80 focus-within:border-ej-lime focus-within:shadow-glow-sm p-1.5 sm:p-2 flex items-center gap-2 transition-all shadow-lg backdrop-blur-sm">
+            {/* Search Icon */}
+            <div className="pl-3 sm:pl-4 text-ej-muted shrink-0">
+              <Search className="w-5 h-5 text-ej-muted/70" />
+            </div>
+
+            {/* Input field */}
+            <input
+              type="text"
+              placeholder="Search here..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full bg-transparent border-none text-ej-cream text-sm font-medium placeholder:text-ej-muted/60 focus:outline-none pr-1"
+            />
+
+            {/* Clear Query Button */}
+            {searchQuery && (
+              <button
+                onClick={() => setSearchQuery('')}
+                className="p-1 rounded-full text-ej-muted hover:text-ej-cream hover:bg-ej-card transition shrink-0"
+                title="Clear search"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            )}
+
+            {/* Docked Filter Button matching the reference image */}
+            <button
+              onClick={() => setIsFilterOpen((prev) => !prev)}
+              aria-expanded={isFilterOpen}
+              className={`flex items-center gap-2 pl-3.5 pr-1.5 py-1 sm:py-1.5 rounded-full font-bold text-xs transition-all shrink-0 select-none shadow-sm ${
+                isFilterOpen || activeFilterCount > 0
+                  ? 'bg-ej-lime text-ej-ink shadow-glow-sm font-black'
+                  : 'bg-white hover:bg-slate-100 text-ej-ink'
+              }`}
+              title="Filter menu options"
+            >
+              <span className="font-extrabold tracking-wide text-[12px] sm:text-xs">
+                Filter
+              </span>
+
+              {activeFilterCount > 0 && (
+                <span className="w-4 h-4 rounded-full bg-ej-ink text-ej-lime text-[10px] font-black flex items-center justify-center">
+                  {activeFilterCount}
+                </span>
+              )}
+
+              {/* Yellow/Gold circular slider badge matching reference */}
+              <div
+                className={`w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center shrink-0 shadow-sm transition-transform active:scale-95 ${
+                  isFilterOpen || activeFilterCount > 0
+                    ? 'bg-ej-ink text-ej-lime'
+                    : 'bg-[#F4B400] text-ej-ink'
+                }`}
+              >
+                <SlidersHorizontal className="w-3.5 h-3.5 sm:w-4 sm:h-4 stroke-[2.2]" />
+              </div>
+            </button>
+          </div>
+
+          {/* Expandable Filter Options Panel */}
+          {isFilterOpen && (
+            <div className="mt-3 p-4 rounded-2xl bg-ej-surface border border-ej-border/90 shadow-2xl space-y-4 animate-fade-in backdrop-blur-md">
+              <div className="flex items-center justify-between pb-2 border-b border-ej-border/60">
+                <div className="flex items-center gap-2">
+                  <SlidersHorizontal className="w-4 h-4 text-ej-gold" />
+                  <span className="text-xs font-black text-ej-cream uppercase tracking-wider">
+                    Filter & Sort Options
+                  </span>
+                  {activeFilterCount > 0 && (
+                    <span className="text-[10px] px-2 py-0.5 rounded-full bg-ej-lime/20 text-ej-lime font-bold border border-ej-lime/30">
+                      {activeFilterCount} Active
+                    </span>
+                  )}
+                </div>
+                {activeFilterCount > 0 && (
+                  <button
+                    onClick={handleClearFilters}
+                    className="text-[11px] font-bold text-ej-muted hover:text-ej-lime underline flex items-center gap-1 transition"
+                  >
+                    <RotateCcw className="w-3 h-3" />
+                    Reset All
+                  </button>
+                )}
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3.5">
+                {/* 1. Dietary Type */}
+                <div className="space-y-1.5">
+                  <label className="text-[11px] font-bold text-ej-muted uppercase tracking-wider">
+                    Dietary
+                  </label>
+                  <div className="flex gap-1.5 bg-ej-deep/90 p-1 rounded-xl border border-ej-border/60">
+                    <button
+                      onClick={() => setDietaryFilter('ALL')}
+                      className={`flex-1 py-1.5 rounded-lg text-xs font-bold transition ${
+                        dietaryFilter === 'ALL'
+                          ? 'bg-ej-surface text-ej-cream shadow-sm font-black'
+                          : 'text-ej-muted hover:text-ej-cream'
+                      }`}
+                    >
+                      All
+                    </button>
+                    <button
+                      onClick={() => setDietaryFilter('VEG')}
+                      className={`flex-1 py-1.5 rounded-lg text-xs font-bold flex items-center justify-center gap-1 transition ${
+                        dietaryFilter === 'VEG'
+                          ? 'bg-ej-teal/20 text-ej-teal border border-ej-teal/40 font-black'
+                          : 'text-ej-muted hover:text-ej-cream'
+                      }`}
+                    >
+                      🌱 Veg
+                    </button>
+                    <button
+                      onClick={() => setDietaryFilter('NON_VEG')}
+                      className={`flex-1 py-1.5 rounded-lg text-xs font-bold flex items-center justify-center gap-1 transition ${
+                        dietaryFilter === 'NON_VEG'
+                          ? 'bg-ej-vermilion/20 text-ej-vermilion border border-ej-vermilion/40 font-black'
+                          : 'text-ej-muted hover:text-ej-cream'
+                      }`}
+                    >
+                      🍗 Non-Veg
+                    </button>
+                  </div>
+                </div>
+
+                {/* 2. Sort by Price */}
+                <div className="space-y-1.5">
+                  <label className="text-[11px] font-bold text-ej-muted uppercase tracking-wider">
+                    Sort By
+                  </label>
+                  <div className="flex gap-1.5 bg-ej-deep/90 p-1 rounded-xl border border-ej-border/60">
+                    <button
+                      onClick={() => setSortBy('RECOMMENDED')}
+                      className={`flex-1 py-1.5 rounded-lg text-xs font-bold transition ${
+                        sortBy === 'RECOMMENDED'
+                          ? 'bg-ej-surface text-ej-cream shadow-sm font-black'
+                          : 'text-ej-muted hover:text-ej-cream'
+                      }`}
+                    >
+                      Popular
+                    </button>
+                    <button
+                      onClick={() => setSortBy('PRICE_LOW')}
+                      className={`flex-1 py-1.5 rounded-lg text-xs font-bold transition ${
+                        sortBy === 'PRICE_LOW'
+                          ? 'bg-ej-lime/20 text-ej-lime border border-ej-lime/40 font-black'
+                          : 'text-ej-muted hover:text-ej-cream'
+                      }`}
+                    >
+                      ₹ Low→High
+                    </button>
+                    <button
+                      onClick={() => setSortBy('PRICE_HIGH')}
+                      className={`flex-1 py-1.5 rounded-lg text-xs font-bold transition ${
+                        sortBy === 'PRICE_HIGH'
+                          ? 'bg-ej-lime/20 text-ej-lime border border-ej-lime/40 font-black'
+                          : 'text-ej-muted hover:text-ej-cream'
+                      }`}
+                    >
+                      ₹ High→Low
+                    </button>
+                  </div>
+                </div>
+
+                {/* 3. Availability Toggle */}
+                <div className="space-y-1.5">
+                  <label className="text-[11px] font-bold text-ej-muted uppercase tracking-wider">
+                    Availability
+                  </label>
+                  <button
+                    onClick={() => setInStockOnly((prev) => !prev)}
+                    className={`w-full py-2 px-3 rounded-xl border text-xs font-bold flex items-center justify-between transition ${
+                      inStockOnly
+                        ? 'bg-ej-lime/15 border-ej-lime text-ej-lime font-black'
+                        : 'bg-ej-deep/90 border-ej-border/60 text-ej-muted hover:text-ej-cream'
+                    }`}
+                  >
+                    <span>In Stock Only</span>
+                    <span
+                      className={`w-4 h-4 rounded-full border flex items-center justify-center text-[11px] ${
+                        inStockOnly
+                          ? 'bg-ej-lime border-ej-lime text-ej-ink font-black'
+                          : 'border-ej-muted/60 text-transparent'
+                      }`}
+                    >
+                      ✓
+                    </span>
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* ─────────────────────────────────────────────────────────────
+            3. CATEGORY FILTER PILLS
+            ───────────────────────────────────────────────────────────── */}
+        <nav
+          id="category-pills"
+          aria-label="Menu categories"
+          className="flex gap-2 overflow-x-auto pb-1 no-scrollbar items-center pt-1"
+        >
+          {categories.map((cat) => {
+            const isAll = cat === 'All';
+            const label = isAll ? 'All Dishes' : cat;
+            const isActive = selectedCategory === cat;
+            return (
+              <button
+                key={cat}
+                onClick={() => setSelectedCategory(cat)}
+                aria-pressed={isActive}
+                className={`px-4 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-all duration-150 ${
+                  isActive
+                    ? 'bg-ej-lime text-ej-ink shadow-glow-sm font-black scale-[1.02]'
+                    : 'bg-ej-surface/70 text-ej-cream/80 border border-ej-border hover:border-ej-lime/50 hover:bg-ej-surface hover:text-ej-cream'
+                }`}
+              >
+                {label}
+              </button>
+            );
+          })}
+        </nav>
+      </section>
+
+      {/* ─────────────────────────────────────────────────────────────
+          4. "REORDER YOUR LAST MEAL" BANNER (Omitted for first-time users)
           ───────────────────────────────────────────────────────────── */}
       {lastDeliveredOrder && (
         <section className="card p-4 sm:p-5 border-ej-lime/40 bg-gradient-to-r from-ej-indigo/90 via-ej-surface/80 to-ej-indigo/90 shadow-xl relative overflow-hidden flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -470,59 +790,6 @@ function StudentMenuDashboard({ session }: { session: any }) {
         </div>
       )}
 
-      {/* ─────────────────────────────────────────────────────────────
-          2. SEARCH BAR & CATEGORY FILTER PILLS
-          ───────────────────────────────────────────────────────────── */}
-      <section className="space-y-3.5">
-        {/* Search Bar */}
-        <div className="relative max-w-md w-full">
-          <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-ej-muted" />
-          <input
-            type="text"
-            placeholder="Search dishes, snacks, cold drinks..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-10 pr-9 py-2.5 rounded-xl bg-ej-surface border border-ej-border text-ej-cream text-xs focus:border-ej-lime focus:outline-none transition shadow-sm placeholder:text-ej-muted/60"
-          />
-          {searchQuery && (
-            <button
-              onClick={() => setSearchQuery('')}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-ej-muted hover:text-ej-cream p-0.5"
-              title="Clear search"
-            >
-              <X className="w-3.5 h-3.5" />
-            </button>
-          )}
-        </div>
-
-        {/* Category Filter Pills */}
-        <nav
-          id="category-pills"
-          aria-label="Menu categories"
-          className="flex gap-2 overflow-x-auto pb-1 no-scrollbar items-center"
-        >
-          {categories.map((cat) => {
-            const isAll = cat === 'All';
-            const label = isAll ? 'All Dishes' : cat;
-            const isActive = selectedCategory === cat;
-            return (
-              <button
-                key={cat}
-                onClick={() => setSelectedCategory(cat)}
-                aria-pressed={isActive}
-                className={`px-4 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-all duration-150 ${
-                  isActive
-                    ? 'bg-ej-lime text-ej-ink shadow-glow-sm font-black scale-[1.02]'
-                    : 'bg-ej-surface/70 text-ej-cream/80 border border-ej-border hover:border-ej-lime/50 hover:bg-ej-surface hover:text-ej-cream'
-                }`}
-              >
-                {label}
-              </button>
-            );
-          })}
-        </nav>
-      </section>
-
       {/* Error message */}
       {menuError && (
         <div
@@ -536,23 +803,50 @@ function StudentMenuDashboard({ session }: { session: any }) {
       )}
 
       {/* ─────────────────────────────────────────────────────────────
-          3. MENU ITEMS GRID (Cards with on-brand placeholders & "+ Add")
+          5. MENU ITEMS GRID (Cards with on-brand placeholders & "+ Add")
           ───────────────────────────────────────────────────────────── */}
+      {/* Results summary bar when filters or search are active */}
+      {(searchQuery || activeFilterCount > 0 || selectedCategory !== 'All') && (
+        <div className="flex items-center justify-between text-xs text-ej-muted px-1">
+          <p className="flex items-center gap-1.5 font-medium flex-wrap">
+            <span>
+              Showing <strong className="text-ej-cream font-bold">{filteredItems.length}</strong>{' '}
+              {filteredItems.length === 1 ? 'dish' : 'dishes'}
+            </span>
+            {dietaryFilter === 'VEG' && <span className="text-ej-teal font-semibold">• 🌱 Veg</span>}
+            {dietaryFilter === 'NON_VEG' && <span className="text-ej-vermilion font-semibold">• 🍗 Non-Veg</span>}
+            {inStockOnly && <span className="text-ej-lime font-semibold">• In Stock</span>}
+            {sortBy !== 'RECOMMENDED' && (
+              <span className="text-ej-gold font-semibold">
+                • {sortBy === 'PRICE_LOW' ? 'Price: Low→High' : 'Price: High→Low'}
+              </span>
+            )}
+          </p>
+
+          <button
+            onClick={handleClearFilters}
+            className="text-[11px] font-bold text-ej-lime hover:underline flex items-center gap-1 shrink-0"
+          >
+            <RotateCcw className="w-3 h-3" />
+            Reset
+          </button>
+        </div>
+      )}
+
       {filteredItems.length === 0 ? (
         <div className="py-16 text-center space-y-3 card border-ej-border/60">
           <UtensilsCrossed className="w-10 h-10 text-ej-muted mx-auto opacity-40" />
-          <p className="text-sm font-bold text-ej-cream">No dishes match your search</p>
+          <p className="text-sm font-bold text-ej-cream">No dishes match your criteria</p>
           <p className="text-xs text-ej-muted max-w-sm mx-auto">
-            Try checking for typos or selecting another category from the filter pills above.
+            Try checking for typos or resetting your dietary, category, or search filters.
           </p>
-          {searchQuery && (
-            <button
-              onClick={() => setSearchQuery('')}
-              className="btn-secondary py-1.5 px-3 text-xs font-bold inline-flex items-center gap-1"
-            >
-              Clear search query
-            </button>
-          )}
+          <button
+            onClick={handleClearFilters}
+            className="btn-secondary py-1.5 px-3.5 text-xs font-bold inline-flex items-center gap-1.5"
+          >
+            <RotateCcw className="w-3 h-3" />
+            Reset all filters
+          </button>
         </div>
       ) : (
         <div
@@ -588,9 +882,21 @@ function StudentMenuDashboard({ session }: { session: any }) {
                 {/* Details */}
                 <div className="space-y-1.5 flex-1">
                   <div className="flex items-center justify-between gap-2">
-                    <span className="text-[10px] font-extrabold text-ej-muted uppercase tracking-wider px-2 py-0.5 rounded-md bg-ej-deep border border-ej-border/50">
-                      {item.category}
-                    </span>
+                    <div className="flex items-center gap-1.5">
+                      <span className="text-[10px] font-extrabold text-ej-muted uppercase tracking-wider px-2 py-0.5 rounded-md bg-ej-deep border border-ej-border/50">
+                        {item.category}
+                      </span>
+                      <span
+                        className={`text-[9px] font-bold px-1.5 py-0.5 rounded border ${
+                          isVegItem(item)
+                            ? 'text-ej-teal border-ej-teal/30 bg-ej-teal/10'
+                            : 'text-ej-vermilion border-ej-vermilion/30 bg-ej-vermilion/10'
+                        }`}
+                        title={isVegItem(item) ? 'Vegetarian' : 'Non-Vegetarian'}
+                      >
+                        {isVegItem(item) ? '🌱 Veg' : '🍗 Non-Veg'}
+                      </span>
+                    </div>
 
                     {item.isSoldOut || item.netAvailable <= 0 ? (
                       <span className="badge-sold-out text-[10px]">Sold out</span>
