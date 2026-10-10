@@ -95,14 +95,13 @@ export default function StudentLoginPage() {
         return; 
       }
 
-      // Check if user has completed their profile (has College ID and custom name)
+      // Check if user has completed their profile
       try {
         const profileRes = await fetch('/api/user/profile');
         if (profileRes.ok) {
           const profileData = await profileRes.json();
-          const emailPrefix = email.trim().toLowerCase().split('@')[0];
-          const isDefaultName = !profileData.name || profileData.name.toLowerCase() === emailPrefix;
-          if (!profileData.collegeId || isDefaultName) {
+          // Only prompt for profile setup on the very first login if not completed
+          if (profileData.profileCompleted === false && !profileData.name) {
             router.push('/profile?firstTime=true');
             router.refresh();
             return;

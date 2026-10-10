@@ -31,6 +31,7 @@ interface ProfileData {
   collegeId: string;
   phone: string;
   role: string;
+  profileCompleted?: boolean;
   createdAt: string;
   isProvidence: boolean;
   stats: {
@@ -92,8 +93,8 @@ function ProfileContent() {
           setCollegeIdInput(data.collegeId || '');
           setPhoneInput(data.phone || '');
 
-          // Check if this is a first-time setup (either via query param or missing college ID)
-          const needsSetup = isFirstTimeUrl || !data.collegeId || isDefaultName;
+          // Check if this is a first-time setup (only if query param firstTime=true and profile not completed)
+          const needsSetup = isFirstTimeUrl && data.profileCompleted === false;
           if (needsSetup && data.role !== 'VENDOR') {
             setIsEditing(true);
             setIsFirstTimeSetup(true);
@@ -112,15 +113,24 @@ function ProfileContent() {
     loadProfile();
   }, [status, isFirstTimeUrl]);
 
+  async function handleSkipSetup() {
+    try {
+      await fetch('/api/user/profile', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ skip: true }),
+      });
+    } catch {
+      /* quiet fail */
+    }
+    router.push('/');
+    router.refresh();
+  }
+
   async function handleSaveProfile(e: React.FormEvent) {
     e.preventDefault();
     if (!nameInput.trim() || nameInput.trim().length < 2) {
       setErrorMessage('Please enter your full name (at least 2 characters)');
-      return;
-    }
-
-    if (profile?.role !== 'VENDOR' && (!collegeIdInput.trim() || collegeIdInput.trim().length < 2)) {
-      setErrorMessage('Please enter your College ID or Roll Number');
       return;
     }
 
@@ -132,7 +142,7 @@ function ProfileContent() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           name: nameInput.trim(),
-          collegeId: collegeIdInput.trim().toUpperCase(),
+          collegeId: collegeIdInput.trim() ? collegeIdInput.trim().toUpperCase() : '',
           phone: phoneInput.trim(),
         }),
       });
@@ -209,13 +219,22 @@ function ProfileContent() {
 
         {/* First Time Setup Banner */}
         {isFirstTimeSetup && isEditing && (
-          <div className="p-4 rounded-2xl bg-gradient-to-r from-ej-lime/20 via-ej-teal/15 to-ej-indigo/60 border border-ej-lime/40 text-ej-cream space-y-1.5 animate-fade-in-up">
-            <div className="flex items-center gap-2 text-ej-lime font-black text-sm">
-              <Sparkles className="w-4 h-4" />
-              <span>Welcome to Enjipuli! Set up your Campus Profile</span>
+          <div className="p-4 rounded-2xl bg-gradient-to-r from-ej-lime/20 via-ej-teal/15 to-ej-indigo/60 border border-ej-lime/40 text-ej-cream space-y-2 animate-fade-in-up">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2 text-ej-lime font-black text-sm">
+                <Sparkles className="w-4 h-4" />
+                <span>Welcome to Enjipuli! Set up your Profile</span>
+              </div>
+              <button
+                type="button"
+                onClick={handleSkipSetup}
+                className="text-xs text-ej-muted hover:text-ej-cream font-bold underline transition"
+              >
+                Skip for now →
+              </button>
             </div>
             <p className="text-xs text-ej-muted">
-              Please enter your full name and College ID / Roll Number below. This helps the food truck staff identify your orders and issue your tokens.
+              Enter your name and optional College ID so the food truck team can call your token at the pickup window.
             </p>
           </div>
         )}

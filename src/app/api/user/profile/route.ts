@@ -21,6 +21,7 @@ export async function GET() {
         collegeId: true,
         phone: true,
         role: true,
+        profileCompleted: true,
         createdAt: true,
         orders: {
           select: {
@@ -62,6 +63,7 @@ export async function GET() {
       collegeId: user.collegeId || '',
       phone: user.phone || '',
       role: user.role,
+      profileCompleted: Boolean(user.profileCompleted),
       createdAt: user.createdAt,
       isProvidence,
       stats: {
@@ -87,9 +89,33 @@ export async function PATCH(request: Request) {
 
     const sessionUser = session.user as any;
     const body = await request.json();
-    const { name, collegeId, phone } = body;
+    const { name, collegeId, phone, skip } = body;
 
-    const updateData: { name?: string; collegeId?: string; phone?: string } = {};
+    const updateData: { name?: string; collegeId?: string; phone?: string; profileCompleted: boolean } = {
+      profileCompleted: true,
+    };
+
+    if (skip === true) {
+      // User opted to skip profile completion for now — mark completed so they are never blocked again
+      const updated = await prisma.user.update({
+        where: { id: sessionUser.id },
+        data: { profileCompleted: true },
+        select: {
+          id: true,
+          email: true,
+          name: true,
+          collegeId: true,
+          phone: true,
+          role: true,
+          profileCompleted: true,
+        },
+      });
+
+      return NextResponse.json({
+        success: true,
+        user: updated,
+      });
+    }
 
     if (name !== undefined) {
       const trimmedName = String(name).trim();
@@ -104,7 +130,7 @@ export async function PATCH(request: Request) {
       if (trimmedId.length > 30) {
         return NextResponse.json({ error: 'College ID cannot exceed 30 characters' }, { status: 400 });
       }
-      updateData.collegeId = trimmedId;
+      updateData.collegeId = trimmedId || null as any;
     }
 
     if (phone !== undefined) {
@@ -112,11 +138,7 @@ export async function PATCH(request: Request) {
       if (trimmedPhone.length > 15) {
         return NextResponse.json({ error: 'Phone number cannot exceed 15 digits' }, { status: 400 });
       }
-      updateData.phone = trimmedPhone;
-    }
-
-    if (Object.keys(updateData).length === 0) {
-      return NextResponse.json({ error: 'No valid fields provided to update' }, { status: 400 });
+      updateData.phone = trimmedPhone || null as any;
     }
 
     const updated = await prisma.user.update({
@@ -129,6 +151,7 @@ export async function PATCH(request: Request) {
         collegeId: true,
         phone: true,
         role: true,
+        profileCompleted: true,
       },
     });
 

@@ -168,15 +168,20 @@ export const authOptions: NextAuthOptions = {
           email: user.email,
           name: user.name,
           role: user.role,
+          profileCompleted: user.profileCompleted ?? false,
         };
       },
     }),
   ],
   callbacks: {
-    async jwt({ token, user }) {
+    async jwt({ token, user, trigger, session }) {
       if (user) {
         token.id = user.id;
         token.role = (user as any).role;
+        token.profileCompleted = (user as any).profileCompleted;
+      }
+      if (trigger === 'update' && session?.profileCompleted !== undefined) {
+        token.profileCompleted = session.profileCompleted;
       }
       return token;
     },
@@ -184,6 +189,7 @@ export const authOptions: NextAuthOptions = {
       if (session.user) {
         (session.user as any).id = token.id;
         (session.user as any).role = token.role;
+        (session.user as any).profileCompleted = token.profileCompleted;
       }
       return session;
     },
@@ -193,6 +199,11 @@ export const authOptions: NextAuthOptions = {
   },
   session: {
     strategy: 'jwt',
+    maxAge: 30 * 24 * 60 * 60, // 30 days — persistent login for seamless student and vendor access
+    updateAge: 24 * 60 * 60, // update token once per day
+  },
+  jwt: {
+    maxAge: 30 * 24 * 60 * 60,
   },
   // IMPORTANT: Replace this with a strong random secret in production via
   // the NEXTAUTH_SECRET environment variable. Never ship the fallback value.
