@@ -15,7 +15,6 @@ import {
   CheckCircle2,
 } from 'lucide-react';
 import { MuralBackground } from '@/components/MuralBackground';
-import { ElephantMascot } from '@/components/ElephantMascot';
 
 interface LandingStats {
   ordersServed: number;
@@ -49,7 +48,7 @@ export function RoleSelectionLanding() {
   return (
     <div
       id="hero-landing-screen"
-      className="min-h-screen flex flex-col bg-ej-deep text-ej-cream relative overflow-x-hidden selection:bg-ej-lime selection:text-ej-ink"
+      className="min-h-screen flex flex-col bg-ej-deep text-ej-cream relative overflow-x-hidden selection:bg-ej-lime selection:text-ej-ink scroll-smooth"
       style={{
         background: 'radial-gradient(ellipse at 80% 20%, #241B5E 0%, #150F2E 50%, #0B081B 100%)',
       }}
@@ -77,42 +76,54 @@ export function RoleSelectionLanding() {
       />
 
       {/* ─────────────────────────────────────────────────────────────
-          1. NAVBAR (Unchanged Structure)
+          1. NAVBAR (Persistent Sticky Header with Anchor Links)
           ───────────────────────────────────────────────────────────── */}
-      <header className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-5 sm:py-6 flex items-center justify-between relative z-20">
-        {/* Left: The ഇഞ്ചിപ്പുളി Wordmark Asset (Small Scale) */}
-        <Link href="/" className="flex items-center gap-3 group">
-          <img
-            src="/branding/enjipuli-wordmark.png"
-            alt="ഇഞ്ചിപ്പുളി"
-            width={320}
-            height={110}
-            className="h-9 sm:h-11 w-auto object-contain drop-shadow-[0_0_16px_rgba(212,255,61,0.35)] transition-transform duration-300 group-hover:scale-105"
-            decoding="async"
-          />
-          <span className="hidden md:inline-block text-[10px] font-black uppercase tracking-widest text-ej-gold/80 border-l border-ej-border/80 pl-3 font-mono">
-            ക്യാമ്പസിന്റെ ഹോട്ട്സ്പോട്ട്
-          </span>
-        </Link>
-
-        {/* Right: Two CTAs matching reference visual relationship */}
-        <div className="flex items-center gap-2.5 sm:gap-3.5">
-          {/* Quiet Button: Vendor Login */}
-          <Link
-            href="/vendor/login?purpose=vendor"
-            className="px-3.5 sm:px-5 py-2 sm:py-2.5 rounded-full text-xs font-bold text-ej-lime border border-ej-lime/60 hover:border-ej-lime hover:bg-ej-lime/10 active:scale-95 transition-all duration-200"
-          >
-            Vendor Login
+      <header className="sticky top-0 z-40 w-full bg-ej-deep/90 backdrop-blur-md border-b border-ej-border/60 transition-all">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3.5 sm:py-4 flex items-center justify-between">
+          {/* Left: The ഇഞ്ചിപ്പുളി Wordmark Asset (Small Scale) */}
+          <Link href="/" className="flex items-center gap-3 group">
+            <img
+              src="/branding/enjipuli-wordmark.png"
+              alt="ഇഞ്ചിപ്പുളി"
+              width={320}
+              height={110}
+              className="h-8 sm:h-9 w-auto object-contain drop-shadow-[0_0_16px_rgba(212,255,61,0.35)] transition-transform duration-300 group-hover:scale-105"
+              decoding="async"
+            />
+            <span className="hidden sm:inline-block text-[10px] font-black uppercase tracking-widest text-ej-gold/80 border-l border-ej-border/80 pl-3 font-mono">
+              ക്യാമ്പസ് ഫുഡ് ട്രക്ക്
+            </span>
           </Link>
 
-          {/* Bold Button: Order Now */}
-          <Link
-            href="/login?purpose=student"
-            className="px-4 sm:px-6 py-2 sm:py-2.5 rounded-full text-xs font-black bg-ej-lime text-ej-ink hover:bg-white shadow-glow-sm hover:shadow-glow active:scale-95 transition-all duration-200 flex items-center gap-1.5"
-          >
-            <span>Order Now</span>
-            <ArrowRight className="w-3.5 h-3.5 stroke-[2.5]" />
-          </Link>
+          {/* Center: Anchor Links */}
+          <nav className="hidden md:flex items-center gap-8 font-mono text-xs font-bold tracking-wider uppercase text-ej-muted">
+            <a href="#story" className="hover:text-ej-lime transition-colors">
+              Story
+            </a>
+            <a href="#counter" className="hover:text-ej-lime transition-colors">
+              Behind the Counter
+            </a>
+          </nav>
+
+          {/* Right: Two CTAs matching reference visual relationship */}
+          <div className="flex items-center gap-2.5 sm:gap-3.5">
+            {/* Quiet Button: Vendor Login */}
+            <Link
+              href="/vendor/login?purpose=vendor"
+              className="px-3.5 sm:px-5 py-2 sm:py-2.5 rounded-full text-xs font-bold text-ej-lime border border-ej-lime/60 hover:border-ej-lime hover:bg-ej-lime/10 active:scale-95 transition-all duration-200"
+            >
+              Vendor Login
+            </Link>
+
+            {/* Bold Button: Order Now */}
+            <Link
+              href="/login?purpose=student"
+              className="px-4 sm:px-6 py-2 sm:py-2.5 rounded-full text-xs font-black bg-ej-lime text-ej-ink hover:bg-white shadow-glow-sm hover:shadow-glow active:scale-95 transition-all duration-200 flex items-center gap-1.5"
+            >
+              <span>Order Now</span>
+              <ArrowRight className="w-3.5 h-3.5 stroke-[2.5]" />
+            </Link>
+          </div>
         </div>
       </header>
 
@@ -295,14 +306,14 @@ export function RoleSelectionLanding() {
       </section>
 
       {/* ─────────────────────────────────────────────────────────────
-          4. SECTION 3: BRAND STORY BLOCK (Headline, Real Photo & Grid)
+          4. SECTION 3: BRAND STORY BLOCK (Bleeding & Overlapping Layout)
           ───────────────────────────────────────────────────────────── */}
-      <section className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-24 relative z-10">
+      <section id="story" className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-24 relative z-10 scroll-mt-20">
         <div className="space-y-12 sm:space-y-16">
           {/* Top Story Header & Big Visual Banner */}
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center relative">
             {/* Oversized Condensed Headline */}
-            <div className="lg:col-span-5 space-y-4 text-left">
+            <div className="lg:col-span-5 relative z-10 space-y-4 text-left">
               <span className="inline-block text-[11px] font-black tracking-widest uppercase text-ej-lime bg-ej-lime/10 px-3 py-1 rounded-full border border-ej-lime/30 font-mono">
                 THE ENJIPULI STORY
               </span>
@@ -324,41 +335,44 @@ export function RoleSelectionLanding() {
               </p>
             </div>
 
-            {/* Massive Bleeding Truck Photo (Real Mural Banner) */}
-            <div className="lg:col-span-7 relative group">
+            {/* Massive Bleeding Truck Photo (Unboxed, Bleeding off Edge & Overlapping) */}
+            <div className="lg:col-span-7 relative group lg:-mr-12 xl:-mr-20 lg:-ml-6">
               {/* Soft neon lime & teal ambient glow */}
               <div
-                className="absolute -inset-4 rounded-3xl blur-2xl opacity-30 pointer-events-none"
+                className="absolute -inset-6 sm:-inset-10 rounded-full blur-3xl opacity-35 pointer-events-none"
                 style={{
                   background: 'radial-gradient(circle, rgba(212,255,61,0.4) 0%, rgba(47,191,160,0.2) 50%, transparent 80%)',
                 }}
               />
 
-              <div className="relative rounded-3xl overflow-hidden border border-ej-border/80 bg-ej-surface/60 shadow-2xl">
+              <div className="relative rounded-2xl sm:rounded-3xl overflow-hidden shadow-2xl transition-transform duration-700 ease-out group-hover:scale-[1.02]">
                 <img
                   src="/branding/enjipuli-truck-real.jpg"
                   alt="ENJIPULI Real Food Truck Mural Banner"
                   width={1200}
                   height={675}
-                  className="w-full h-auto object-cover transform group-hover:scale-105 transition-transform duration-700 ease-out"
+                  className="w-full h-auto object-cover max-h-[500px]"
                   decoding="async"
                 />
+                {/* Vignette overlay */}
                 <div className="absolute inset-0 bg-gradient-to-t from-ej-deep/90 via-transparent to-transparent pointer-events-none" />
 
-                <div className="absolute bottom-4 left-5 right-5 flex items-center justify-between text-xs text-ej-cream font-bold">
-                  <span className="font-malayalam text-ej-gold text-sm font-extrabold tracking-wide">
-                    ഇഞ്ചിപ്പുളി • ഒറിജിനൽ ക്യാമ്പസ് ഫുഡ് ട്രക്ക്
+                {/* Corner caption directly on image */}
+                <div className="absolute bottom-3 right-3 sm:bottom-4 sm:right-5 px-3 py-1.5 rounded-lg bg-ej-deep/80 backdrop-blur-md border border-ej-border/60 flex items-center gap-2 text-xs font-bold text-ej-cream">
+                  <span className="font-malayalam text-ej-gold text-xs sm:text-sm font-extrabold tracking-wide">
+                    ഇഞ്ചിപ്പുളി
                   </span>
+                  <span className="text-ej-muted/60">•</span>
                   <span className="text-[10px] text-ej-muted font-mono uppercase tracking-wider">
-                    Providence Campus
+                    Providence Campus Truck
                   </span>
                 </div>
               </div>
             </div>
           </div>
 
-          {/* Description Grid with Thin Vertical Divider Lines (Inspired by Reference) */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-0 md:divide-x divide-ej-lime/20 border-t border-b border-ej-border/80 py-10">
+          {/* Description Grid with Thin Vertical Divider Lines (Editorial Style) */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-0 md:divide-x divide-ej-border/60 border-t border-b border-ej-border/80 py-10">
             {/* Column 1: What's On The Menu */}
             <div className="md:px-8 first:pl-0 space-y-3">
               <span className="text-[11px] font-black uppercase tracking-wider text-ej-gold font-mono flex items-center gap-1.5">
@@ -410,8 +424,8 @@ export function RoleSelectionLanding() {
       {/* ─────────────────────────────────────────────────────────────
           5. SECTION 4: "BEHIND THE COUNTER" (Authentic Vendor Team)
           ───────────────────────────────────────────────────────────── */}
-      <section className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-20 relative z-10 border-t border-ej-border/80">
-        <div className="space-y-10">
+      <section id="counter" className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-14 sm:py-20 relative z-10 border-t border-ej-border/60 scroll-mt-20">
+        <div className="space-y-10 sm:space-y-12">
           {/* Section Header */}
           <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
             <div className="space-y-2">
@@ -422,23 +436,23 @@ export function RoleSelectionLanding() {
                 Behind The Counter
               </h2>
             </div>
-            <p className="text-xs text-ej-muted max-w-md">
+            <p className="text-xs sm:text-sm text-ej-muted max-w-md font-medium leading-relaxed">
               The culinary crew keeping the food truck firing, steaming hot tea, and serving fresh tokens across campus daily.
             </p>
           </div>
 
-          {/* Authentic Kitchen Crew Feature (No Fabricated Stock Humans) */}
-          <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-center bg-gradient-to-r from-ej-surface/90 via-ej-indigo/70 to-ej-surface/90 p-6 sm:p-10 rounded-3xl border border-ej-border/90 shadow-2xl relative overflow-hidden">
-            {/* Visual Icon Badge (Elephant / Chef Motif) */}
-            <div className="md:col-span-4 flex flex-col items-center justify-center p-6 rounded-2xl bg-ej-deep/90 border border-ej-lime/30 text-center relative group">
-              <div className="relative">
-                <ElephantMascot size={130} />
-                <div className="absolute -bottom-2 -right-2 p-2 rounded-xl bg-ej-lime text-ej-ink shadow-glow-sm">
-                  <ChefHat className="w-5 h-5" />
-                </div>
+          {/* Editorial Kitchen Crew Presentation (No Boxed Nested Card, Stylized Chef Insignia) */}
+          <div className="grid grid-cols-1 md:grid-cols-12 gap-8 lg:gap-12 items-center py-4 sm:py-6 border-b border-ej-border/40">
+            {/* Visual Chef Insignia Badge */}
+            <div className="md:col-span-4 flex flex-col items-center justify-center p-8 rounded-3xl bg-gradient-to-br from-ej-surface/60 via-ej-deep/80 to-ej-indigo/40 border border-ej-border/60 hover:border-ej-lime/50 transition-all duration-300 relative group">
+              <div className="relative w-28 h-28 sm:w-32 sm:h-32 rounded-2xl bg-gradient-to-br from-ej-surface via-ej-deep to-ej-indigo border border-ej-lime/30 flex flex-col items-center justify-center shadow-[0_0_35px_rgba(212,255,61,0.18)] group-hover:shadow-[0_0_45px_rgba(212,255,61,0.35)] group-hover:scale-105 transition-all duration-300">
+                <ChefHat className="w-12 h-12 text-ej-lime stroke-[1.75] drop-shadow-[0_0_15px_rgba(212,255,61,0.5)]" />
+                <span className="text-[9px] font-black uppercase tracking-widest text-ej-gold mt-2 font-mono">
+                  CAMPUS CREW
+                </span>
               </div>
 
-              <span className="mt-4 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider bg-ej-lime/15 text-ej-lime border border-ej-lime/30 font-mono">
+              <span className="mt-4 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider bg-ej-lime/10 text-ej-lime border border-ej-lime/30 font-mono">
                 Verified Campus Vendor
               </span>
             </div>
@@ -454,7 +468,7 @@ export function RoleSelectionLanding() {
                 </h3>
               </div>
 
-              <p className="text-xs sm:text-sm text-ej-muted/90 leading-relaxed">
+              <p className="text-xs sm:text-sm text-ej-muted/90 leading-relaxed font-medium">
                 Freshly sourcing local bananas for Pazham Pori, boiling traditional Malabar spice blends, and handling hundreds of token pickups with care. Dedicated to quick turnaround times and clean, delicious campus dining.
               </p>
 
