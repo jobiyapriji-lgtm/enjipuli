@@ -1,95 +1,185 @@
 'use client';
 
-import React from 'react';
-import { LogoWordmark } from '@/components/LogoWordmark';
-import { ElephantMascot } from '@/components/ElephantMascot';
-import { MuralBackground } from '@/components/MuralBackground';
-import { Sparkles } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
 
 interface SplashScreenProps {
-  stage: 'logo' | 'loading';
+  stage?: 'logo' | 'loading';
   message?: string;
 }
 
-export function SplashScreen({ stage, message = 'Connecting to Providence campus kitchen...' }: SplashScreenProps) {
+const ON_BRAND_MESSAGES = [
+  "Loading today's fresh menu...",
+  "Checking live food truck stock...",
+  "Getting campus counter ready...",
+];
+
+export function SplashScreen({
+  stage = 'loading',
+  message,
+}: SplashScreenProps) {
+  const [activeMessage, setActiveMessage] = useState(
+    message || ON_BRAND_MESSAGES[0]
+  );
+
+  // If a custom specific message is provided (e.g. "Opening Vendor Dashboard..."), use it
+  useEffect(() => {
+    if (message) {
+      setActiveMessage(message);
+      return;
+    }
+
+    // Otherwise gently rotate through 2-3 short on-brand messages
+    const interval = setInterval(() => {
+      setActiveMessage((prev) => {
+        const nextIdx = (ON_BRAND_MESSAGES.indexOf(prev) + 1) % ON_BRAND_MESSAGES.length;
+        return ON_BRAND_MESSAGES[nextIdx];
+      });
+    }, 2400);
+
+    return () => clearInterval(interval);
+  }, [message]);
+
   return (
     <div
       id="app-splash-screen"
+      role="status"
+      aria-live="polite"
       className="fixed inset-0 z-50 flex flex-col items-center justify-center p-6 text-center select-none overflow-hidden"
       style={{
-        background: 'radial-gradient(ellipse at center, #1E1744 0%, #150F2E 70%, #0D0920 100%)',
+        background: 'radial-gradient(ellipse at center, #1E1744 0%, #150F2E 65%, #0B081B 100%)',
       }}
     >
-      {/* Decorative Mural Backdrop */}
-      <MuralBackground opacity={0.12} />
-
-      {/* Ambient background glow orb */}
+      {/* ─────────────────────────────────────────────────────────────
+          1. CENTERED AMBIENT LIME GLOW (Minimal & Confident)
+          ───────────────────────────────────────────────────────────── */}
       <div
-        className="absolute w-96 h-96 rounded-full pointer-events-none blur-3xl opacity-30 animate-pulse"
-        style={{ background: 'radial-gradient(circle, var(--ej-lime) 0%, transparent 70%)' }}
+        className="absolute w-72 h-72 sm:w-96 sm:h-96 rounded-full pointer-events-none blur-3xl opacity-25 splash-glow"
+        style={{
+          background: 'radial-gradient(circle, rgba(212, 255, 61, 0.9) 0%, rgba(20, 184, 166, 0.4) 40%, transparent 70%)',
+        }}
       />
 
-      <div className="relative z-10 flex flex-col items-center max-w-sm w-full space-y-6 animate-fade-in-up">
-        {/* Elephant Mascot with playful float animation */}
-        <div className="relative">
-          <div className="transform transition-transform duration-700 hover:scale-105">
-            <ElephantMascot size={150} />
+      {/* ─────────────────────────────────────────────────────────────
+          2. THE REAL LOGO ASSETS (Wordmark + Tagline)
+          ───────────────────────────────────────────────────────────── */}
+      <div className="relative z-10 flex flex-col items-center max-w-sm sm:max-w-md w-full space-y-6">
+        {/* Brand Group */}
+        <div className="flex flex-col items-center select-none">
+          {/* Main Wordmark Asset: ഇഞ്ചിപ്പുളി */}
+          <div className="relative flex items-center justify-center">
+            <img
+              src="/branding/enjipuli-wordmark.png"
+              alt="ഇഞ്ചിപ്പുളി"
+              width={1024}
+              height={377}
+              className="w-64 sm:w-80 md:w-[22rem] max-w-[85vw] h-auto object-contain drop-shadow-[0_0_25px_rgba(212,255,61,0.3)] transition-transform duration-500 hover:scale-[1.02]"
+              decoding="async"
+            />
           </div>
-          <div className="absolute -top-1 -right-1 p-1.5 rounded-full bg-ej-lime text-ej-ink shadow-glow-sm animate-bounce">
-            <Sparkles className="w-3.5 h-3.5" />
+
+          {/* Malayalam Tagline Asset: ക്യാമ്പസിന്റെ ഹോട്ട്സ്പോട്ട് */}
+          <div className="mt-1 sm:mt-1.5 flex items-center justify-center">
+            <img
+              src="/branding/enjipuli-tagline.png"
+              alt="ക്യാമ്പസിന്റെ ഹോട്ട്സ്പോട്ട്"
+              width={1024}
+              height={341}
+              className="w-40 sm:w-52 md:w-60 max-w-[65vw] h-auto object-contain drop-shadow-[0_0_14px_rgba(212,255,61,0.22)]"
+              decoding="async"
+            />
           </div>
         </div>
 
-        {/* Brand Logo Wordmark */}
-        <div className="flex flex-col items-center space-y-1">
-          <LogoWordmark size={220} light glow={true} />
-          <p className="text-xs font-bold text-ej-gold tracking-widest uppercase mt-1">
-            Campus Hotspot • Food Truck
-          </p>
-        </div>
-
-        {/* Loading Indicator (Stage: 'loading') */}
-        {stage === 'loading' ? (
-          <div className="w-full max-w-xs space-y-3 pt-2 animate-fade-in">
-            {/* Sleek animated progress bar */}
-            <div className="w-full h-1.5 bg-ej-indigo/80 rounded-full overflow-hidden border border-ej-border/60 relative">
+        {/* ─────────────────────────────────────────────────────────────
+            3. REFINED SINGLE PROGRESS BAR & LOADING STATUS
+            ───────────────────────────────────────────────────────────── */}
+        {stage === 'loading' && (
+          <div className="w-full max-w-[200px] sm:max-w-[240px] space-y-3 pt-3 flex flex-col items-center">
+            {/* Ultra-clean gradient bar with subtle sheen */}
+            <div className="w-full h-1 sm:h-1.5 bg-ej-indigo/70 rounded-full overflow-hidden border border-ej-border/40 relative shadow-inner">
               <div
-                className="h-full bg-gradient-to-r from-ej-lime via-ej-teal to-ej-lime rounded-full animate-indeterminate-bar"
+                className="h-full rounded-full bg-gradient-to-r from-ej-teal via-ej-lime to-ej-gold indeterminate-bar"
                 style={{
-                  boxShadow: '0 0 12px rgba(212, 255, 61, 0.8)',
+                  boxShadow: '0 0 10px rgba(212, 255, 61, 0.7)',
                 }}
               />
+              <div className="absolute inset-0 sheen-overlay pointer-events-none" />
             </div>
 
-            {/* Friendly status message */}
-            <p className="text-xs text-ej-muted font-medium tracking-wide">
-              {message}
+            {/* Clean loading message */}
+            <p className="text-[11px] sm:text-xs text-ej-muted/80 font-medium tracking-wide transition-opacity duration-300">
+              {activeMessage}
             </p>
-          </div>
-        ) : (
-          <div className="h-8 flex items-center justify-center">
-            <span className="inline-flex items-center gap-1.5 text-xs text-ej-muted/80 font-medium animate-pulse">
-              <span>Providence College of Engineering</span>
-            </span>
           </div>
         )}
       </div>
 
-      {/* Inline styles for custom animations */}
+      {/* ─────────────────────────────────────────────────────────────
+          4. PERFORMANCE & ACCESSIBILITY STYLES
+          ───────────────────────────────────────────────────────────── */}
       <style jsx>{`
-        @keyframes indeterminate {
-          0% {
-            transform: translateX(-100%) scaleX(0.2);
+        @keyframes splashPulse {
+          0%, 100% {
+            transform: scale(1);
+            opacity: 0.22;
           }
           50% {
-            transform: translateX(30%) scaleX(0.8);
-          }
-          100% {
-            transform: translateX(150%) scaleX(0.2);
+            transform: scale(1.06);
+            opacity: 0.35;
           }
         }
-        .animate-indeterminate-bar {
-          animation: indeterminate 1.4s infinite cubic-bezier(0.65, 0.815, 0.735, 0.395);
+
+        @keyframes indeterminateMove {
+          0% {
+            transform: translateX(-100%) scaleX(0.25);
+          }
+          50% {
+            transform: translateX(25%) scaleX(0.65);
+          }
+          100% {
+            transform: translateX(130%) scaleX(0.25);
+          }
+        }
+
+        @keyframes sheenSweep {
+          0% {
+            transform: translateX(-100%);
+          }
+          100% {
+            transform: translateX(100%);
+          }
+        }
+
+        .splash-glow {
+          animation: splashPulse 3.5s ease-in-out infinite;
+        }
+
+        .indeterminate-bar {
+          animation: indeterminateMove 1.6s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+        }
+
+        .sheen-overlay {
+          background: linear-gradient(
+            90deg,
+            transparent 0%,
+            rgba(255, 255, 255, 0.35) 50%,
+            transparent 100%
+          );
+          animation: sheenSweep 2.2s ease-in-out infinite;
+        }
+
+        /* Respect prefers-reduced-motion */
+        @media (prefers-reduced-motion: reduce) {
+          .splash-glow,
+          .indeterminate-bar,
+          .sheen-overlay {
+            animation: none !important;
+          }
+          .indeterminate-bar {
+            width: 75% !important;
+            transform: none !important;
+            margin: 0 auto;
+          }
         }
       `}</style>
     </div>
