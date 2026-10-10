@@ -448,87 +448,22 @@ export function RoleSelectionLanding() {
       </section>
 
       {/* ═══════════════════════════════════════════════════════════
-          STAT / TRUCK SECTION — cream, oversized headline left, truck right
+          TRUCK STORY BANNER SECTION — exact match to approved design
           ═══════════════════════════════════════════════════════════ */}
       <section
         id="story"
         className="relative w-full overflow-hidden scroll-mt-14"
         style={{ background: '#EDE8DC' }}
       >
-        {/* Vertical grid lines */}
-        <div className="absolute inset-0 pointer-events-none z-0" aria-hidden="true">
-          {[14, 28, 42, 57, 71, 85].map((pct) => (
-            <div key={pct} className="absolute top-0 bottom-0 w-[1px]" style={{ left: `${pct}%`, background: '#C8C0A8', opacity: 0.3 }} />
-          ))}
-        </div>
-
-        <div className="relative z-10 max-w-full">
-          {/* Top rating badge */}
-          <div className="px-8 sm:px-12 lg:px-16 pt-8">
-            <div
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11px] font-black text-[#120B24]"
-              style={{ background: '#F6A800' }}
-            >
-              <span>⭐</span>
-              <span className="uppercase tracking-wide">5-star on Campus Reviews</span>
-            </div>
-          </div>
-
-          {/* Two-column: headline left, truck right */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 items-center">
-            {/* Left: oversized block headline */}
-            <div className="px-8 sm:px-12 lg:px-16 pb-4 lg:pb-8 pt-4">
-              <h2
-                className="font-black leading-[0.95] uppercase text-[#120B24]"
-                style={{
-                  fontFamily: "'Archivo Black', 'Inter', sans-serif",
-                  fontSize: 'clamp(52px, 8vw, 110px)',
-                }}
-              >
-                HOT,<br />
-                CRISPY,<br />
-                AUTHENTIC<br />
-                <span className="inline-flex items-end gap-2">
-                  BITES.
-                  <span className="inline-flex items-center justify-center rounded-full border-[3px] border-[#120B24] mb-2"
-                    style={{ width: 'clamp(32px, 4vw, 56px)', height: 'clamp(32px, 4vw, 56px)' }}>
-                    <svg viewBox="0 0 24 24" fill="none" style={{ width: '55%', height: '55%' }}>
-                      <path d="M12 5v14M6 13l6 6 6-6" stroke="#120B24" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
-                    </svg>
-                  </span>
-                </span>
-              </h2>
-            </div>
-
-            {/* Right: Animated illustrated truck, large, bleeding off right */}
-            <div className="relative flex items-center justify-end">
-              <div className="relative w-full lg:w-[110%] lg:-mr-0">
-                <img
-                  src="/branding/enjipuli-animated-truck.jpg"
-                  alt="ENJIPULI Illustrated Food Truck"
-                  width={900}
-                  height={560}
-                  className="w-full h-auto object-contain object-center"
-                  decoding="async"
-                />
-              </div>
-            </div>
-          </div>
-
-          {/* Bottom label bar */}
-          <div
-            className="flex items-center justify-between px-8 sm:px-12 lg:px-16 py-3 border-t border-[#C8C0A8]/60"
-          >
-            <span className="text-[11px] font-black uppercase tracking-[0.18em] text-[#120B24]">
-              Providence College of Engineering
-            </span>
-            <span className="text-[11px] font-black uppercase tracking-[0.18em] text-[#120B24]">
-              Serving Kerala Flavours
-            </span>
-            <span className="text-[11px] font-black uppercase tracking-[0.18em] text-[#120B24]">
-              2025
-            </span>
-          </div>
+        <div className="relative z-10 w-full">
+          <img
+            src="/branding/the-taste-of-tamarind-house-banner.png"
+            alt="The Taste of Enjipuli Food Truck"
+            width={1600}
+            height={900}
+            className="w-full h-auto object-cover select-none"
+            decoding="async"
+          />
         </div>
       </section>
 
