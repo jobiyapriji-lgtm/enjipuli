@@ -244,11 +244,11 @@ export function RoleSelectionLanding() {
       style={{ background: '#EDE8DC' }}
     >
       {/* ═══════════════════════════════════════════════════════════
-          NAV BAR — native sticky dark header with working links
+          NAV BAR — native sticky dark header with exact button placement
           ═══════════════════════════════════════════════════════════ */}
       <header
-        className="w-full sticky top-0 z-50 flex items-center justify-between px-6 sm:px-10 lg:px-14 shadow-lg"
-        style={{ background: '#1A1128', minHeight: 64 }}
+        className="w-full sticky top-0 z-50 flex items-center justify-between px-6 sm:px-10 lg:px-14 shadow-lg border-b border-white/5"
+        style={{ background: '#130D26', minHeight: 64, height: 64 }}
       >
         {/* Left: Wordmark + colorful accent dots */}
         <Link href="/" className="flex items-center gap-1 shrink-0 py-2">
@@ -284,19 +284,19 @@ export function RoleSelectionLanding() {
           </a>
         </nav>
 
-        {/* Right: CTAs */}
-        <div className="flex items-center gap-3">
+        {/* Right: CTAs — strictly single row, vertically centered, Vendor Login left, Order Now right */}
+        <div className="flex items-center gap-3 shrink-0">
           <Link
             href="/vendor/login?purpose=vendor"
-            className="px-5 py-2 rounded-full text-[13px] font-bold text-[#D4FF3D] border-2 border-[#D4FF3D] hover:bg-[#D4FF3D]/10 transition-all"
+            className="inline-flex items-center justify-center px-4 sm:px-5 py-2 rounded-full text-xs sm:text-[13px] font-bold text-[#D4FF3D] border-2 border-[#D4FF3D] hover:bg-[#D4FF3D]/10 transition-all whitespace-nowrap"
           >
             Vendor Login
           </Link>
           <Link
             href="/login?purpose=student"
-            className="px-5 py-2 rounded-full text-[13px] font-black text-[#120B24] bg-[#D4FF3D] hover:bg-white transition-all flex items-center gap-1.5 shadow-sm"
+            className="inline-flex items-center justify-center gap-1.5 px-4 sm:px-5 py-2 rounded-full text-xs sm:text-[13px] font-black text-[#120B24] bg-[#D4FF3D] hover:bg-white transition-all whitespace-nowrap shadow-sm"
           >
-            Order Now
+            <span>Order Now</span>
             <ArrowRight className="w-3.5 h-3.5 stroke-[2.5]" />
           </Link>
         </div>
@@ -463,6 +463,15 @@ export function RoleSelectionLanding() {
             className="w-full h-auto object-cover select-none"
             decoding="async"
           />
+          {/* Trust row at bottom of truck block matching final design */}
+          <div
+            className="absolute bottom-0 left-0 right-0 py-2.5 sm:py-3.5 px-6 sm:px-12 lg:px-16 flex items-center justify-between text-[#120B24] text-[9px] sm:text-[11px] font-black uppercase tracking-[0.18em] border-t border-[#C8C0A8]/40"
+            style={{ background: '#EDE8DC' }}
+          >
+            <span>TAMARIND HOUSE CAFETERIA</span>
+            <span>BRINGING CAMPUS FLAVOURS TO YOU</span>
+            <span>SINCE 2015</span>
+          </div>
         </div>
       </section>
 
@@ -567,7 +576,7 @@ export function RoleSelectionLanding() {
           5. STORY SECTION — exact match to approved design image
           ═══════════════════════════════════════════════════════════ */}
       <section
-        className="relative w-full overflow-hidden"
+        className="relative w-full overflow-hidden select-none"
         style={{ background: '#EDE8DC' }}
       >
         <div className="relative z-10 w-full">
@@ -578,6 +587,19 @@ export function RoleSelectionLanding() {
             height={900}
             className="w-full h-auto object-cover select-none"
             decoding="async"
+          />
+          {/* Interactive FIND US button hit area right over the banner's FIND US button */}
+          <a
+            href="#story"
+            className="absolute z-20 rounded-md transition-opacity hover:opacity-80 cursor-pointer"
+            style={{
+              right: '3.6%',
+              bottom: '15.5%',
+              width: '10.5%',
+              height: '8%',
+            }}
+            title="Find Us"
+            aria-label="Find Us"
           />
         </div>
       </section>
