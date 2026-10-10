@@ -4,7 +4,7 @@ import { useState, useEffect, Suspense } from 'react';
 import { useSession, signOut } from 'next-auth/react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
-import { Header } from '@/components/Header';
+import { StudentDashboardLayout } from '@/components/StudentDashboardLayout';
 import {
   User,
   Mail,
@@ -190,29 +190,22 @@ function ProfileContent() {
   const userInitial = hasRealName ? profile!.name.trim()[0].toUpperCase() : '';
 
   return (
-    <div className="min-h-screen bg-ej-deep text-ej-cream flex flex-col">
-      <Header />
-
-      <main className="max-w-xl w-full mx-auto px-4 py-8 space-y-5 flex-1">
-        {/* Top Header Bar */}
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-xl font-bold text-ej-cream">
-              {isFirstTimeSetup && isEditing ? 'Complete Your Profile' : 'Account Profile'}
-            </h1>
-            <p className="text-xs text-ej-muted">Campus ID &amp; Student Details</p>
-          </div>
-
-          {!isFirstTimeSetup && (
-            <Link
-              href="/orders"
-              className="text-xs font-bold text-ej-lime hover:underline flex items-center gap-1.5 bg-ej-lime/10 px-3 py-1.5 rounded-xl border border-ej-lime/25 hover:bg-ej-lime/20 transition"
-            >
-              <Receipt className="w-3.5 h-3.5" />
-              <span>My Orders</span>
-            </Link>
-          )}
-        </div>
+    <StudentDashboardLayout
+      title={isFirstTimeSetup && isEditing ? 'Complete Your Profile' : 'Account Profile'}
+      subtitle="Campus ID, Roll Number & Student Details"
+      action={
+        !isFirstTimeSetup ? (
+          <Link
+            href="/orders"
+            className="btn-secondary text-xs flex items-center gap-1.5 py-2 px-3.5 shadow-sm"
+          >
+            <Receipt className="w-3.5 h-3.5 text-ej-gold" />
+            <span>My Orders →</span>
+          </Link>
+        ) : null
+      }
+    >
+      <div className="max-w-xl space-y-5">
 
         {/* First Time Setup Banner */}
         {isFirstTimeSetup && isEditing && (
@@ -532,8 +525,8 @@ function ProfileContent() {
             </div>
           </>
         ) : null}
-      </main>
-    </div>
+      </div>
+    </StudentDashboardLayout>
   );
 }
 

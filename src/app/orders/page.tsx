@@ -3,10 +3,10 @@
 import { useEffect, useState } from 'react';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
-import { Header } from '@/components/Header';
+import { StudentDashboardLayout } from '@/components/StudentDashboardLayout';
 import { ElephantMascot } from '@/components/ElephantMascot';
 import Link from 'next/link';
-import { ShoppingBag, ArrowRight, Clock, User, ChevronRight } from 'lucide-react';
+import { ShoppingBag, ArrowRight, Clock, User, ChevronRight, UtensilsCrossed } from 'lucide-react';
 
 interface OrderItem {
   id: string;
@@ -61,10 +61,20 @@ export default function OrderHistoryPage() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-ej-deep text-ej-cream pb-16 flex flex-col">
-      <Header />
-
-      <main className="max-w-3xl w-full mx-auto px-4 pt-6 space-y-6 flex-1">
+    <StudentDashboardLayout
+      title="My Orders"
+      subtitle="Track live order status, pickup tokens, and past receipts"
+      action={
+        <Link
+          href="/"
+          className="btn-secondary text-xs flex items-center gap-1.5 py-2 px-3.5 shadow-sm"
+        >
+          <UtensilsCrossed className="w-3.5 h-3.5 text-ej-lime" />
+          <span>Order Food →</span>
+        </Link>
+      }
+    >
+      <div className="max-w-3xl space-y-6">
         {/* Account Holder Profile Summary Banner */}
         {session && (
           <div className="card p-4 sm:p-5 border-ej-border/80 bg-gradient-to-r from-ej-indigo/80 via-ej-surface/70 to-ej-indigo/60 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
@@ -94,11 +104,6 @@ export default function OrderHistoryPage() {
           </div>
         )}
 
-        <div>
-          <h1 className="text-2xl font-extrabold text-ej-cream">My Orders</h1>
-          <p className="text-xs text-ej-muted mt-1">Track current order status or view past receipts</p>
-        </div>
-
         {loading ? (
           <div className="space-y-4">
             {[1, 2, 3].map((i) => (
@@ -106,7 +111,7 @@ export default function OrderHistoryPage() {
             ))}
           </div>
         ) : orders.length === 0 ? (
-          <div className="card p-10 text-center space-y-4 border-ej-border/60 my-8">
+          <div className="card p-10 text-center space-y-4 border-ej-border/60 my-4">
             <ElephantMascot size={160} className="mx-auto opacity-70" />
             <h3 className="text-lg font-bold text-ej-cream">No orders yet</h3>
             <p className="text-xs text-ej-muted max-w-sm mx-auto">
@@ -180,7 +185,7 @@ export default function OrderHistoryPage() {
             ))}
           </div>
         )}
-      </main>
-    </div>
+      </div>
+    </StudentDashboardLayout>
   );
 }
