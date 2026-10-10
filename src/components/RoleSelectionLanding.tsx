@@ -303,37 +303,45 @@ export function RoleSelectionLanding() {
       </header>
 
       {/* ═══════════════════════════════════════════════════════════
-          HERO SECTION — exact master design with invisible clickable hitboxes
+          HERO SECTION — crisp native layout matching approved master design
           ═══════════════════════════════════════════════════════════ */}
       <section
         id="hero-top"
         className="relative w-full overflow-hidden select-none"
         style={{ background: '#EDE8DC' }}
       >
-        <div className="relative w-full">
-          {/* Master high-resolution hero graphic (cropped slightly at top to avoid navbar repetition) */}
-          <div className="w-full overflow-hidden">
-            <img
-              src="/branding/hero-exact-final.png"
-              alt="Skip the Queue, Order Fresh Daily Only at Enjipuli"
-              width={1600}
-              height={900}
-              className="w-full h-auto object-cover select-none pointer-events-none -mt-[5.8%]"
-              decoding="async"
-            />
-          </div>
+        <div className="relative w-full max-w-[1600px] mx-auto">
+          {/* Master hero illustration rendered at native natural aspect ratio */}
+          <img
+            src="/branding/hero-exact-final.png"
+            alt="Skip the Queue, Order Fresh Daily Only at Enjipuli"
+            width={1600}
+            height={900}
+            className="w-full h-auto block select-none pointer-events-none"
+            style={{ imageRendering: 'auto' }}
+            decoding="async"
+          />
 
-          {/* Invisible interactive button clickable hitboxes positioned right over the artwork buttons */}
-          <div className="absolute left-[9.5%] bottom-[8%] flex items-center gap-4 z-20">
+          {/* Fully interactive hitboxes positioned exactly over the artwork's Order Now and Vendor Portal buttons */}
+          <div
+            className="absolute z-30 flex items-center"
+            style={{
+              left: '9.3%',
+              bottom: '9%',
+              gap: '1.2%',
+              width: '32%',
+              height: '8.5%',
+            }}
+          >
             <Link
               href="/login?purpose=student"
-              className="w-[145px] sm:w-[170px] lg:w-[190px] h-[46px] sm:h-[54px] lg:h-[60px] rounded-full cursor-pointer transition-transform hover:scale-[1.02] active:scale-95"
+              className="flex-1 h-full rounded-full cursor-pointer hover:opacity-80 transition-opacity"
               title="Order Now"
               aria-label="Order Now"
             />
             <Link
               href="/vendor/login?purpose=vendor"
-              className="w-[145px] sm:w-[170px] lg:w-[190px] h-[46px] sm:h-[54px] lg:h-[60px] rounded-full cursor-pointer transition-transform hover:scale-[1.02] active:scale-95"
+              className="flex-1 h-full rounded-full cursor-pointer hover:opacity-80 transition-opacity"
               title="Vendor Portal"
               aria-label="Vendor Portal"
             />
