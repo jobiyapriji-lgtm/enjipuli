@@ -244,10 +244,10 @@ export function RoleSelectionLanding() {
       style={{ background: '#EDE8DC' }}
     >
       {/* ═══════════════════════════════════════════════════════════
-          NAV BAR — dark navy full-width, wordmark left, links center, CTAs right
+          NAV BAR — sticky dark navbar with working links
           ═══════════════════════════════════════════════════════════ */}
       <header
-        className="w-full sticky top-0 z-50 flex items-center justify-between px-6 sm:px-10 lg:px-14"
+        className="w-full sticky top-0 z-50 flex items-center justify-between px-6 sm:px-10 lg:px-14 shadow-md"
         style={{ background: '#1A1128', minHeight: 56 }}
       >
         {/* Left: Wordmark + colorful accent dots */}
@@ -303,7 +303,7 @@ export function RoleSelectionLanding() {
       </header>
 
       {/* ═══════════════════════════════════════════════════════════
-          HERO SECTION — exact master design with interactive controls
+          HERO SECTION — exact master design with invisible clickable hitboxes
           ═══════════════════════════════════════════════════════════ */}
       <section
         id="hero-top"
@@ -311,32 +311,32 @@ export function RoleSelectionLanding() {
         style={{ background: '#EDE8DC' }}
       >
         <div className="relative w-full">
-          {/* Master high-resolution hero graphic */}
-          <img
-            src="/branding/hero-exact-final.png"
-            alt="Skip the Queue, Order Fresh Daily Only at Enjipuli"
-            width={1600}
-            height={900}
-            className="w-full h-auto object-cover select-none pointer-events-none"
-            decoding="async"
-          />
+          {/* Master high-resolution hero graphic (cropped slightly at top to avoid navbar repetition) */}
+          <div className="w-full overflow-hidden">
+            <img
+              src="/branding/hero-exact-final.png"
+              alt="Skip the Queue, Order Fresh Daily Only at Enjipuli"
+              width={1600}
+              height={900}
+              className="w-full h-auto object-cover select-none pointer-events-none -mt-[5.8%]"
+              decoding="async"
+            />
+          </div>
 
-          {/* Interactive button clickable overlays aligned precisely with the artwork buttons */}
-          <div className="absolute left-[9.5%] bottom-[7.5%] flex items-center gap-4 z-20">
+          {/* Invisible interactive button clickable hitboxes positioned right over the artwork buttons */}
+          <div className="absolute left-[9.5%] bottom-[8%] flex items-center gap-4 z-20">
             <Link
               href="/login?purpose=student"
-              className="px-8 sm:px-10 py-3.5 sm:py-4 rounded-full font-black text-[14px] text-[#120B24] bg-[#AADB1E] hover:bg-white transition-all shadow-md flex items-center gap-2"
-              style={{ background: '#AADB1E' }}
-            >
-              <span>Order Now</span>
-              <ArrowRight className="w-4 h-4 stroke-[2.5]" />
-            </Link>
+              className="w-[145px] sm:w-[170px] lg:w-[190px] h-[46px] sm:h-[54px] lg:h-[60px] rounded-full cursor-pointer transition-transform hover:scale-[1.02] active:scale-95"
+              title="Order Now"
+              aria-label="Order Now"
+            />
             <Link
               href="/vendor/login?purpose=vendor"
-              className="px-8 sm:px-10 py-3.5 sm:py-4 rounded-full font-bold text-[14px] text-[#120B24] bg-white border-2 border-[#120B24] hover:bg-[#F0EDE4] transition-all shadow-sm"
-            >
-              <span>Vendor Portal</span>
-            </Link>
+              className="w-[145px] sm:w-[170px] lg:w-[190px] h-[46px] sm:h-[54px] lg:h-[60px] rounded-full cursor-pointer transition-transform hover:scale-[1.02] active:scale-95"
+              title="Vendor Portal"
+              aria-label="Vendor Portal"
+            />
           </div>
         </div>
       </section>
