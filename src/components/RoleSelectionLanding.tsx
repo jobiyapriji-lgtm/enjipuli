@@ -458,7 +458,7 @@ export function RoleSelectionLanding() {
         <div className="relative z-10 w-full">
           <img
             src="/branding/the-taste-of-tamarind-house-banner.png"
-            alt="The Taste of Enjipuli Food Truck"
+            alt="The Taste of Tamarind House Food Truck"
             width={1600}
             height={900}
             className="w-full h-auto object-cover select-none"
@@ -468,84 +468,118 @@ export function RoleSelectionLanding() {
       </section>
 
       {/* ═══════════════════════════════════════════════════════════
-          "BIG FLAVOURS" STORY SECTION — food art left, big text right
+          4. STAT BAND — dark navy, 4 stat tiles with icons & labels
+          ═══════════════════════════════════════════════════════════ */}
+      <section
+        className="w-full relative z-10 py-7 px-4 sm:px-8 border-y border-white/10"
+        style={{ background: '#120B24' }}
+      >
+        <div className="max-w-7xl mx-auto grid grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-8 items-center justify-between">
+          {/* Stat 1: 40K+ */}
+          <div className="flex items-center gap-3.5">
+            <div className="w-12 h-12 shrink-0 flex items-center justify-center">
+              <svg viewBox="0 0 48 48" fill="none" className="w-11 h-11">
+                <ellipse cx="24" cy="28" rx="20" ry="12" fill="#E8B87A" stroke="#FF7A00" strokeWidth="2.5" />
+                <ellipse cx="24" cy="25" rx="16" ry="8" fill="#FFF3CD" />
+                <circle cx="20" cy="24" r="3" fill="#E53030" />
+                <circle cx="28" cy="24" r="2.5" fill="#22C55E" />
+                <path d="M12 28 Q 24 38 36 28" stroke="#FF7A00" strokeWidth="2" fill="none" />
+              </svg>
+            </div>
+            <div>
+              <div className="text-2xl sm:text-3xl font-black text-white leading-none font-sans">
+                40K+
+              </div>
+              <div className="text-[11px] sm:text-xs text-white/70 font-medium leading-tight mt-1">
+                Happy Students Served
+              </div>
+            </div>
+          </div>
+
+          {/* Stat 2: 15+ */}
+          <div className="flex items-center gap-3.5">
+            <div className="w-12 h-12 shrink-0 flex items-center justify-center">
+              <svg viewBox="0 0 48 48" fill="none" className="w-11 h-11">
+                <circle cx="24" cy="14" r="6" fill="#F6A800" stroke="#FF7A00" strokeWidth="2" />
+                <circle cx="14" cy="18" r="4.5" fill="#22C55E" />
+                <circle cx="34" cy="18" r="4.5" fill="#2563EB" />
+                <path d="M12 36 C12 28 20 26 24 26 C28 26 36 28 36 36" fill="#F6A800" opacity="0.9" />
+                <path d="M6 38 C6 32 12 30 15 30" stroke="#22C55E" strokeWidth="2.5" strokeLinecap="round" />
+                <path d="M42 38 C42 32 36 30 33 30" stroke="#2563EB" strokeWidth="2.5" strokeLinecap="round" />
+              </svg>
+            </div>
+            <div>
+              <div className="text-2xl sm:text-3xl font-black text-white leading-none font-sans">
+                15+
+              </div>
+              <div className="text-[11px] sm:text-xs text-white/70 font-medium leading-tight mt-1">
+                Campus Locations Covered
+              </div>
+            </div>
+          </div>
+
+          {/* Stat 3: 1M+ */}
+          <div className="flex items-center gap-3.5">
+            <div className="w-12 h-12 shrink-0 flex items-center justify-center">
+              <svg viewBox="0 0 48 48" fill="none" className="w-10 h-10">
+                <path
+                  d="M24 40 C24 40 6 28 6 16 C6 10 11 6 17 6 C21 6 24 9 24 11 C24 9 27 6 31 6 C37 6 42 10 42 16 C42 28 24 40 24 40 Z"
+                  fill="#FF3366"
+                />
+                <ellipse cx="15" cy="14" rx="3" ry="5" fill="#FFA3BA" opacity="0.6" transform="rotate(-25 15 14)" />
+              </svg>
+            </div>
+            <div>
+              <div className="text-2xl sm:text-3xl font-black text-white leading-none font-sans">
+                1M+
+              </div>
+              <div className="text-[11px] sm:text-xs text-white/70 font-medium leading-tight mt-1">
+                Meals Shared with Good Vibes
+              </div>
+            </div>
+          </div>
+
+          {/* Stat 4: 100+ */}
+          <div className="flex items-center gap-3.5">
+            <div className="w-12 h-12 shrink-0 flex items-center justify-center">
+              <svg viewBox="0 0 48 48" fill="none" className="w-10 h-10">
+                <path
+                  d="M24 4 L30 16 L44 18 L34 28 L36 42 L24 35 L12 42 L14 28 L4 18 L18 16 Z"
+                  fill="#FFD000"
+                  stroke="#FF9900"
+                  strokeWidth="2"
+                  strokeLinejoin="round"
+                />
+              </svg>
+            </div>
+            <div>
+              <div className="text-2xl sm:text-3xl font-black text-white leading-none font-sans">
+                100+
+              </div>
+              <div className="text-[11px] sm:text-xs text-white/70 font-medium leading-tight mt-1">
+                Varieties of Campus Favourites
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ═══════════════════════════════════════════════════════════
+          5. STORY SECTION — exact match to approved design image
           ═══════════════════════════════════════════════════════════ */}
       <section
         className="relative w-full overflow-hidden"
         style={{ background: '#EDE8DC' }}
       >
-        {/* Vertical grid lines */}
-        <div className="absolute inset-0 pointer-events-none z-0" aria-hidden="true">
-          {[14, 28, 42, 57, 71, 85].map((pct) => (
-            <div key={pct} className="absolute top-0 bottom-0 w-[1px]" style={{ left: `${pct}%`, background: '#C8C0A8', opacity: 0.28 }} />
-          ))}
-        </div>
-
-        <div className="relative z-10 flex flex-col lg:flex-row items-stretch min-h-[420px] sm:min-h-[520px]">
-          {/* Left: food art bleeding off left edge */}
-          <div className="relative w-full lg:w-[46%] flex items-end justify-start shrink-0 overflow-hidden">
-            {/* Large stylized Kerala food wrap illustration bleeding off left */}
-            <div className="absolute -left-8 bottom-0 w-[340px] sm:w-[420px] lg:w-[500px]">
-              <FooterFoodIllustration className="w-full h-auto" />
-            </div>
-            {/* Extra scattered splashes */}
-            <div className="absolute top-10 left-[38%] pointer-events-none" aria-hidden="true">
-              <div className="flex flex-col gap-3">
-                <BlueDrop className="w-3 h-4 rotate-12 opacity-80" />
-                <OilDrop className="w-2.5 h-4 -rotate-6 opacity-70" />
-              </div>
-            </div>
-            <div className="absolute top-20 left-[52%] pointer-events-none" aria-hidden="true">
-              <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="8" fill="#16A34A" opacity="0.85"/></svg>
-            </div>
-            <div className="absolute top-14 left-[60%]" aria-hidden="true">
-              <RedDrop className="w-3 h-4 rotate-6 opacity-75 pointer-events-none" />
-            </div>
-            <div className="h-[380px] sm:h-[460px] lg:h-full w-full" />
-          </div>
-
-          {/* Right: big text + sub-info + button */}
-          <div className="flex-1 flex flex-col justify-between px-8 sm:px-10 lg:px-12 pt-10 pb-8">
-            {/* Oversized display text */}
-            <div className="flex-1 flex items-center">
-              <h2
-                className="font-black text-[#120B24] leading-[0.9]"
-                style={{
-                  fontFamily: "'Lilita One', 'Archivo Black', 'Inter', sans-serif",
-                  fontSize: 'clamp(42px, 6.5vw, 88px)',
-                }}
-              >
-                big flavours,<br />
-                one little<br />
-                truck,<br />
-                your campus.
-              </h2>
-            </div>
-
-            {/* Bottom info row */}
-            <div className="flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-0 pt-8 border-t border-[#C8C0A8]/50 mt-6">
-              <div className="flex-1 sm:pr-6 sm:border-r sm:border-[#C8C0A8]/60">
-                <p className="text-[11px] font-black uppercase tracking-[0.13em] text-[#120B24] leading-snug">
-                  Your favourite<br />cafeteria flavours,<br />made for campus life.
-                </p>
-              </div>
-              <div className="flex-1 sm:px-6 sm:border-r sm:border-[#C8C0A8]/60">
-                <p className="text-[13px] font-black uppercase tracking-wide text-[#120B24]">
-                  Come Hungry.<br />Leave Happy.
-                </p>
-              </div>
-              <div className="sm:pl-6">
-                <Link
-                  href="/login?purpose=student"
-                  className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg text-[12px] font-black uppercase tracking-wider text-white hover:opacity-90 transition-all"
-                  style={{ background: '#1A1128' }}
-                >
-                  <MapPin className="w-4 h-4" />
-                  Find Us
-                </Link>
-              </div>
-            </div>
-          </div>
+        <div className="relative z-10 w-full">
+          <img
+            src="/branding/big-flavours-story-banner.jpg"
+            alt="Big flavours, one little truck, your campus."
+            width={1600}
+            height={900}
+            className="w-full h-auto object-cover select-none"
+            decoding="async"
+          />
         </div>
       </section>
 
