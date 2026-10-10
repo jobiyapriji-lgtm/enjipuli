@@ -428,7 +428,7 @@ export default function VendorLoginPage() {
             onMouseEnter={(e) => { e.currentTarget.style.color = 'var(--ej-gold)'; }}
             onMouseLeave={(e) => { e.currentTarget.style.color = 'var(--ej-muted)'; }}
           >
-            ← Back to role selection
+            ← Back to home
           </Link>
         </div>
       </div>
