@@ -500,16 +500,15 @@ export function RoleSelectionLanding() {
               </h2>
             </div>
 
-            {/* Right: truck photo, large, bleeding off right */}
+            {/* Right: Animated illustrated truck, large, bleeding off right */}
             <div className="relative flex items-center justify-end">
               <div className="relative w-full lg:w-[110%] lg:-mr-0">
                 <img
-                  src="/branding/enjipuli-truck-real.jpg"
-                  alt="ENJIPULI Food Truck"
+                  src="/branding/enjipuli-animated-truck.jpg"
+                  alt="ENJIPULI Illustrated Food Truck"
                   width={900}
                   height={560}
-                  className="w-full h-auto object-cover object-center"
-                  style={{ filter: 'drop-shadow(0 8px 32px rgba(0,0,0,0.18))' }}
+                  className="w-full h-auto object-contain object-center"
                   decoding="async"
                 />
               </div>
