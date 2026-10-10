@@ -2,28 +2,189 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import {
-  ArrowRight,
-  Sparkles,
-  Clock,
-  ShieldCheck,
-  Zap,
-  UtensilsCrossed,
-  Flame,
-  ChefHat,
-  Coffee,
-  CheckCircle2,
-  MapPin,
-  Calendar,
-  Send,
-  Check,
-  AlertCircle,
-} from 'lucide-react';
+import { ArrowRight, MapPin, Send, Check, AlertCircle, Sparkles } from 'lucide-react';
 
 interface LandingStats {
   ordersServed: number;
   menuItems: number;
   categories: number;
+}
+
+/* ─── Inline SVG Decoratives ──────────────────────────────────── */
+
+// Yellow / amber oil drop
+function OilDrop({ className = '' }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 40 60" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M20 4C20 4 4 22 4 36C4 48 11.2 56 20 56C28.8 56 36 48 36 36C36 22 20 4 20 4Z" fill="#F6A800" opacity="0.9"/>
+      <ellipse cx="14" cy="30" rx="3" ry="6" fill="#FFD050" opacity="0.6" transform="rotate(-20 14 30)"/>
+    </svg>
+  );
+}
+
+// Red drop
+function RedDrop({ className = '' }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 40 60" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M20 4C20 4 4 22 4 36C4 48 11.2 56 20 56C28.8 56 36 48 36 36C36 22 20 4 20 4Z" fill="#E53030" opacity="0.85"/>
+    </svg>
+  );
+}
+
+// Blue drop
+function BlueDrop({ className = '' }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 40 60" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M20 4C20 4 4 22 4 36C4 48 11.2 56 20 56C28.8 56 36 48 36 36C36 22 20 4 20 4Z" fill="#2563EB" opacity="0.8"/>
+    </svg>
+  );
+}
+
+// Tropical leaf (large dark green)
+function TropicalLeaf({ className = '' }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 120 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M60 190 C60 190 10 120 20 60 C30 10 60 5 80 20 C110 40 120 90 100 140 C85 175 60 190 60 190Z" fill="#1B4D1E"/>
+      <path d="M60 190 C60 190 62 120 58 60" stroke="#2D7A31" strokeWidth="2" opacity="0.5"/>
+      <path d="M60 140 C60 140 80 120 95 110" stroke="#2D7A31" strokeWidth="1.5" opacity="0.4"/>
+      <path d="M60 160 C60 160 40 145 28 138" stroke="#2D7A31" strokeWidth="1.5" opacity="0.4"/>
+    </svg>
+  );
+}
+
+// Small bright green leaf
+function SmallLeaf({ className = '' }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 80 130" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M40 120 C40 120 8 80 14 45 C20 14 40 8 55 18 C72 30 78 65 62 95 C52 115 40 120 40 120Z" fill="#22C55E"/>
+      <path d="M40 120 C40 120 42 80 38 45" stroke="#16A34A" strokeWidth="1.5" opacity="0.6"/>
+    </svg>
+  );
+}
+
+// Red chili pepper
+function ChiliPepper({ className = '' }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 60 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M30 10 C25 8 20 4 22 2 C24 0 30 2 32 5" fill="#1B4D1E"/>
+      <path d="M30 10 C30 10 15 30 12 55 C9 80 18 105 30 108 C42 111 50 88 50 62 C50 38 38 15 30 10Z" fill="#DC2626"/>
+      <path d="M30 10 C30 10 28 30 27 55 C26 75 28 95 30 108" stroke="#EF4444" strokeWidth="1.5" opacity="0.4"/>
+      <ellipse cx="22" cy="50" rx="4" ry="8" fill="#EF4444" opacity="0.5" transform="rotate(-15 22 50)"/>
+    </svg>
+  );
+}
+
+// Kerala food bowl (stylized SVG illustration)
+function KeralaFoodBowl({ className = '' }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 280 260" fill="none" xmlns="http://www.w3.org/2000/svg">
+      {/* Bowl base */}
+      <ellipse cx="140" cy="185" rx="110" ry="28" fill="#8B5E3C" opacity="0.3"/>
+      <path d="M40 140 Q40 220 140 225 Q240 220 240 140 Z" fill="#C8955C"/>
+      <path d="M40 140 Q40 150 140 155 Q240 150 240 140" fill="#E8B87A"/>
+      {/* Bowl rim */}
+      <ellipse cx="140" cy="140" rx="100" ry="22" fill="#D4A574"/>
+      <ellipse cx="140" cy="140" rx="96" ry="18" fill="#E8C99A"/>
+      {/* Rice mound */}
+      <ellipse cx="130" cy="128" rx="70" ry="30" fill="#F5F0E0"/>
+      <ellipse cx="145" cy="120" rx="55" ry="22" fill="#FFF8EC"/>
+      {/* Curry / red sauce */}
+      <path d="M80 130 Q110 110 145 115 Q170 112 190 125 Q180 145 155 148 Q120 150 95 142 Z" fill="#C0392B" opacity="0.85"/>
+      {/* Orange gravy */}
+      <path d="M100 132 Q125 118 155 122 Q175 119 188 130 Q178 143 158 146 Q125 148 105 140 Z" fill="#E67E22" opacity="0.7"/>
+      {/* Egg / protein */}
+      <ellipse cx="155" cy="127" rx="18" ry="14" fill="#FFF3CD"/>
+      <ellipse cx="155" cy="127" rx="10" ry="8" fill="#F39C12"/>
+      {/* Garnish leaves */}
+      <path d="M90 115 C90 115 75 100 85 88 C92 80 105 88 100 102 Z" fill="#27AE60"/>
+      <path d="M190 118 C190 118 205 103 198 90 C192 81 178 89 183 103 Z" fill="#27AE60"/>
+      <path d="M165 105 C168 98 178 94 182 100 C186 106 176 112 170 108 Z" fill="#2ECC71"/>
+      {/* Small garnish dots */}
+      <circle cx="120" cy="125" r="3" fill="#E74C3C"/>
+      <circle cx="175" cy="120" r="2.5" fill="#E74C3C"/>
+      <circle cx="140" cy="118" r="2" fill="#E74C3C"/>
+      {/* Oil drops spilling */}
+      <ellipse cx="225" cy="158" rx="8" ry="14" fill="#F6A800" opacity="0.7" transform="rotate(20 225 158)"/>
+      <ellipse cx="240" cy="172" rx="5" ry="9" fill="#F6A800" opacity="0.6" transform="rotate(35 240 172)"/>
+      <circle cx="248" cy="155" r="4" fill="#F6A800" opacity="0.5"/>
+    </svg>
+  );
+}
+
+// Garlic bulb (bottom left decoration)
+function GarlicBulb({ className = '' }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 120 150" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M60 20 C60 20 50 10 55 5 C58 2 65 4 65 10 Z" fill="#8B7355"/>
+      <path d="M60 20 C60 20 48 15 45 10 C43 6 46 2 50 4 C56 7 60 15 60 20 Z" fill="#7A6347"/>
+      <path d="M60 20 C60 20 72 15 75 10 C77 6 74 2 70 4 C64 7 60 15 60 20 Z" fill="#7A6347"/>
+      {/* Main bulb */}
+      <ellipse cx="60" cy="85" rx="48" ry="58" fill="#F5F0E8"/>
+      <ellipse cx="60" cy="85" rx="44" ry="54" fill="#FDF8F0"/>
+      {/* Clove lines */}
+      <path d="M60 35 C60 35 38 50 36 75 C34 95 42 125 60 132 C78 125 86 95 84 75 C82 50 60 35 60 35Z" fill="#F0EAE0" stroke="#D4C9B5" strokeWidth="1"/>
+      <path d="M60 35 C60 35 48 55 47 78 C46 98 52 122 60 132" stroke="#D4C9B5" strokeWidth="1.5"/>
+      <path d="M60 35 C60 35 72 55 73 78 C74 98 68 122 60 132" stroke="#D4C9B5" strokeWidth="1.5"/>
+      <path d="M42 55 C42 55 30 65 28 82 C27 94 32 112 45 122" stroke="#D4C9B5" strokeWidth="1"/>
+      <path d="M78 55 C78 55 90 65 92 82 C93 94 88 112 75 122" stroke="#D4C9B5" strokeWidth="1"/>
+      {/* Base */}
+      <path d="M25 118 Q60 140 95 118 Q90 135 60 140 Q30 135 25 118Z" fill="#E8DDD0"/>
+      <path d="M40 120 C40 130 50 135 60 136" stroke="#C4B89A" strokeWidth="1.5"/>
+      <path d="M80 120 C80 130 70 135 60 136" stroke="#C4B89A" strokeWidth="1.5"/>
+    </svg>
+  );
+}
+
+// Colorful paint splash (for wordmark area)
+function PaintSplash({ className = '' }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 200 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="20" cy="40" r="12" fill="#E53030" opacity="0.9"/>
+      <circle cx="18" cy="22" r="6" fill="#E53030" opacity="0.7"/>
+      <path d="M26 38 L35 28" stroke="#E53030" strokeWidth="3" strokeLinecap="round" opacity="0.6"/>
+      <circle cx="70" cy="15" r="8" fill="#F6A800" opacity="0.9"/>
+      <path d="M68 23 L64 35" stroke="#F6A800" strokeWidth="2.5" strokeLinecap="round" opacity="0.7"/>
+      <circle cx="150" cy="20" r="10" fill="#2563EB" opacity="0.85"/>
+      <circle cx="165" cy="12" r="5" fill="#2563EB" opacity="0.6"/>
+      <path d="M155 28 L160 40" stroke="#2563EB" strokeWidth="2" strokeLinecap="round" opacity="0.5"/>
+      <circle cx="185" cy="50" r="7" fill="#16A34A" opacity="0.8"/>
+      <path d="M182 57 L178 68" stroke="#16A34A" strokeWidth="2" strokeLinecap="round" opacity="0.5"/>
+    </svg>
+  );
+}
+
+// Footer food illustration (wrap/roll with splash)
+function FooterFoodIllustration({ className = '' }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 300 320" fill="none" xmlns="http://www.w3.org/2000/svg">
+      {/* Wrap/roll base */}
+      <path d="M60 280 C20 260 10 200 30 160 C50 110 100 90 140 100 C180 110 200 140 190 180 C175 230 130 270 90 285 Z" fill="#E8C27A"/>
+      <path d="M60 280 C80 290 120 295 140 285 C160 275 175 255 175 235 C175 215 160 200 145 195 C125 188 100 192 80 205 C60 218 48 245 60 280Z" fill="#D4A856"/>
+      {/* Filling colours */}
+      <ellipse cx="120" cy="180" rx="45" ry="35" fill="#E74C3C" opacity="0.9"/>
+      <path d="M80 175 Q120 155 160 168 Q165 182 155 192 Q115 205 80 190 Z" fill="#C0392B" opacity="0.8"/>
+      <path d="M88 172 Q115 162 148 170 Q155 180 145 186 Q112 196 85 186Z" fill="#27AE60" opacity="0.7"/>
+      <ellipse cx="125" cy="170" rx="15" ry="10" fill="#F39C12"/>
+      {/* Sauce splashes */}
+      <path d="M175 150 C195 130 210 120 225 130 C215 145 200 148 190 155 Z" fill="#F6A800" opacity="0.8"/>
+      <path d="M185 140 C200 118 222 108 235 115 C228 132 210 138 198 145 Z" fill="#E67E22" opacity="0.65"/>
+      <circle cx="240" cy="125" r="8" fill="#F6A800" opacity="0.7"/>
+      <circle cx="252" cy="140" r="5" fill="#E53030" opacity="0.6"/>
+      <circle cx="245" cy="155" r="4" fill="#F6A800" opacity="0.5"/>
+      {/* White milk/cream splash */}
+      <path d="M40 240 C20 225 5 235 8 250 C11 265 28 268 40 258 Z" fill="white" opacity="0.8"/>
+      <path d="M15 258 C8 270 10 285 22 283 C30 282 36 272 30 262 Z" fill="white" opacity="0.7"/>
+      {/* Garnish leaves */}
+      <path d="M155 115 C165 95 185 90 190 100 C195 110 180 122 168 118 Z" fill="#27AE60"/>
+      <path d="M165 108 C172 95 188 98 188 108" stroke="#16A34A" strokeWidth="1.5" opacity="0.6"/>
+      {/* Colorful dots */}
+      <circle cx="210" cy="180" r="6" fill="#8B5CF6" opacity="0.7"/>
+      <circle cx="55" cy="210" r="8" fill="#E53030" opacity="0.6"/>
+      <circle cx="35" cy="175" r="5" fill="#F6A800" opacity="0.7"/>
+      {/* Bottom drip */}
+      <path d="M100 285 C98 295 100 310 108 312 C116 314 120 300 118 288 Z" fill="#F6A800" opacity="0.5"/>
+    </svg>
+  );
 }
 
 export function RoleSelectionLanding() {
@@ -33,22 +194,20 @@ export function RoleSelectionLanding() {
     categories: 4,
   });
 
-  // Newsletter subscribe state
   const [subscriberEmail, setSubscriberEmail] = useState('');
   const [subscribing, setSubscribing] = useState(false);
   const [subscribeSuccess, setSubscribeSuccess] = useState<string | null>(null);
   const [subscribeError, setSubscribeError] = useState<string | null>(null);
 
-  // Pull real live numbers from the database
   useEffect(() => {
     fetch('/api/landing/stats')
-      .then((res) => (res.ok ? res.json() : null))
-      .then((data) => {
-        if (data) {
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d) => {
+        if (d) {
           setStats({
-            ordersServed: Number(data.ordersServed) || 0,
-            menuItems: Number(data.menuItems) || 8,
-            categories: Number(data.categories) || 4,
+            ordersServed: Number(d.ordersServed) || 0,
+            menuItems: Number(d.menuItems) || 8,
+            categories: Number(d.categories) || 4,
           });
         }
       })
@@ -59,11 +218,9 @@ export function RoleSelectionLanding() {
     e.preventDefault();
     const email = subscriberEmail.trim().toLowerCase();
     if (!email) return;
-
     setSubscribing(true);
     setSubscribeError(null);
     setSubscribeSuccess(null);
-
     try {
       const res = await fetch('/api/subscribe', {
         method: 'POST',
@@ -71,13 +228,11 @@ export function RoleSelectionLanding() {
         body: JSON.stringify({ email }),
       });
       const data = await res.json();
-      if (!res.ok) {
-        throw new Error(data.error || 'Subscription failed');
-      }
-      setSubscribeSuccess(data.message || 'Subscribed successfully!');
+      if (!res.ok) throw new Error(data.error || 'Subscription failed');
+      setSubscribeSuccess("You're on the list!");
       setSubscriberEmail('');
     } catch (err: any) {
-      setSubscribeError(err.message || 'Something went wrong. Please try again.');
+      setSubscribeError(err.message || 'Try again.');
     } finally {
       setSubscribing(false);
     }
@@ -85,469 +240,374 @@ export function RoleSelectionLanding() {
 
   return (
     <div
-      id="hero-landing-screen"
-      className="min-h-screen flex flex-col bg-[#FAF7EE] text-[#120B24] relative overflow-x-hidden selection:bg-ej-lime selection:text-[#120B24] scroll-smooth"
+      className="min-h-screen flex flex-col text-[#120B24] overflow-x-hidden scroll-smooth"
+      style={{ background: '#EDE8DC' }}
     >
-      {/* ─────────────────────────────────────────────────────────────
-          EDITORIAL BACKGROUND VERTICAL GRID LINES (Beige/Tan on Cream)
-          ───────────────────────────────────────────────────────────── */}
-      <div
-        className="absolute inset-0 pointer-events-none z-0 flex justify-between max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 opacity-40"
-        aria-hidden="true"
+      {/* ═══════════════════════════════════════════════════════════
+          NAV BAR — dark navy full-width, wordmark left, links center, CTAs right
+          ═══════════════════════════════════════════════════════════ */}
+      <header
+        className="w-full sticky top-0 z-50 flex items-center justify-between px-6 sm:px-10 lg:px-14"
+        style={{ background: '#1A1128', minHeight: 56 }}
       >
-        <div className="w-[1px] h-full bg-[#E5DFD1]" />
-        <div className="w-[1px] h-full bg-[#E5DFD1] hidden sm:block" />
-        <div className="w-[1px] h-full bg-[#E5DFD1]" />
-        <div className="w-[1px] h-full bg-[#E5DFD1] hidden md:block" />
-        <div className="w-[1px] h-full bg-[#E5DFD1]" />
-      </div>
-
-      {/* Decorative Kerala Floral/Spices Droplet Accents */}
-      <div className="absolute top-20 right-6 w-72 h-72 rounded-full bg-gradient-to-br from-amber-200/40 via-yellow-100/20 to-transparent blur-3xl pointer-events-none" />
-      <div className="absolute top-96 left-[-5%] w-80 h-80 rounded-full bg-gradient-to-tr from-lime-200/35 via-orange-100/25 to-transparent blur-3xl pointer-events-none" />
-
-      {/* ─────────────────────────────────────────────────────────────
-          1. NAVBAR (Floating Deep Navy Capsule with Lime Accents)
-          ───────────────────────────────────────────────────────────── */}
-      <div className="sticky top-4 z-50 w-full px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto transition-all">
-        <header className="w-full bg-[#120B24] text-white rounded-full px-4 sm:px-7 py-3 sm:py-3.5 flex items-center justify-between shadow-2xl border border-white/10">
-          {/* Left: The ഇഞ്ചിപ്പുളി Wordmark Asset */}
-          <Link href="/" className="flex items-center gap-2.5 sm:gap-3 group">
+        {/* Left: Wordmark + colorful accent dots */}
+        <Link href="/" className="flex items-center gap-1 shrink-0 py-2">
+          <div className="relative">
             <img
               src="/branding/enjipuli-wordmark.png"
               alt="ഇഞ്ചിപ്പുളി"
-              width={320}
-              height={110}
-              className="h-7 sm:h-8 w-auto object-contain drop-shadow-[0_0_12px_rgba(212,255,61,0.4)] transition-transform duration-300 group-hover:scale-105"
+              width={200}
+              height={70}
+              className="h-9 w-auto object-contain"
               decoding="async"
             />
-            <span className="hidden sm:inline-block text-[10px] font-black uppercase tracking-widest text-[#F6A623] border-l border-white/20 pl-3 font-mono">
-              ക്യാമ്പസ് ഫുഡ് ട്രക്ക്
-            </span>
-          </Link>
-
-          {/* Middle: Anchor text links */}
-          <nav className="hidden md:flex items-center gap-8 font-mono text-xs font-bold tracking-wider uppercase text-white/70">
-            <a href="#story" className="hover:text-ej-lime transition-colors">
-              Story
-            </a>
-            <a href="#counter" className="hover:text-ej-lime transition-colors">
-              Behind the Counter
-            </a>
-          </nav>
-
-          {/* Right: Two CTAs matching reference visual relationship */}
-          <div className="flex items-center gap-2 sm:gap-3">
-            {/* Quiet Button: Vendor Login */}
-            <Link
-              href="/vendor/login?purpose=vendor"
-              className="px-3.5 sm:px-4 py-1.5 sm:py-2 rounded-full text-xs font-bold text-ej-lime border border-ej-lime/60 hover:border-ej-lime hover:bg-ej-lime/10 active:scale-95 transition-all duration-200"
-            >
-              Vendor Login
-            </Link>
-
-            {/* Bold Button: Order Now */}
-            <Link
-              href="/login?purpose=student"
-              className="px-4 sm:px-5 py-1.5 sm:py-2 rounded-full text-xs font-black bg-ej-lime text-[#120B24] hover:bg-white shadow-glow-sm hover:shadow-glow active:scale-95 transition-all duration-200 flex items-center gap-1.5"
-            >
-              <span>Order Now</span>
-              <ArrowRight className="w-3.5 h-3.5 stroke-[2.5]" />
-            </Link>
+            {/* Small colorful accent dots around wordmark */}
+            <span className="absolute -top-1.5 -left-2 w-2.5 h-2.5 rounded-full bg-[#E53030] opacity-90" />
+            <span className="absolute -bottom-1 left-2 w-2 h-2 rounded-full bg-[#F6A800] opacity-90" />
+            <span className="absolute top-0.5 -right-1 w-2 h-2 rounded-full bg-[#2563EB] opacity-80" />
           </div>
-        </header>
-      </div>
+        </Link>
 
-      {/* ─────────────────────────────────────────────────────────────
-          2. SECTION 1: SPLIT HERO (Cream Theme with Orange Accents)
-          ───────────────────────────────────────────────────────────── */}
-      <section className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 sm:pt-14 pb-12 sm:pb-16 grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-8 items-center relative z-10">
-        {/* Left Column: Headline, Badge, Subtext & CTAs */}
-        <div className="lg:col-span-7 flex flex-col items-start space-y-6 sm:space-y-7 text-left animate-fade-in-up">
-          {/* Badge: Campus Favorite (Orange / Black border) */}
-          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#F6A623] text-[#120B24] border border-[#120B24] shadow-sm">
-            <span className="w-2 h-2 rounded-full bg-[#120B24] animate-pulse" />
-            <span className="text-[11px] sm:text-xs font-black uppercase tracking-wider">
+        {/* Center: Nav links */}
+        <nav className="hidden md:flex items-center gap-10">
+          <a
+            href="#story"
+            className="text-white text-[11px] font-black uppercase tracking-[0.18em] hover:text-[#D4FF3D] transition-colors"
+          >
+            Story
+          </a>
+          <a
+            href="#story"
+            className="text-white text-[11px] font-black uppercase tracking-[0.18em] hover:text-[#D4FF3D] transition-colors"
+          >
+            Behind the Counter
+          </a>
+        </nav>
+
+        {/* Right: CTAs */}
+        <div className="flex items-center gap-2.5">
+          <Link
+            href="/vendor/login?purpose=vendor"
+            className="px-5 py-2 rounded-full text-[13px] font-bold text-[#D4FF3D] border-2 border-[#D4FF3D] hover:bg-[#D4FF3D]/10 transition-all"
+          >
+            Vendor Login
+          </Link>
+          <Link
+            href="/login?purpose=student"
+            className="px-5 py-2 rounded-full text-[13px] font-black text-[#120B24] bg-[#D4FF3D] hover:bg-white transition-all flex items-center gap-1.5"
+          >
+            Order Now
+            <ArrowRight className="w-3.5 h-3.5 stroke-[2.5]" />
+          </Link>
+        </div>
+      </header>
+
+      {/* ═══════════════════════════════════════════════════════════
+          HERO SECTION — cream bg, vertical grid lines, food illustrations
+          ═══════════════════════════════════════════════════════════ */}
+      <section
+        className="relative w-full overflow-hidden"
+        style={{ background: '#EDE8DC', minHeight: 580 }}
+      >
+        {/* Vertical grid lines */}
+        <div className="absolute inset-0 pointer-events-none z-0" aria-hidden="true">
+          {[14, 28, 42, 57, 71, 85].map((pct) => (
+            <div
+              key={pct}
+              className="absolute top-0 bottom-0 w-[1px]"
+              style={{ left: `${pct}%`, background: '#C8C0A8', opacity: 0.35 }}
+            />
+          ))}
+        </div>
+
+        {/* ── Decorative: Kerala food bowl — top right ── */}
+        <div className="absolute top-[-20px] right-[-10px] w-[240px] sm:w-[300px] pointer-events-none z-10" aria-hidden="true">
+          <KeralaFoodBowl className="w-full h-auto" />
+          {/* Oil drops spilling from bowl */}
+          <OilDrop className="absolute w-6 h-9 top-[55%] right-[-18px]" />
+          <OilDrop className="absolute w-4 h-6 top-[68%] right-[-5px] opacity-80" />
+          <SmallLeaf className="absolute w-10 h-14 top-[65%] right-[28px] opacity-90 -rotate-12" />
+        </div>
+
+        {/* ── Decorative: Garlic — bottom left ── */}
+        <div className="absolute bottom-[-30px] left-[-15px] w-[130px] sm:w-[160px] pointer-events-none z-10 -rotate-12" aria-hidden="true">
+          <GarlicBulb className="w-full h-auto opacity-90" />
+        </div>
+
+        {/* ── Decorative: Chili + Leaf — bottom right ── */}
+        <div className="absolute bottom-[10px] right-[4%] pointer-events-none z-10 flex items-end gap-1" aria-hidden="true">
+          <TropicalLeaf className="w-[90px] sm:w-[115px] h-auto opacity-95" />
+          <ChiliPepper className="w-[30px] sm:w-[38px] h-auto -mb-4 -ml-2 opacity-90" />
+          <OilDrop className="absolute w-5 h-7 bottom-20 right-2 opacity-70" />
+          <OilDrop className="absolute w-4 h-6 bottom-28 right-10 opacity-60" />
+        </div>
+
+        {/* ── Decorative: Left side colored drops ── */}
+        <div className="absolute left-4 top-[35%] pointer-events-none z-10 space-y-2" aria-hidden="true">
+          <OilDrop className="w-5 h-7 opacity-80" />
+          <RedDrop className="w-4 h-5 opacity-75 translate-x-3" />
+          <BlueDrop className="w-3.5 h-5 opacity-70 -translate-x-1" />
+        </div>
+
+        {/* ── Hero content ── */}
+        <div className="relative z-20 max-w-7xl mx-auto px-8 sm:px-12 lg:px-16 pt-10 pb-14">
+          {/* Badge */}
+          <div
+            className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full mb-6 border border-[#120B24]"
+            style={{ background: '#F6A800' }}
+          >
+            <span className="w-1.5 h-1.5 rounded-full bg-[#120B24]" />
+            <span className="text-[11px] font-black uppercase tracking-[0.14em] text-[#120B24]">
               Campus Favorite • Hot &amp; Fresh
             </span>
             <Sparkles className="w-3.5 h-3.5 text-[#120B24]" />
           </div>
 
-          {/* Bold Multi-Line Headline with Color Highlighting & Underline Accent */}
-          <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-[4.25rem] font-black text-[#120B24] tracking-tight leading-[1.08]">
+          {/* Main headline */}
+          <h1
+            className="text-[48px] sm:text-[60px] lg:text-[72px] leading-[1.08] font-black text-[#120B24] mb-1"
+            style={{ fontFamily: "'Archivo Black', 'Inter', sans-serif", maxWidth: 640 }}
+          >
             Skip the Queue,
             <br />
             Order{' '}
-            <span className="relative inline-block text-[#FF7A00]">
+            <span className="relative inline-block" style={{ color: '#FF7A00' }}>
               Fresh
-              {/* Brush underline ornament */}
+              {/* Wavy underline matching design */}
               <svg
-                className="absolute -bottom-1 sm:-bottom-2 left-0 w-full h-3 text-[#FF7A00]"
-                viewBox="0 0 100 12"
+                className="absolute left-0 w-full"
+                style={{ bottom: '-6px', height: 12 }}
+                viewBox="0 0 120 12"
                 preserveAspectRatio="none"
                 fill="none"
-                aria-hidden="true"
               >
                 <path
-                  d="M2 9C25 3 75 3 98 9"
-                  stroke="currentColor"
+                  d="M2 9 C 22 2, 42 12, 62 5 C 82 -1, 102 10, 118 5"
+                  stroke="#FF7A00"
                   strokeWidth="4"
                   strokeLinecap="round"
+                  fill="none"
                 />
               </svg>
             </span>{' '}
             Daily
             <br />
-            Only at{' '}
-            <span className="text-ej-lime drop-shadow-[0_2px_12px_rgba(212,255,61,0.5)] font-malayalam tracking-normal inline-block bg-[#120B24] px-4 py-1 rounded-2xl align-middle mt-1 sm:mt-2">
-              ഇഞ്ചിപ്പുളി
-            </span>
+            Only at
           </h1>
 
-          {/* Value Prop Subtext */}
-          <p className="text-sm sm:text-base md:text-lg text-[#32284D] max-w-xl font-medium leading-relaxed">
-            Browse today&apos;s campus menu, order ahead, and pick up hot at the food truck
-            counter with your token — no more waiting in line between classes.
+          {/* ഇഞ്ചിപ്പുളി large wordmark in hero — lime brush, with paint splash decor */}
+          <div className="relative inline-block mb-5 mt-1">
+            <img
+              src="/branding/enjipuli-wordmark.png"
+              alt="ഇഞ്ചിപ്പുളി"
+              width={420}
+              height={145}
+              className="h-[80px] sm:h-[100px] w-auto object-contain"
+              decoding="async"
+            />
+            {/* Colorful paint splashes around the hero wordmark */}
+            <span className="absolute -left-5 top-1/2 -translate-y-1/2 flex flex-col gap-1.5">
+              <OilDrop className="w-4 h-6 -rotate-12" />
+              <RedDrop className="w-3 h-4.5 rotate-6" />
+            </span>
+            <span className="absolute -right-3 bottom-0 flex items-center gap-1">
+              <BlueDrop className="w-3.5 h-5 rotate-12" />
+            </span>
+            <span className="absolute right-8 -top-3">
+              <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><circle cx="7" cy="7" r="7" fill="#F6A800" opacity="0.9"/></svg>
+            </span>
+            <span className="absolute right-2 top-1/3">
+              <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><circle cx="5" cy="5" r="5" fill="#E53030" opacity="0.85"/></svg>
+            </span>
+          </div>
+
+          {/* Subtext */}
+          <p className="text-[14px] sm:text-[15px] text-[#3A3050] font-medium leading-relaxed mb-7 max-w-sm">
+            Browse today&apos;s campus menu, order ahead, and pick up hot at the food truck counter
+            with your token — no more waiting in line between classes.
           </p>
 
-          {/* Large CTA Pair */}
-          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:gap-4 w-full sm:w-auto pt-2">
-            {/* Primary Filled Lime Button: Order Now */}
+          {/* CTA Buttons */}
+          <div className="flex flex-col sm:flex-row gap-3">
             <Link
               href="/login?purpose=student"
-              className="px-8 py-4 rounded-full font-black text-sm sm:text-base bg-ej-lime text-[#120B24] hover:bg-[#120B24] hover:text-ej-lime shadow-md hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center gap-2.5 text-center group"
+              className="inline-flex items-center justify-center gap-2 px-8 py-3.5 rounded-full font-black text-[14px] text-[#120B24] hover:opacity-90 transition-all"
+              style={{ background: '#AADB1E' }}
             >
-              <span>Order Now</span>
-              <ArrowRight className="w-4 h-4 stroke-[2.5] group-hover:translate-x-1 transition-transform" />
+              Order Now
+              <ArrowRight className="w-4 h-4 stroke-[2.5]" />
             </Link>
-
-            {/* Secondary Outlined Button: Vendor Portal */}
             <Link
               href="/vendor/login?purpose=vendor"
-              className="px-7 py-4 rounded-full font-bold text-sm sm:text-base text-[#120B24] bg-[#FAF7EE] border-2 border-[#120B24] hover:bg-white active:scale-[0.98] transition-all flex items-center justify-center gap-2 text-center"
+              className="inline-flex items-center justify-center gap-2 px-8 py-3.5 rounded-full font-bold text-[14px] text-[#120B24] bg-white border-2 border-[#120B24] hover:bg-[#f0f0f0] transition-all"
             >
-              <span>Vendor Portal</span>
+              Vendor Portal
             </Link>
           </div>
-
-          {/* Trust Highlights */}
-          <div className="pt-4 flex flex-wrap items-center gap-4 sm:gap-6 text-xs text-[#443862] font-semibold border-t border-[#E5DFD1] w-full max-w-xl">
-            <div className="flex items-center gap-2">
-              <Zap className="w-4 h-4 text-[#FF7A00] shrink-0" />
-              <span>Instant Digital Tokens</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <Clock className="w-4 h-4 text-[#F6A623] shrink-0" />
-              <span>5-Min Hot Counter Pickup</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <ShieldCheck className="w-4 h-4 text-ej-teal shrink-0" />
-              <span>Direct Campus Kitchen</span>
-            </div>
-          </div>
-        </div>
-
-        {/* Right Column: Actual Food Truck Photography with Vibrant Glow */}
-        <div className="lg:col-span-5 flex items-center justify-center relative mt-6 lg:mt-0">
-          {/* Subtle Ambient Warm & Lime Glow */}
-          <div
-            className="absolute inset-0 sm:-inset-6 rounded-3xl blur-3xl pointer-events-none opacity-45"
-            style={{
-              background:
-                'radial-gradient(circle, rgba(212, 255, 61, 0.45) 0%, rgba(246, 166, 35, 0.25) 45%, transparent 70%)',
-            }}
-          />
-
-          {/* Real Truck Photo Card Frame */}
-          <div className="relative z-10 w-full max-w-lg lg:max-w-none group">
-            <div className="relative rounded-3xl overflow-hidden border-2 border-[#120B24] shadow-2xl transition-all duration-500">
-              <img
-                src="/branding/enjipuli-truck-real.jpg"
-                alt="Actual ENJIPULI Kerala Food Truck with Elephant Mural"
-                width={1024}
-                height={640}
-                className="w-full h-auto object-cover transform group-hover:scale-[1.03] transition-transform duration-700 ease-out"
-                decoding="async"
-                loading="eager"
-              />
-
-              {/* Bottom gradient fade for text legibility */}
-              <div className="absolute inset-0 bg-gradient-to-t from-[#120B24]/90 via-transparent to-transparent pointer-events-none" />
-
-              {/* Floating Live Counter Status Badge */}
-              <div className="absolute bottom-4 left-4 right-4 p-3.5 rounded-2xl bg-[#120B24]/95 backdrop-blur-md border border-white/10 flex items-center justify-between shadow-xl text-white">
-                <div className="flex items-center gap-3">
-                  <div className="w-9 h-9 rounded-xl bg-ej-lime/15 border border-ej-lime/30 flex items-center justify-center text-ej-lime">
-                    <span className="w-2.5 h-2.5 rounded-full bg-ej-lime animate-pulse" />
-                  </div>
-                  <div>
-                    <p className="text-xs font-black text-white leading-tight">
-                      Campus Counter Live
-                    </p>
-                    <p className="text-[10px] text-white/70 font-mono">
-                      Providence College of Engineering
-                    </p>
-                  </div>
-                </div>
-
-                <span className="text-[11px] font-black text-ej-lime px-3 py-1 rounded-full bg-ej-lime/15 border border-ej-lime/30 uppercase tracking-wider">
-                  Open
-                </span>
-              </div>
-            </div>
-          </div>
         </div>
       </section>
 
-      {/* ─────────────────────────────────────────────────────────────
-          3. SECTION 2: STAT BAND (Full-Width, Deep Navy Band)
-          ───────────────────────────────────────────────────────────── */}
-      <section className="w-full bg-[#0E0A1F] text-white border-y border-white/10 py-10 sm:py-14 relative z-10 shadow-2xl">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 sm:grid-cols-3 divide-y sm:divide-y-0 sm:divide-x divide-white/15 text-center">
-            {/* Stat 1: Delivered Orders */}
-            <div className="py-6 sm:py-2 px-4 sm:px-8 flex flex-col items-center justify-center">
-              <span className="text-5xl sm:text-6xl md:text-7xl font-black text-white tracking-tight font-sans">
-                {stats.ordersServed > 1000
-                  ? `${(stats.ordersServed / 1000).toFixed(1)}K`
-                  : stats.ordersServed}
-              </span>
-              <span className="text-xs sm:text-sm font-extrabold uppercase tracking-widest text-ej-lime mt-2 flex items-center gap-1.5">
-                <CheckCircle2 className="w-3.5 h-3.5 text-ej-lime" />
-                Orders Delivered
-              </span>
-              <p className="text-[11px] text-white/60 mt-1 font-mono">
-                Live fulfilled orders from DB
-              </p>
-            </div>
-
-            {/* Stat 2: Active Menu Items */}
-            <div className="py-6 sm:py-2 px-4 sm:px-8 flex flex-col items-center justify-center">
-              <span className="text-5xl sm:text-6xl md:text-7xl font-black text-ej-lime tracking-tight font-sans drop-shadow-[0_0_25px_rgba(212,255,61,0.3)]">
-                {stats.menuItems}+
-              </span>
-              <span className="text-xs sm:text-sm font-extrabold uppercase tracking-widest text-[#F6A623] mt-2 flex items-center gap-1.5">
-                <Flame className="w-3.5 h-3.5 text-[#F6A623]" />
-                Fresh Menu Items
-              </span>
-              <p className="text-[11px] text-white/60 mt-1 font-mono">
-                Snacks, hot tea &amp; chilled juices
-              </p>
-            </div>
-
-            {/* Stat 3: Active Categories */}
-            <div className="py-6 sm:py-2 px-4 sm:px-8 flex flex-col items-center justify-center">
-              <span className="text-5xl sm:text-6xl md:text-7xl font-black text-white tracking-tight font-sans">
-                {stats.categories}
-              </span>
-              <span className="text-xs sm:text-sm font-extrabold uppercase tracking-widest text-ej-teal mt-2 flex items-center gap-1.5">
-                <UtensilsCrossed className="w-3.5 h-3.5 text-ej-teal" />
-                Live Food Categories
-              </span>
-              <p className="text-[11px] text-white/60 mt-1 font-mono">
-                Meals, bakery &amp; campus beverages
-              </p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* ─────────────────────────────────────────────────────────────
-          4. SECTION 3: BRAND STORY BLOCK (Bleeding & Overlapping Layout)
-          ───────────────────────────────────────────────────────────── */}
+      {/* ═══════════════════════════════════════════════════════════
+          STAT / TRUCK SECTION — cream, oversized headline left, truck right
+          ═══════════════════════════════════════════════════════════ */}
       <section
         id="story"
-        className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-24 relative z-10 scroll-mt-20"
+        className="relative w-full overflow-hidden scroll-mt-14"
+        style={{ background: '#EDE8DC' }}
       >
-        <div className="space-y-12 sm:space-y-16">
-          {/* Top Story Header & Big Visual Banner */}
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center relative">
-            {/* Oversized Condensed Headline */}
-            <div className="lg:col-span-5 relative z-10 space-y-4 text-left">
-              <span className="inline-block text-[11px] font-black tracking-widest uppercase text-[#120B24] bg-[#120B24]/10 px-3 py-1 rounded-full border border-[#120B24]/30 font-mono">
-                THE ENJIPULI STORY
-              </span>
+        {/* Vertical grid lines */}
+        <div className="absolute inset-0 pointer-events-none z-0" aria-hidden="true">
+          {[14, 28, 42, 57, 71, 85].map((pct) => (
+            <div key={pct} className="absolute top-0 bottom-0 w-[1px]" style={{ left: `${pct}%`, background: '#C8C0A8', opacity: 0.3 }} />
+          ))}
+        </div>
 
-              <h2 className="text-4xl sm:text-5xl md:text-6xl font-black text-[#120B24] tracking-tight uppercase leading-[1.02]">
-                HOT, CRISPY,
-                <br />
-                <span className="text-[#FF7A00]">AUTHENTIC</span>
-                <br />
-                BITES EVERYDAY.
+        <div className="relative z-10 max-w-full">
+          {/* Top rating badge */}
+          <div className="px-8 sm:px-12 lg:px-16 pt-8">
+            <div
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11px] font-black text-[#120B24]"
+              style={{ background: '#F6A800' }}
+            >
+              <span>⭐</span>
+              <span className="uppercase tracking-wide">5-star on Campus Reviews</span>
+            </div>
+          </div>
+
+          {/* Two-column: headline left, truck right */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 items-center">
+            {/* Left: oversized block headline */}
+            <div className="px-8 sm:px-12 lg:px-16 pb-4 lg:pb-8 pt-4">
+              <h2
+                className="font-black leading-[0.95] uppercase text-[#120B24]"
+                style={{
+                  fontFamily: "'Archivo Black', 'Inter', sans-serif",
+                  fontSize: 'clamp(52px, 8vw, 110px)',
+                }}
+              >
+                HOT,<br />
+                CRISPY,<br />
+                AUTHENTIC<br />
+                <span className="inline-flex items-end gap-2">
+                  BITES.
+                  <span className="inline-flex items-center justify-center rounded-full border-[3px] border-[#120B24] mb-2"
+                    style={{ width: 'clamp(32px, 4vw, 56px)', height: 'clamp(32px, 4vw, 56px)' }}>
+                    <svg viewBox="0 0 24 24" fill="none" style={{ width: '55%', height: '55%' }}>
+                      <path d="M12 5v14M6 13l6 6 6-6" stroke="#120B24" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
+                    </svg>
+                  </span>
+                </span>
               </h2>
-
-              <p className="text-sm sm:text-base text-[#34294F] font-medium leading-relaxed">
-                Born out of a love for genuine Kerala street flavors and campus energy. Our food
-                truck rolls up with boiling tea kettles, frying banana fritters, and ice-cold
-                shakes ready for every break between lectures.
-              </p>
             </div>
 
-            {/* Massive Bleeding Truck Photo (Unboxed, Bleeding off Edge & Overlapping) */}
-            <div className="lg:col-span-7 relative group lg:-mr-12 xl:-mr-20 lg:-ml-6">
-              {/* Soft neon lime & amber ambient glow */}
-              <div
-                className="absolute -inset-6 sm:-inset-10 rounded-full blur-3xl opacity-35 pointer-events-none"
-                style={{
-                  background:
-                    'radial-gradient(circle, rgba(212,255,61,0.4) 0%, rgba(246,166,35,0.25) 50%, transparent 80%)',
-                }}
-              />
-
-              <div className="relative rounded-2xl sm:rounded-3xl overflow-hidden shadow-2xl transition-transform duration-700 ease-out group-hover:scale-[1.02] border border-[#120B24]/20">
+            {/* Right: truck photo, large, bleeding off right */}
+            <div className="relative flex items-center justify-end">
+              <div className="relative w-full lg:w-[110%] lg:-mr-0">
                 <img
                   src="/branding/enjipuli-truck-real.jpg"
-                  alt="ENJIPULI Real Food Truck Mural Banner"
-                  width={1200}
-                  height={675}
-                  className="w-full h-auto object-cover max-h-[500px]"
+                  alt="ENJIPULI Food Truck"
+                  width={900}
+                  height={560}
+                  className="w-full h-auto object-cover object-center"
+                  style={{ filter: 'drop-shadow(0 8px 32px rgba(0,0,0,0.18))' }}
                   decoding="async"
                 />
-                {/* Vignette overlay */}
-                <div className="absolute inset-0 bg-gradient-to-t from-[#120B24]/90 via-transparent to-transparent pointer-events-none" />
-
-                {/* Corner caption directly on image */}
-                <div className="absolute bottom-3 right-3 sm:bottom-4 sm:right-5 px-3 py-1.5 rounded-lg bg-[#120B24]/85 backdrop-blur-md border border-white/20 flex items-center gap-2 text-xs font-bold text-white">
-                  <span className="font-malayalam text-ej-gold text-xs sm:text-sm font-extrabold tracking-wide">
-                    ഇഞ്ചിപ്പുളി
-                  </span>
-                  <span className="text-white/40">•</span>
-                  <span className="text-[10px] text-white/80 font-mono uppercase tracking-wider">
-                    Providence Campus Truck
-                  </span>
-                </div>
               </div>
             </div>
           </div>
 
-          {/* Description Grid with Thin Vertical Divider Lines (Editorial Style) */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-0 md:divide-x divide-[#120B24]/15 border-t border-b border-[#120B24]/15 py-10">
-            {/* Column 1: What's On The Menu */}
-            <div className="md:px-8 first:pl-0 space-y-3">
-              <span className="text-[11px] font-black uppercase tracking-wider text-[#FF7A00] font-mono flex items-center gap-1.5">
-                <Flame className="w-3.5 h-3.5 text-[#FF7A00]" />
-                01 / WHAT&apos;S ON THE COUNTER
-              </span>
-              <h3 className="text-xl font-black text-[#120B24] tracking-tight">
-                Fresh &amp; Spiced Delights
-              </h3>
-              <p className="text-xs sm:text-sm text-[#3E3259] leading-relaxed">
-                Crispy golden Pazham Pori, hot spiced Egg Puffs, crunchy Chicken Cutlets, and
-                authentic froth-poured Malabar Chaya made live throughout the day.
-              </p>
-            </div>
-
-            {/* Column 2: The Ordering Experience */}
-            <div className="md:px-8 space-y-3">
-              <span className="text-[11px] font-black uppercase tracking-wider text-[#120B24] font-mono flex items-center gap-1.5">
-                <Zap className="w-3.5 h-3.5 text-ej-lime bg-[#120B24] p-0.5 rounded" />
-                02 / ZERO-WAIT EXPERIENCE
-              </span>
-              <h3 className="text-xl font-black text-[#120B24] tracking-tight">
-                Order Ahead, Skip the Rush
-              </h3>
-              <p className="text-xs sm:text-sm text-[#3E3259] leading-relaxed">
-                Check real-time stock from your phone, place your order with fast UPI/Razorpay, and
-                walk straight to the window with your digital token when it&apos;s ready.
-              </p>
-            </div>
-
-            {/* Column 3: The Campus Angle */}
-            <div className="md:px-8 last:pr-0 space-y-3">
-              <span className="text-[11px] font-black uppercase tracking-wider text-ej-teal font-mono flex items-center gap-1.5">
-                <ShieldCheck className="w-3.5 h-3.5 text-ej-teal" />
-                03 / CAMPUS-LOCAL HEART
-              </span>
-              <h3 className="text-xl font-black text-[#120B24] tracking-tight">
-                Built for Providence College
-              </h3>
-              <p className="text-xs sm:text-sm text-[#3E3259] leading-relaxed">
-                Designed specifically for college breaks. Student-friendly pricing, clean kitchen
-                hygiene, and speedy prep times so you never miss the bell.
-              </p>
-            </div>
+          {/* Bottom label bar */}
+          <div
+            className="flex items-center justify-between px-8 sm:px-12 lg:px-16 py-3 border-t border-[#C8C0A8]/60"
+          >
+            <span className="text-[11px] font-black uppercase tracking-[0.18em] text-[#120B24]">
+              Providence College of Engineering
+            </span>
+            <span className="text-[11px] font-black uppercase tracking-[0.18em] text-[#120B24]">
+              Serving Kerala Flavours
+            </span>
+            <span className="text-[11px] font-black uppercase tracking-[0.18em] text-[#120B24]">
+              2025
+            </span>
           </div>
         </div>
       </section>
 
-      {/* ─────────────────────────────────────────────────────────────
-          5. SECTION 4: "BEHIND THE COUNTER" (Authentic Vendor Team)
-          ───────────────────────────────────────────────────────────── */}
+      {/* ═══════════════════════════════════════════════════════════
+          "BIG FLAVOURS" STORY SECTION — food art left, big text right
+          ═══════════════════════════════════════════════════════════ */}
       <section
-        id="counter"
-        className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-14 sm:py-20 relative z-10 border-t border-[#120B24]/15 scroll-mt-20"
+        className="relative w-full overflow-hidden"
+        style={{ background: '#EDE8DC' }}
       >
-        <div className="space-y-10 sm:space-y-12">
-          {/* Section Header */}
-          <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
-            <div className="space-y-2">
-              <span className="text-[11px] font-black tracking-widest uppercase text-[#FF7A00] font-mono">
-                THE PEOPLE WHO FEED YOU
-              </span>
-              <h2 className="text-3xl sm:text-4xl md:text-5xl font-black text-[#120B24] tracking-tight uppercase">
-                Behind The Counter
-              </h2>
+        {/* Vertical grid lines */}
+        <div className="absolute inset-0 pointer-events-none z-0" aria-hidden="true">
+          {[14, 28, 42, 57, 71, 85].map((pct) => (
+            <div key={pct} className="absolute top-0 bottom-0 w-[1px]" style={{ left: `${pct}%`, background: '#C8C0A8', opacity: 0.28 }} />
+          ))}
+        </div>
+
+        <div className="relative z-10 flex flex-col lg:flex-row items-stretch min-h-[420px] sm:min-h-[520px]">
+          {/* Left: food art bleeding off left edge */}
+          <div className="relative w-full lg:w-[46%] flex items-end justify-start shrink-0 overflow-hidden">
+            {/* Large stylized Kerala food wrap illustration bleeding off left */}
+            <div className="absolute -left-8 bottom-0 w-[340px] sm:w-[420px] lg:w-[500px]">
+              <FooterFoodIllustration className="w-full h-auto" />
             </div>
-            <p className="text-xs sm:text-sm text-[#473B63] max-w-md font-medium leading-relaxed">
-              The culinary crew keeping the food truck firing, steaming hot tea, and serving fresh
-              tokens across campus daily.
-            </p>
+            {/* Extra scattered splashes */}
+            <div className="absolute top-10 left-[38%] pointer-events-none" aria-hidden="true">
+              <div className="flex flex-col gap-3">
+                <BlueDrop className="w-3 h-4 rotate-12 opacity-80" />
+                <OilDrop className="w-2.5 h-4 -rotate-6 opacity-70" />
+              </div>
+            </div>
+            <div className="absolute top-20 left-[52%] pointer-events-none" aria-hidden="true">
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="8" fill="#16A34A" opacity="0.85"/></svg>
+            </div>
+            <div className="absolute top-14 left-[60%]" aria-hidden="true">
+              <RedDrop className="w-3 h-4 rotate-6 opacity-75 pointer-events-none" />
+            </div>
+            <div className="h-[380px] sm:h-[460px] lg:h-full w-full" />
           </div>
 
-          {/* Editorial Kitchen Crew Presentation */}
-          <div className="grid grid-cols-1 md:grid-cols-12 gap-8 lg:gap-12 items-center py-4 sm:py-6 border-b border-[#120B24]/15">
-            {/* Visual Chef Insignia Badge */}
-            <div className="md:col-span-4 flex flex-col items-center justify-center p-8 rounded-3xl bg-[#120B24] border border-[#120B24] hover:shadow-xl transition-all duration-300 relative group text-white">
-              <div className="relative w-28 h-28 sm:w-32 sm:h-32 rounded-2xl bg-[#1E143B] border border-ej-lime/40 flex flex-col items-center justify-center shadow-[0_0_35px_rgba(212,255,61,0.2)] group-hover:scale-105 transition-all duration-300">
-                <ChefHat className="w-12 h-12 text-ej-lime stroke-[1.75] drop-shadow-[0_0_15px_rgba(212,255,61,0.6)]" />
-                <span className="text-[9px] font-black uppercase tracking-widest text-[#F6A623] mt-2 font-mono">
-                  CAMPUS CREW
-                </span>
-              </div>
-
-              <span className="mt-4 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider bg-ej-lime/15 text-ej-lime border border-ej-lime/30 font-mono">
-                Verified Campus Vendor
-              </span>
+          {/* Right: big text + sub-info + button */}
+          <div className="flex-1 flex flex-col justify-between px-8 sm:px-10 lg:px-12 pt-10 pb-8">
+            {/* Oversized display text */}
+            <div className="flex-1 flex items-center">
+              <h2
+                className="font-black text-[#120B24] leading-[0.9]"
+                style={{
+                  fontFamily: "'Lilita One', 'Archivo Black', 'Inter', sans-serif",
+                  fontSize: 'clamp(42px, 6.5vw, 88px)',
+                }}
+              >
+                big flavours,<br />
+                one little<br />
+                truck,<br />
+                your campus.
+              </h2>
             </div>
 
-            {/* Team Description & Credentials */}
-            <div className="md:col-span-8 space-y-4 text-left">
-              <div className="space-y-1">
-                <span className="text-[11px] font-bold text-[#FF7A00] uppercase tracking-wider font-mono">
-                  Kitchen Operations &amp; Prep
-                </span>
-                <h3 className="text-2xl sm:text-3xl font-black text-[#120B24] tracking-tight">
-                  Enjipuli Counter Crew
-                </h3>
+            {/* Bottom info row */}
+            <div className="flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-0 pt-8 border-t border-[#C8C0A8]/50 mt-6">
+              <div className="flex-1 sm:pr-6 sm:border-r sm:border-[#C8C0A8]/60">
+                <p className="text-[11px] font-black uppercase tracking-[0.13em] text-[#120B24] leading-snug">
+                  Your favourite<br />cafeteria flavours,<br />made for campus life.
+                </p>
               </div>
-
-              <p className="text-xs sm:text-sm text-[#3E3259] leading-relaxed font-medium">
-                Freshly sourcing local bananas for Pazham Pori, boiling traditional Malabar spice
-                blends, and handling hundreds of token pickups with care. Dedicated to quick
-                turnaround times and clean, delicious campus dining.
-              </p>
-
-              <div className="pt-2 flex flex-wrap items-center gap-4 text-xs font-semibold text-[#120B24]">
-                <span className="flex items-center gap-1.5 text-[#120B24]">
-                  <CheckCircle2 className="w-4 h-4 text-ej-lime fill-[#120B24]" /> Fresh daily
-                  batch cooking
-                </span>
-                <span className="flex items-center gap-1.5 text-[#120B24]">
-                  <Coffee className="w-4 h-4 text-[#FF7A00]" /> Live boiling kettle tea
-                </span>
-                <span className="flex items-center gap-1.5 text-[#120B24]">
-                  <ShieldCheck className="w-4 h-4 text-ej-teal" /> Campus hygiene verified
-                </span>
+              <div className="flex-1 sm:px-6 sm:border-r sm:border-[#C8C0A8]/60">
+                <p className="text-[13px] font-black uppercase tracking-wide text-[#120B24]">
+                  Come Hungry.<br />Leave Happy.
+                </p>
               </div>
-
-              {/* Staff login shortcut */}
-              <div className="pt-4 border-t border-[#120B24]/15 flex items-center justify-between flex-wrap gap-3">
-                <p className="text-[11px] text-[#473B63] font-mono">Operating the truck today?</p>
+              <div className="sm:pl-6">
                 <Link
-                  href="/vendor/login?purpose=vendor"
-                  className="text-xs font-bold text-[#120B24] hover:text-[#FF7A00] hover:underline flex items-center gap-1"
+                  href="/login?purpose=student"
+                  className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg text-[12px] font-black uppercase tracking-wider text-white hover:opacity-90 transition-all"
+                  style={{ background: '#1A1128' }}
                 >
-                  Access Vendor Portal →
+                  <MapPin className="w-4 h-4" />
+                  Find Us
                 </Link>
               </div>
             </div>
@@ -555,223 +615,230 @@ export function RoleSelectionLanding() {
         </div>
       </section>
 
-      {/* ─────────────────────────────────────────────────────────────
-          6. MATCHING FOOTER SECTION (Reference-Exact Architecture)
-          ───────────────────────────────────────────────────────────── */}
-      <footer className="w-full bg-[#0E0A1F] text-white pt-16 sm:pt-20 pb-10 relative z-20 border-t border-white/10 overflow-hidden">
-        {/* Subtle Ambient Glow */}
-        <div className="absolute top-0 right-10 w-96 h-96 rounded-full bg-ej-lime/5 blur-3xl pointer-events-none" />
-        <div className="absolute bottom-0 left-10 w-96 h-96 rounded-full bg-[#FF7A00]/5 blur-3xl pointer-events-none" />
+      {/* ═══════════════════════════════════════════════════════════
+          FOOTER — dark navy, 3-col links, subscribe, social, copyright
+          ═══════════════════════════════════════════════════════════ */}
+      <footer className="relative overflow-hidden" style={{ background: '#130F26' }}>
+        {/* Top colorful border strip */}
+        <div className="w-full h-1 flex" aria-hidden="true">
+          <div className="flex-1" style={{ background: '#E53030' }} />
+          <div className="flex-1" style={{ background: '#F6A800' }} />
+          <div className="flex-1" style={{ background: '#AADB1E' }} />
+          <div className="flex-1" style={{ background: '#2563EB' }} />
+          <div className="flex-1" style={{ background: '#8B5CF6' }} />
+        </div>
 
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-12 pb-14 border-b border-white/10">
-            {/* Left Column (lg:col-span-5): Wordmark, One-Line Pitch, Subscribe Box & Socials */}
-            <div className="lg:col-span-5 space-y-6">
-              {/* Wordmark with colorful splash flair */}
-              <div className="flex items-center gap-3">
+        {/* Footer bottom-left food illustration */}
+        <div className="absolute bottom-10 left-0 w-[200px] sm:w-[260px] pointer-events-none z-0 opacity-90" aria-hidden="true">
+          <FooterFoodIllustration className="w-full h-auto" />
+        </div>
+
+        {/* Decorative accents — top right area */}
+        <div className="absolute top-8 right-16 pointer-events-none z-0" aria-hidden="true">
+          <SmallLeaf className="w-10 h-14 rotate-[20deg] opacity-70" />
+        </div>
+        <div className="absolute top-14 right-10 pointer-events-none z-0" aria-hidden="true">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><circle cx="7" cy="7" r="7" fill="#E53030" opacity="0.7"/></svg>
+        </div>
+        <div className="absolute top-10 right-32 pointer-events-none z-0" aria-hidden="true">
+          <OilDrop className="w-4 h-6 opacity-70" />
+        </div>
+
+        {/* Main footer content */}
+        <div className="relative z-10 max-w-7xl mx-auto px-6 sm:px-10 lg:px-14 pt-12 pb-6">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 pb-10 border-b border-white/10">
+
+            {/* Left column: wordmark, description, subscribe, socials */}
+            <div className="lg:col-span-4 space-y-5 pl-[160px] sm:pl-[200px] lg:pl-0">
+              {/* Wordmark + splash */}
+              <div className="relative inline-block">
                 <img
                   src="/branding/enjipuli-wordmark.png"
                   alt="ഇഞ്ചിപ്പുളി"
-                  width={320}
-                  height={110}
-                  className="h-11 sm:h-12 w-auto object-contain drop-shadow-[0_0_16px_rgba(212,255,61,0.4)]"
+                  width={200}
+                  height={70}
+                  className="h-12 sm:h-14 w-auto object-contain"
                   decoding="async"
+                  style={{ filter: 'drop-shadow(0 0 12px rgba(170,219,30,0.35))' }}
                 />
+                {/* Colorful paint splashes around footer wordmark */}
+                <span className="absolute -left-5 top-0"><RedDrop className="w-4 h-6 -rotate-20 opacity-90" /></span>
+                <span className="absolute -left-3 bottom-0"><OilDrop className="w-3.5 h-5 rotate-10 opacity-85" /></span>
+                <span className="absolute -right-2 -top-2"><BlueDrop className="w-3 h-4 opacity-80" /></span>
+                <span className="absolute right-2 bottom-0">
+                  <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><circle cx="5" cy="5" r="5" fill="#E53030" opacity="0.85"/></svg>
+                </span>
+                <span className="absolute right-8 top-1">
+                  <svg width="8" height="8" viewBox="0 0 8 8" fill="none"><circle cx="4" cy="4" r="4" fill="#F6A800"/></svg>
+                </span>
               </div>
 
-              {/* One-Line Description in ENJIPULI Voice */}
-              <p className="text-xs sm:text-sm text-white/70 max-w-sm leading-relaxed font-normal">
-                Your favourite campus flavours, now ordered ahead. Freshly made food, great vibes
-                and speedy token pickups at Providence College of Engineering.
+              {/* Description */}
+              <p className="text-[13px] text-white/70 leading-relaxed max-w-[240px]">
+                Your favourite cafeteria flavours, now on the move. Freshly made food, great vibes
+                and campus memories served with love.
               </p>
 
-              {/* Email Subscribe Box */}
-              <form onSubmit={handleSubscribe} className="space-y-2 max-w-md">
+              {/* Email subscribe */}
+              <form onSubmit={handleSubscribe} className="max-w-[300px]">
                 <div className="relative flex items-center">
                   <input
                     type="email"
                     value={subscriberEmail}
                     onChange={(e) => setSubscriberEmail(e.target.value)}
                     placeholder="Enter your email for updates"
-                    className="w-full bg-[#1A1435] border border-white/15 rounded-full py-3 pl-4 pr-32 text-xs text-white placeholder:text-white/40 focus:outline-none focus:border-ej-lime focus:ring-1 focus:ring-ej-lime transition"
+                    className="w-full rounded-full py-2.5 pl-4 pr-28 text-[12px] text-[#120B24] placeholder:text-[#888] focus:outline-none"
+                    style={{ background: '#2A2345', color: 'white', border: 'none' }}
                     required
                   />
                   <button
                     type="submit"
                     disabled={subscribing}
-                    className="absolute right-1.5 px-4 py-2 rounded-full bg-white text-[#120B24] text-xs font-black hover:bg-ej-lime transition-all disabled:opacity-60 flex items-center gap-1.5"
+                    className="absolute right-1 px-4 py-2 rounded-full text-[12px] font-black text-[#120B24] bg-white hover:bg-[#AADB1E] transition-all disabled:opacity-60"
                   >
-                    {subscribing ? (
-                      <span>...</span>
-                    ) : (
-                      <>
-                        <span>Subscribe</span>
-                        <Send className="w-3 h-3" />
-                      </>
-                    )}
+                    {subscribing ? '...' : 'Subscribe'}
                   </button>
                 </div>
-
                 {subscribeSuccess && (
-                  <p className="text-[11px] text-ej-lime flex items-center gap-1 font-mono pt-1">
-                    <Check className="w-3.5 h-3.5" />
-                    <span>{subscribeSuccess}</span>
+                  <p className="text-[11px] text-[#AADB1E] flex items-center gap-1 mt-1 font-mono">
+                    <Check className="w-3 h-3" />{subscribeSuccess}
                   </p>
                 )}
                 {subscribeError && (
-                  <p className="text-[11px] text-[#FF7A00] flex items-center gap-1 font-mono pt-1">
-                    <AlertCircle className="w-3.5 h-3.5" />
-                    <span>{subscribeError}</span>
+                  <p className="text-[11px] text-[#E53030] flex items-center gap-1 mt-1">
+                    <AlertCircle className="w-3 h-3" />{subscribeError}
                   </p>
                 )}
               </form>
 
-              {/* Social Channels Note */}
-              <div className="pt-2 flex items-center gap-3">
-                <a
-                  href="https://instagram.com"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="w-8 h-8 rounded-full bg-white/10 hover:bg-ej-lime hover:text-[#120B24] flex items-center justify-center text-white/80 transition-colors"
-                  aria-label="Instagram"
-                >
-                  <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24">
+              {/* Social icons */}
+              <div className="flex items-center gap-3">
+                {/* Instagram */}
+                <a href="https://instagram.com" target="_blank" rel="noopener noreferrer"
+                  className="w-9 h-9 rounded-full flex items-center justify-center hover:bg-white/20 transition-colors"
+                  style={{ background: '#2A2345' }} aria-label="Instagram">
+                  <svg className="w-4 h-4 fill-white" viewBox="0 0 24 24">
                     <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
                   </svg>
                 </a>
-                <span className="text-[11px] text-white/50 font-mono">
-                  @enjipuli • Official Campus Truck
-                </span>
+                {/* Facebook */}
+                <a href="https://facebook.com" target="_blank" rel="noopener noreferrer"
+                  className="w-9 h-9 rounded-full flex items-center justify-center hover:bg-white/20 transition-colors"
+                  style={{ background: '#2A2345' }} aria-label="Facebook">
+                  <svg className="w-4 h-4 fill-white" viewBox="0 0 24 24">
+                    <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
+                  </svg>
+                </a>
+                {/* X / Twitter */}
+                <a href="https://x.com" target="_blank" rel="noopener noreferrer"
+                  className="w-9 h-9 rounded-full flex items-center justify-center hover:bg-white/20 transition-colors"
+                  style={{ background: '#2A2345' }} aria-label="X">
+                  <svg className="w-4 h-4 fill-white" viewBox="0 0 24 24">
+                    <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
+                  </svg>
+                </a>
+                {/* LinkedIn */}
+                <a href="https://linkedin.com" target="_blank" rel="noopener noreferrer"
+                  className="w-9 h-9 rounded-full flex items-center justify-center hover:bg-white/20 transition-colors"
+                  style={{ background: '#2A2345' }} aria-label="LinkedIn">
+                  <svg className="w-4 h-4 fill-white" viewBox="0 0 24 24">
+                    <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/>
+                  </svg>
+                </a>
               </div>
             </div>
 
-            {/* Quick Links Column (lg:col-span-2) */}
+            {/* Quick Links column */}
             <div className="lg:col-span-2 space-y-3">
               <div>
-                <h3 className="text-sm font-black uppercase tracking-wider text-white">
-                  Quick Links
+                <h3 className="text-[14px] font-black text-white tracking-wide">Quick Links</h3>
+                <div className="h-[3px] w-8 mt-1.5 rounded-full" style={{ background: '#F6A800' }} />
+              </div>
+              <ul className="space-y-2.5 text-[13px] text-white/75">
+                <li><a href="#hero-top" className="hover:text-white transition-colors">Home</a></li>
+                <li><Link href="/login?purpose=student" className="hover:text-white transition-colors">Menu</Link></li>
+                <li><a href="#story" className="hover:text-white transition-colors">Our Story</a></li>
+                <li><Link href="/login?purpose=student" className="hover:text-white transition-colors">Food Truck</Link></li>
+                <li><a href="#story" className="hover:text-white transition-colors">Gallery</a></li>
+                <li><a href="mailto:support@enjipuli.com" className="hover:text-white transition-colors">Contact Us</a></li>
+                <li><Link href="/privacy" className="hover:text-white transition-colors">FAQ</Link></li>
+              </ul>
+            </div>
+
+            {/* Support column */}
+            <div className="lg:col-span-2 space-y-3">
+              <div>
+                <h3 className="text-[14px] font-black text-white tracking-wide">Support</h3>
+                <div className="h-[3px] w-8 mt-1.5 rounded-full" style={{ background: '#E53030' }} />
+              </div>
+              <ul className="space-y-2.5 text-[13px] text-white/75">
+                <li><Link href="/orders" className="hover:text-white transition-colors">Order Tracking</Link></li>
+                <li><Link href="/privacy" className="hover:text-white transition-colors">Privacy Policy</Link></li>
+                <li><Link href="/terms" className="hover:text-white transition-colors">Terms &amp; Conditions</Link></li>
+                <li><a href="mailto:support@enjipuli.com" className="hover:text-white transition-colors">Help Center</a></li>
+              </ul>
+            </div>
+
+            {/* More from ഇഞ്ചിപ്പുളി column */}
+            <div className="lg:col-span-4 space-y-3 relative">
+              <div>
+                <h3 className="text-[14px] font-black text-white tracking-wide">
+                  More from{' '}
+                  <span style={{ fontFamily: "'Baloo Chettan 2', sans-serif" }}>ഇഞ്ചിപ്പുളി</span>
                 </h3>
-                <div className="h-1 w-8 bg-[#F6A623] rounded-full mt-1.5" />
+                <div className="h-[3px] w-8 mt-1.5 rounded-full" style={{ background: '#2563EB' }} />
               </div>
-              <ul className="space-y-2.5 text-xs text-white/70 font-medium">
-                <li>
-                  <a href="#hero-landing-screen" className="hover:text-ej-lime transition-colors">
-                    Home
-                  </a>
-                </li>
-                <li>
-                  <Link href="/login?purpose=student" className="hover:text-ej-lime transition-colors">
-                    Order Menu
-                  </Link>
-                </li>
-                <li>
-                  <a href="#story" className="hover:text-ej-lime transition-colors">
-                    Our Story
-                  </a>
-                </li>
-                <li>
-                  <Link href="/orders" className="hover:text-ej-lime transition-colors">
-                    My Orders
-                  </Link>
-                </li>
-                <li>
-                  <Link
-                    href="/vendor/login?purpose=vendor"
-                    className="hover:text-ej-lime transition-colors"
-                  >
-                    Vendor Portal
-                  </Link>
-                </li>
+              <ul className="space-y-2.5 text-[13px] text-white/75">
+                <li><a href="#story" className="hover:text-white transition-colors">Healthy Eating</a></li>
+                <li><a href="#story" className="hover:text-white transition-colors">Campus Life</a></li>
+                <li><a href="#story" className="hover:text-white transition-colors">Foodie Diaries</a></li>
+                <li><a href="#story" className="hover:text-white transition-colors">Recipe Inspirations</a></li>
               </ul>
-            </div>
 
-            {/* Support Column (lg:col-span-2) */}
-            <div className="lg:col-span-2 space-y-3">
-              <div>
-                <h3 className="text-sm font-black uppercase tracking-wider text-white">Support</h3>
-                <div className="h-1 w-8 bg-[#FF4785] rounded-full mt-1.5" />
-              </div>
-              <ul className="space-y-2.5 text-xs text-white/70 font-medium">
-                <li>
-                  <Link href="/orders" className="hover:text-ej-lime transition-colors">
-                    Order Tracking
-                  </Link>
-                </li>
-                <li>
-                  <Link href="/privacy" className="hover:text-ej-lime transition-colors">
-                    Privacy Policy
-                  </Link>
-                </li>
-                <li>
-                  <Link href="/terms" className="hover:text-ej-lime transition-colors">
-                    Terms &amp; Conditions
-                  </Link>
-                </li>
-                <li>
-                  <a
-                    href="mailto:support@enjipuli.com"
-                    className="hover:text-ej-lime transition-colors"
+              {/* COME HUNGRY. LEAVE HAPPY. — diagonal callout bottom-right */}
+              <div className="absolute bottom-[-20px] right-4 lg:right-0">
+                <div className="transform -rotate-6 inline-block">
+                  <p
+                    className="text-[#F6A800] font-black leading-tight"
+                    style={{
+                      fontFamily: "'Permanent Marker', 'Caveat', cursive",
+                      fontSize: 22,
+                      textShadow: '1px 1px 0 rgba(0,0,0,0.3)',
+                    }}
                   >
-                    Help / Contact
-                  </a>
-                </li>
-              </ul>
-            </div>
-
-            {/* Campus Info & Diagonal Tagline (lg:col-span-3) */}
-            <div className="lg:col-span-3 flex flex-col justify-between space-y-6">
-              <div className="space-y-3">
-                <div>
-                  <h3 className="text-sm font-black uppercase tracking-wider text-white">
-                    Campus Counter
-                  </h3>
-                  <div className="h-1 w-8 bg-ej-teal rounded-full mt-1.5" />
-                </div>
-                <div className="space-y-2 text-xs text-white/70 font-medium">
-                  <p className="flex items-center gap-1.5 text-white/90">
-                    <MapPin className="w-3.5 h-3.5 text-ej-teal shrink-0" />
-                    <span>Providence College of Engineering</span>
+                    COME HUNGRY.
+                    <br />
+                    LEAVE HAPPY.
                   </p>
-                  <p className="flex items-center gap-1.5 text-white/70">
-                    <Calendar className="w-3.5 h-3.5 text-ej-gold shrink-0" />
-                    <span>Mon – Sat • Campus Break Hours</span>
-                  </p>
-                  <p className="text-[11px] text-white/50 font-mono">
-                    Token pickups at main ground counter.
-                  </p>
-                </div>
-              </div>
-
-              {/* Diagonal Tagline Callout (Inspired by Reference) */}
-              <div className="pt-2 flex justify-start lg:justify-end">
-                <div className="inline-block transform -rotate-6 bg-[#1A1435] border border-ej-lime/30 px-4 py-2.5 rounded-xl shadow-lg">
-                  <p className="text-xs sm:text-sm font-black tracking-wider uppercase text-ej-lime">
-                    SKIP THE QUEUE.
-                  </p>
-                  <p className="text-xs sm:text-sm font-black tracking-wider uppercase text-[#FF7A00] flex items-center justify-between">
-                    <span>EAT FRESH.</span>
-                    <span className="text-[10px] text-white/50 font-malayalam tracking-normal">
-                      ഇഞ്ചിപ്പുളി
-                    </span>
-                  </p>
+                  {/* Small colored accent dots near callout */}
+                  <div className="absolute -bottom-2 -right-3 flex gap-1">
+                    <span className="w-2 h-2 rounded-full bg-[#E53030] opacity-80" />
+                    <span className="w-2 h-2 rounded-full bg-[#F6A800] opacity-90" />
+                    <span className="w-1.5 h-1.5 rounded-full bg-[#16A34A] opacity-75 mt-0.5" />
+                  </div>
                 </div>
               </div>
             </div>
           </div>
 
-          {/* Bottom Copyright Bar */}
-          <div className="pt-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-white/50 font-mono">
-            <p>© {new Date().getFullYear()} ഇഞ്ചിപ്പുളി. All rights reserved.</p>
-            <div className="flex items-center gap-6">
-              <Link href="/terms" className="hover:text-white transition-colors">
-                Terms &amp; Conditions
-              </Link>
-              <span>|</span>
-              <Link href="/privacy" className="hover:text-white transition-colors">
-                Privacy Policy
-              </Link>
-              <span>|</span>
-              <span className="text-white/40">Providence College</span>
+          {/* Bottom copyright bar */}
+          <div className="pt-6 pb-2 flex flex-col sm:flex-row items-center justify-between gap-3">
+            <p className="text-[12px] text-white/60 font-mono">
+              © Since 2015{' '}
+              <span
+                className="text-white/90 font-bold underline"
+                style={{ fontFamily: "'Baloo Chettan 2', sans-serif" }}
+              >
+                ഇഞ്ചിപ്പുളി
+              </span>
+              . All rights reserved.
+            </p>
+            <div className="flex items-center gap-4 text-[12px] text-white/55">
+              <Link href="/terms" className="hover:text-white transition-colors">Terms &amp; Conditions</Link>
+              <span className="text-white/25">|</span>
+              <Link href="/privacy" className="hover:text-white transition-colors">Privacy Policy</Link>
+              <span className="text-white/25">|</span>
+              <span className="hover:text-white cursor-pointer transition-colors">Cookie Settings</span>
             </div>
           </div>
         </div>
