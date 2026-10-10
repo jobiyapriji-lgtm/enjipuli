@@ -345,22 +345,28 @@ export default function StudentLoginPage() {
           </form>
         )}
 
-        {/* Staff login link */}
+        {/* Back to role selection */}
         <div style={{
           marginTop: '1.75rem',
           paddingTop: '1.25rem',
           borderTop: '1px solid var(--ej-border)',
+          textAlign: 'center',
         }}>
           <Link
-            href="/vendor/login"
+            href="/"
             style={{
               color: 'var(--ej-muted)',
               fontSize: '0.75rem',
               textDecoration: 'none',
               transition: 'color 0.15s',
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '0.35rem',
             }}
+            onMouseEnter={(e) => { e.currentTarget.style.color = 'var(--ej-lime)'; }}
+            onMouseLeave={(e) => { e.currentTarget.style.color = 'var(--ej-muted)'; }}
           >
-            Staff login →
+            ← Back to role selection
           </Link>
         </div>
       </div>

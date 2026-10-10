@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import { Header } from '@/components/Header';
 import { FloralDivider } from '@/components/FloralDivider';
 import { SplashScreen } from '@/components/SplashScreen';
+import { RoleSelectionLanding } from '@/components/RoleSelectionLanding';
 import { ShoppingBag, X, Plus, Minus, ArrowRight, RefreshCw, AlertTriangle } from 'lucide-react';
 
 /* ─── Types ───────────────────────────────────────────────────────────── */
@@ -30,13 +31,8 @@ declare global {
   interface Window { Razorpay: any; }
 }
 
-export default function StudentHomePage() {
-  const { data: session, status } = useSession();
+function StudentMenuDashboard({ session }: { session: any }) {
   const router = useRouter();
-
-  // App startup sequence: 'logo' -> 'loading' -> 'dashboard'
-  const [appStage, setAppStage] = useState<'logo' | 'loading' | 'dashboard'>('logo');
-  const [splashMessage, setSplashMessage] = useState('Starting campus food truck...');
 
   const [menuItems, setMenuItems]               = useState<MenuItem[]>([]);
   const [menuLoading, setMenuLoading]           = useState(true);
@@ -94,50 +90,6 @@ export default function StudentHomePage() {
     const id = setInterval(fetchMenu, 10_000);
     return () => clearInterval(id);
   }, [fetchMenu]);
-
-  // Step 1: Logo Page display timer (1000ms)
-  useEffect(() => {
-    const logoTimer = setTimeout(() => {
-      setAppStage('loading');
-    }, 1000);
-
-    return () => clearTimeout(logoTimer);
-  }, []);
-
-  // Step 2 & 3: Loading transition & Authentication check
-  useEffect(() => {
-    if (appStage === 'logo') return;
-
-    if (status === 'loading') {
-      setSplashMessage('Checking student authentication...');
-      return;
-    }
-
-    if (status === 'unauthenticated') {
-      // Must NOT directly open the dashboard page without login!
-      setSplashMessage('Redirecting to Campus Login...');
-      const redirectTimer = setTimeout(() => {
-        router.replace('/login');
-      }, 500);
-      return () => clearTimeout(redirectTimer);
-    }
-
-    if (status === 'authenticated') {
-      const user = session?.user as any;
-      if (user?.role === 'VENDOR') {
-        router.replace('/vendor/queue');
-        return;
-      }
-
-      setSplashMessage("Loading today's fresh menu...");
-      if (!menuLoading) {
-        const readyTimer = setTimeout(() => {
-          setAppStage('dashboard');
-        }, 350);
-        return () => clearTimeout(readyTimer);
-      }
-    }
-  }, [appStage, status, menuLoading, session, router]);
 
   useEffect(() => {
     const s = document.createElement('script');
@@ -275,8 +227,8 @@ export default function StudentHomePage() {
     ? menuItems
     : menuItems.filter(i => i.category === selectedCategory);
 
-  if (appStage !== 'dashboard') {
-    return <SplashScreen stage={appStage} message={splashMessage} />;
+  if (menuLoading) {
+    return <SplashScreen stage="loading" message="Loading today's fresh menu..." />;
   }
 
   return (
@@ -564,3 +516,29 @@ export default function StudentHomePage() {
     </div>
   );
 }
+
+export default function HomePage() {
+  const { data: session, status } = useSession();
+  const router = useRouter();
+
+  // 1. Session is still resolving
+  if (status === 'loading') {
+    return <SplashScreen stage="loading" message="Loading Enjipuli..." />;
+  }
+
+  // 2. Unauthenticated visitors see the Role-Selection Landing Screen as root entry point
+  if (status === 'unauthenticated') {
+    return <RoleSelectionLanding />;
+  }
+
+  // 3. Vendor session skips straight to vendor queue
+  const user = session?.user as any;
+  if (user?.role === 'VENDOR') {
+    router.replace('/vendor/queue');
+    return <SplashScreen stage="loading" message="Opening Vendor Dashboard..." />;
+  }
+
+  // 4. Authenticated Student Dashboard
+  return <StudentMenuDashboard session={session} />;
+}
+

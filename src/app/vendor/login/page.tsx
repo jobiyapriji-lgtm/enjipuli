@@ -412,17 +412,23 @@ export default function VendorLoginPage() {
           marginTop: '1.75rem',
           paddingTop: '1.25rem',
           borderTop: '1px solid var(--ej-border)',
+          textAlign: 'center',
         }}>
           <Link
-            href="/login"
+            href="/"
             style={{
               color: 'var(--ej-muted)',
               fontSize: '0.75rem',
               textDecoration: 'none',
               transition: 'color 0.15s',
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '0.35rem',
             }}
+            onMouseEnter={(e) => { e.currentTarget.style.color = 'var(--ej-gold)'; }}
+            onMouseLeave={(e) => { e.currentTarget.style.color = 'var(--ej-muted)'; }}
           >
-            ← Student login
+            ← Back to role selection
           </Link>
         </div>
       </div>
