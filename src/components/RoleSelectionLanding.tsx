@@ -303,145 +303,39 @@ export function RoleSelectionLanding() {
       </header>
 
       {/* ═══════════════════════════════════════════════════════════
-          HERO SECTION — cream bg, vertical grid lines, food illustrations
+          HERO SECTION — exact master design with interactive controls
           ═══════════════════════════════════════════════════════════ */}
       <section
-        className="relative w-full overflow-hidden"
-        style={{ background: '#EDE8DC', minHeight: 580 }}
+        id="hero-top"
+        className="relative w-full overflow-hidden select-none"
+        style={{ background: '#EDE8DC' }}
       >
-        {/* Vertical grid lines */}
-        <div className="absolute inset-0 pointer-events-none z-0" aria-hidden="true">
-          {[14, 28, 42, 57, 71, 85].map((pct) => (
-            <div
-              key={pct}
-              className="absolute top-0 bottom-0 w-[1px]"
-              style={{ left: `${pct}%`, background: '#C8C0A8', opacity: 0.35 }}
-            />
-          ))}
-        </div>
+        <div className="relative w-full">
+          {/* Master high-resolution hero graphic */}
+          <img
+            src="/branding/hero-exact-final.png"
+            alt="Skip the Queue, Order Fresh Daily Only at Enjipuli"
+            width={1600}
+            height={900}
+            className="w-full h-auto object-cover select-none pointer-events-none"
+            decoding="async"
+          />
 
-        {/* ── Decorative: Kerala food bowl — top right ── */}
-        <div className="absolute top-[-20px] right-[-10px] w-[240px] sm:w-[300px] pointer-events-none z-10" aria-hidden="true">
-          <KeralaFoodBowl className="w-full h-auto" />
-          {/* Oil drops spilling from bowl */}
-          <OilDrop className="absolute w-6 h-9 top-[55%] right-[-18px]" />
-          <OilDrop className="absolute w-4 h-6 top-[68%] right-[-5px] opacity-80" />
-          <SmallLeaf className="absolute w-10 h-14 top-[65%] right-[28px] opacity-90 -rotate-12" />
-        </div>
-
-        {/* ── Decorative: Garlic — bottom left ── */}
-        <div className="absolute bottom-[-30px] left-[-15px] w-[130px] sm:w-[160px] pointer-events-none z-10 -rotate-12" aria-hidden="true">
-          <GarlicBulb className="w-full h-auto opacity-90" />
-        </div>
-
-        {/* ── Decorative: Chili + Leaf — bottom right ── */}
-        <div className="absolute bottom-[10px] right-[4%] pointer-events-none z-10 flex items-end gap-1" aria-hidden="true">
-          <TropicalLeaf className="w-[90px] sm:w-[115px] h-auto opacity-95" />
-          <ChiliPepper className="w-[30px] sm:w-[38px] h-auto -mb-4 -ml-2 opacity-90" />
-          <OilDrop className="absolute w-5 h-7 bottom-20 right-2 opacity-70" />
-          <OilDrop className="absolute w-4 h-6 bottom-28 right-10 opacity-60" />
-        </div>
-
-        {/* ── Decorative: Left side colored drops ── */}
-        <div className="absolute left-4 top-[35%] pointer-events-none z-10 space-y-2" aria-hidden="true">
-          <OilDrop className="w-5 h-7 opacity-80" />
-          <RedDrop className="w-4 h-5 opacity-75 translate-x-3" />
-          <BlueDrop className="w-3.5 h-5 opacity-70 -translate-x-1" />
-        </div>
-
-        {/* ── Hero content ── */}
-        <div className="relative z-20 max-w-7xl mx-auto px-8 sm:px-12 lg:px-16 pt-10 pb-14">
-          {/* Badge */}
-          <div
-            className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full mb-6 border border-[#120B24]"
-            style={{ background: '#F6A800' }}
-          >
-            <span className="w-1.5 h-1.5 rounded-full bg-[#120B24]" />
-            <span className="text-[11px] font-black uppercase tracking-[0.14em] text-[#120B24]">
-              Campus Favorite • Hot &amp; Fresh
-            </span>
-            <Sparkles className="w-3.5 h-3.5 text-[#120B24]" />
-          </div>
-
-          {/* Main headline */}
-          <h1
-            className="text-[48px] sm:text-[60px] lg:text-[72px] leading-[1.08] font-black text-[#120B24] mb-1"
-            style={{ fontFamily: "'Archivo Black', 'Inter', sans-serif", maxWidth: 640 }}
-          >
-            Skip the Queue,
-            <br />
-            Order{' '}
-            <span className="relative inline-block" style={{ color: '#FF7A00' }}>
-              Fresh
-              {/* Wavy underline matching design */}
-              <svg
-                className="absolute left-0 w-full"
-                style={{ bottom: '-6px', height: 12 }}
-                viewBox="0 0 120 12"
-                preserveAspectRatio="none"
-                fill="none"
-              >
-                <path
-                  d="M2 9 C 22 2, 42 12, 62 5 C 82 -1, 102 10, 118 5"
-                  stroke="#FF7A00"
-                  strokeWidth="4"
-                  strokeLinecap="round"
-                  fill="none"
-                />
-              </svg>
-            </span>{' '}
-            Daily
-            <br />
-            Only at
-          </h1>
-
-          {/* ഇഞ്ചിപ്പുളി large wordmark in hero — lime brush, with paint splash decor */}
-          <div className="relative inline-block mb-5 mt-1">
-            <img
-              src="/branding/enjipuli-wordmark.png"
-              alt="ഇഞ്ചിപ്പുളി"
-              width={420}
-              height={145}
-              className="h-[80px] sm:h-[100px] w-auto object-contain"
-              decoding="async"
-            />
-            {/* Colorful paint splashes around the hero wordmark */}
-            <span className="absolute -left-5 top-1/2 -translate-y-1/2 flex flex-col gap-1.5">
-              <OilDrop className="w-4 h-6 -rotate-12" />
-              <RedDrop className="w-3 h-4.5 rotate-6" />
-            </span>
-            <span className="absolute -right-3 bottom-0 flex items-center gap-1">
-              <BlueDrop className="w-3.5 h-5 rotate-12" />
-            </span>
-            <span className="absolute right-8 -top-3">
-              <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><circle cx="7" cy="7" r="7" fill="#F6A800" opacity="0.9"/></svg>
-            </span>
-            <span className="absolute right-2 top-1/3">
-              <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><circle cx="5" cy="5" r="5" fill="#E53030" opacity="0.85"/></svg>
-            </span>
-          </div>
-
-          {/* Subtext */}
-          <p className="text-[14px] sm:text-[15px] text-[#3A3050] font-medium leading-relaxed mb-7 max-w-sm">
-            Browse today&apos;s campus menu, order ahead, and pick up hot at the food truck counter
-            with your token — no more waiting in line between classes.
-          </p>
-
-          {/* CTA Buttons */}
-          <div className="flex flex-col sm:flex-row gap-3">
+          {/* Interactive button clickable overlays aligned precisely with the artwork buttons */}
+          <div className="absolute left-[9.5%] bottom-[7.5%] flex items-center gap-4 z-20">
             <Link
               href="/login?purpose=student"
-              className="inline-flex items-center justify-center gap-2 px-8 py-3.5 rounded-full font-black text-[14px] text-[#120B24] hover:opacity-90 transition-all"
+              className="px-8 sm:px-10 py-3.5 sm:py-4 rounded-full font-black text-[14px] text-[#120B24] bg-[#AADB1E] hover:bg-white transition-all shadow-md flex items-center gap-2"
               style={{ background: '#AADB1E' }}
             >
-              Order Now
+              <span>Order Now</span>
               <ArrowRight className="w-4 h-4 stroke-[2.5]" />
             </Link>
             <Link
               href="/vendor/login?purpose=vendor"
-              className="inline-flex items-center justify-center gap-2 px-8 py-3.5 rounded-full font-bold text-[14px] text-[#120B24] bg-white border-2 border-[#120B24] hover:bg-[#f0f0f0] transition-all"
+              className="px-8 sm:px-10 py-3.5 sm:py-4 rounded-full font-bold text-[14px] text-[#120B24] bg-white border-2 border-[#120B24] hover:bg-[#F0EDE4] transition-all shadow-sm"
             >
-              Vendor Portal
+              <span>Vendor Portal</span>
             </Link>
           </div>
         </div>
