@@ -243,64 +243,19 @@ export function RoleSelectionLanding() {
       className="min-h-screen flex flex-col text-[#120B24] overflow-x-hidden scroll-smooth"
       style={{ background: '#EDE8DC' }}
     >
-      {/* ═══════════════════════════════════════════════════════════
-          NAV BAR — sticky dark navbar with working links
-          ═══════════════════════════════════════════════════════════ */}
-      <header
-        className="w-full sticky top-0 z-50 flex items-center justify-between px-6 sm:px-10 lg:px-14 shadow-md"
-        style={{ background: '#1A1128', minHeight: 56 }}
-      >
-        {/* Left: Wordmark + colorful accent dots */}
-        <Link href="/" className="flex items-center gap-1 shrink-0 py-2">
-          <div className="relative">
-            <img
-              src="/branding/enjipuli-wordmark.png"
-              alt="ഇഞ്ചിപ്പുളി"
-              width={200}
-              height={70}
-              className="h-9 w-auto object-contain"
-              decoding="async"
-            />
-            {/* Small colorful accent dots around wordmark */}
-            <span className="absolute -top-1.5 -left-2 w-2.5 h-2.5 rounded-full bg-[#E53030] opacity-90" />
-            <span className="absolute -bottom-1 left-2 w-2 h-2 rounded-full bg-[#F6A800] opacity-90" />
-            <span className="absolute top-0.5 -right-1 w-2 h-2 rounded-full bg-[#2563EB] opacity-80" />
-          </div>
-        </Link>
-
-        {/* Center: Nav links */}
-        <nav className="hidden md:flex items-center gap-10">
-          <a
-            href="#story"
-            className="text-white text-[11px] font-black uppercase tracking-[0.18em] hover:text-[#D4FF3D] transition-colors"
-          >
-            Story
-          </a>
-          <a
-            href="#story"
-            className="text-white text-[11px] font-black uppercase tracking-[0.18em] hover:text-[#D4FF3D] transition-colors"
-          >
-            Behind the Counter
-          </a>
-        </nav>
-
-        {/* Right: CTAs */}
-        <div className="flex items-center gap-2.5">
-          <Link
-            href="/vendor/login?purpose=vendor"
-            className="px-5 py-2 rounded-full text-[13px] font-bold text-[#D4FF3D] border-2 border-[#D4FF3D] hover:bg-[#D4FF3D]/10 transition-all"
-          >
-            Vendor Login
-          </Link>
-          <Link
-            href="/login?purpose=student"
-            className="px-5 py-2 rounded-full text-[13px] font-black text-[#120B24] bg-[#D4FF3D] hover:bg-white transition-all flex items-center gap-1.5"
-          >
-            Order Now
-            <ArrowRight className="w-3.5 h-3.5 stroke-[2.5]" />
-          </Link>
+      {/* Nav is built directly into the approved master design below */}
+      {/* Invisible interactive links matching the master artwork navbar */}
+      <div className="absolute top-0 left-0 w-full z-50 flex items-center justify-between px-6 sm:px-10 lg:px-14 pointer-events-none" style={{ height: '7vw', maxHeight: 85 }}>
+        <Link href="/" className="pointer-events-auto h-full w-[20%] max-w-[200px]" title="Enjipuli Home" aria-label="Home" />
+        <div className="hidden md:flex items-center gap-10 pointer-events-auto">
+          <a href="#story" className="text-transparent py-4 text-xs font-bold" aria-label="Story">Story</a>
+          <a href="#story" className="text-transparent py-4 text-xs font-bold" aria-label="Behind the Counter">Behind the Counter</a>
         </div>
-      </header>
+        <div className="flex items-center gap-2.5 pointer-events-auto">
+          <Link href="/vendor/login?purpose=vendor" className="w-[110px] sm:w-[130px] h-[34px] sm:h-[42px] rounded-full" title="Vendor Login" aria-label="Vendor Login" />
+          <Link href="/login?purpose=student" className="w-[110px] sm:w-[130px] h-[34px] sm:h-[42px] rounded-full" title="Order Now" aria-label="Order Now" />
+        </div>
+      </div>
 
       {/* ═══════════════════════════════════════════════════════════
           HERO SECTION — crisp native layout matching approved master design
