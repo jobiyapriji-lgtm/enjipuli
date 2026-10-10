@@ -243,70 +243,202 @@ export function RoleSelectionLanding() {
       className="min-h-screen flex flex-col text-[#120B24] overflow-x-hidden scroll-smooth"
       style={{ background: '#EDE8DC' }}
     >
-      {/* Nav is built directly into the approved master design below */}
-      {/* Invisible interactive links matching the master artwork navbar */}
-      <div className="absolute top-0 left-0 w-full z-50 flex items-center justify-between px-6 sm:px-10 lg:px-14 pointer-events-none" style={{ height: '7vw', maxHeight: 85 }}>
-        <Link href="/" className="pointer-events-auto h-full w-[20%] max-w-[200px]" title="Enjipuli Home" aria-label="Home" />
-        <div className="hidden md:flex items-center gap-10 pointer-events-auto">
-          <a href="#story" className="text-transparent py-4 text-xs font-bold" aria-label="Story">Story</a>
-          <a href="#story" className="text-transparent py-4 text-xs font-bold" aria-label="Behind the Counter">Behind the Counter</a>
+      {/* ═══════════════════════════════════════════════════════════
+          NAV BAR — native sticky dark header with working links
+          ═══════════════════════════════════════════════════════════ */}
+      <header
+        className="w-full sticky top-0 z-50 flex items-center justify-between px-6 sm:px-10 lg:px-14 shadow-lg"
+        style={{ background: '#1A1128', minHeight: 64 }}
+      >
+        {/* Left: Wordmark + colorful accent dots */}
+        <Link href="/" className="flex items-center gap-1 shrink-0 py-2">
+          <div className="relative">
+            <img
+              src="/branding/enjipuli-wordmark.png"
+              alt="ഇഞ്ചിപ്പുളി"
+              width={180}
+              height={60}
+              className="h-9 sm:h-10 w-auto object-contain"
+              decoding="async"
+            />
+            {/* Colorful paint splashes around logo */}
+            <span className="absolute -top-1.5 -left-2 w-2.5 h-2.5 rounded-full bg-[#E53030] opacity-90" />
+            <span className="absolute -bottom-1 left-2 w-2 h-2 rounded-full bg-[#F6A800] opacity-90" />
+            <span className="absolute top-0.5 -right-1 w-2 h-2 rounded-full bg-[#2563EB] opacity-80" />
+          </div>
+        </Link>
+
+        {/* Center: Navigation Links */}
+        <nav className="hidden md:flex items-center gap-10">
+          <a
+            href="#story"
+            className="text-white text-[12px] font-black uppercase tracking-[0.18em] hover:text-[#D4FF3D] transition-colors"
+          >
+            Story
+          </a>
+          <a
+            href="#story"
+            className="text-white text-[12px] font-black uppercase tracking-[0.18em] hover:text-[#D4FF3D] transition-colors"
+          >
+            Behind the Counter
+          </a>
+        </nav>
+
+        {/* Right: CTAs */}
+        <div className="flex items-center gap-3">
+          <Link
+            href="/vendor/login?purpose=vendor"
+            className="px-5 py-2 rounded-full text-[13px] font-bold text-[#D4FF3D] border-2 border-[#D4FF3D] hover:bg-[#D4FF3D]/10 transition-all"
+          >
+            Vendor Login
+          </Link>
+          <Link
+            href="/login?purpose=student"
+            className="px-5 py-2 rounded-full text-[13px] font-black text-[#120B24] bg-[#D4FF3D] hover:bg-white transition-all flex items-center gap-1.5 shadow-sm"
+          >
+            Order Now
+            <ArrowRight className="w-3.5 h-3.5 stroke-[2.5]" />
+          </Link>
         </div>
-        <div className="flex items-center gap-2.5 pointer-events-auto">
-          <Link href="/vendor/login?purpose=vendor" className="w-[110px] sm:w-[130px] h-[34px] sm:h-[42px] rounded-full" title="Vendor Login" aria-label="Vendor Login" />
-          <Link href="/login?purpose=student" className="w-[110px] sm:w-[130px] h-[34px] sm:h-[42px] rounded-full" title="Order Now" aria-label="Order Now" />
-        </div>
-      </div>
+      </header>
 
       {/* ═══════════════════════════════════════════════════════════
-          HERO SECTION — crisp native layout matching approved master design
+          HERO SECTION — Native HTML & SVG layout: 100% crisp, no blur, no image overlay issues
           ═══════════════════════════════════════════════════════════ */}
       <section
         id="hero-top"
         className="relative w-full overflow-hidden select-none"
-        style={{ background: '#EDE8DC' }}
+        style={{ background: '#EDE8DC', minHeight: 620 }}
       >
-        <div className="relative w-full max-w-[1600px] mx-auto">
-          {/* Master hero illustration rendered at native natural aspect ratio */}
-          <img
-            src="/branding/hero-exact-final.png"
-            alt="Skip the Queue, Order Fresh Daily Only at Enjipuli"
-            width={1600}
-            height={900}
-            className="w-full h-auto block select-none pointer-events-none"
-            style={{ imageRendering: 'auto' }}
-            decoding="async"
-          />
+        {/* Subtle vertical grid lines */}
+        <div className="absolute inset-0 pointer-events-none z-0" aria-hidden="true">
+          {[14, 28, 42, 57, 71, 85].map((pct) => (
+            <div
+              key={pct}
+              className="absolute top-0 bottom-0 w-[1px]"
+              style={{ left: `${pct}%`, background: '#C8C0A8', opacity: 0.35 }}
+            />
+          ))}
+        </div>
 
-          {/* Real styled buttons with high z-index and pointer-events */}
+        {/* ── Decorative: Kerala Food Bowl (top right) ── */}
+        <div className="absolute -top-4 -right-4 w-[280px] sm:w-[380px] lg:w-[460px] pointer-events-none z-10" aria-hidden="true">
+          <KeralaFoodBowl className="w-full h-auto" />
+          <OilDrop className="absolute w-6 h-9 top-[50%] -left-3" />
+          <OilDrop className="absolute w-4 h-6 top-[62%] left-4 opacity-80" />
+          <SmallLeaf className="absolute w-12 h-16 top-[55%] left-12 opacity-90 -rotate-12" />
+        </div>
+
+        {/* ── Decorative: Wrap / Roll (bottom left) ── */}
+        <div className="absolute -bottom-10 -left-6 w-[200px] sm:w-[260px] pointer-events-none z-10 -rotate-6" aria-hidden="true">
+          <FooterFoodIllustration className="w-full h-auto opacity-95" />
+        </div>
+
+        {/* ── Decorative: Tropical Leaf & Chili (bottom right) ── */}
+        <div className="absolute bottom-4 right-[5%] pointer-events-none z-10 flex items-end gap-1" aria-hidden="true">
+          <TropicalLeaf className="w-[100px] sm:w-[130px] h-auto opacity-95" />
+          <ChiliPepper className="w-[34px] sm:w-[44px] h-auto -mb-4 -ml-3 opacity-90" />
+          <OilDrop className="absolute w-5 h-7 bottom-24 right-4 opacity-75" />
+          <OilDrop className="absolute w-4 h-6 bottom-32 right-12 opacity-65" />
+        </div>
+
+        {/* ── Decorative: Paint Drops (left edge) ── */}
+        <div className="absolute left-6 top-[40%] pointer-events-none z-10 space-y-2" aria-hidden="true">
+          <OilDrop className="w-5 h-7 opacity-85" />
+          <RedDrop className="w-4 h-5 opacity-80 translate-x-3" />
+          <BlueDrop className="w-4 h-5 opacity-75 -translate-x-1" />
+        </div>
+
+        {/* ── Hero Content (Sharp Native Typography & Interactive Elements) ── */}
+        <div className="relative z-20 max-w-7xl mx-auto px-8 sm:px-12 lg:px-16 pt-12 sm:pt-16 pb-20">
+          {/* Badge */}
           <div
-            className="absolute z-40 flex items-center"
-            style={{
-              left: '8.8%',
-              bottom: '10.5%',
-              gap: '12px',
-            }}
+            className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full mb-6 border border-[#120B24] shadow-sm"
+            style={{ background: '#F6A800' }}
           >
+            <span className="w-2 h-2 rounded-full bg-[#120B24]" />
+            <span className="text-[11px] font-black uppercase tracking-[0.16em] text-[#120B24]">
+              Campus Favorite • Hot &amp; Fresh
+            </span>
+            <Sparkles className="w-3.5 h-3.5 text-[#120B24]" />
+          </div>
+
+          {/* Headline */}
+          <h1
+            className="text-[44px] sm:text-[60px] lg:text-[76px] leading-[1.05] font-black text-[#120B24] tracking-tight mb-2"
+            style={{ fontFamily: "'Archivo Black', 'Inter', sans-serif", maxWidth: 700 }}
+          >
+            Skip the Queue,
+            <br />
+            Order{' '}
+            <span className="relative inline-block text-[#FF7A00]">
+              Fresh
+              {/* Brush wavy underline */}
+              <svg
+                className="absolute left-0 w-full"
+                style={{ bottom: '-8px', height: 14 }}
+                viewBox="0 0 120 12"
+                preserveAspectRatio="none"
+                fill="none"
+              >
+                <path
+                  d="M2 9 C 22 2, 42 12, 62 5 C 82 -1, 102 10, 118 5"
+                  stroke="#FF7A00"
+                  strokeWidth="4.5"
+                  strokeLinecap="round"
+                  fill="none"
+                />
+              </svg>
+            </span>{' '}
+            Daily
+            <br />
+            Only at
+          </h1>
+
+          {/* Large Enjipuli Wordmark with Paint Accents */}
+          <div className="relative inline-block mb-6 mt-1">
+            <img
+              src="/branding/enjipuli-wordmark.png"
+              alt="ഇഞ്ചിപ്പുളി"
+              width={420}
+              height={145}
+              className="h-[76px] sm:h-[96px] lg:h-[115px] w-auto object-contain drop-shadow-sm"
+              decoding="async"
+            />
+            {/* Colorful accent splashes around wordmark */}
+            <span className="absolute -left-6 top-1/2 -translate-y-1/2 flex flex-col gap-1.5">
+              <OilDrop className="w-4 h-6 -rotate-12" />
+              <RedDrop className="w-3.5 h-5 rotate-6" />
+            </span>
+            <span className="absolute -right-4 bottom-1 flex items-center gap-1">
+              <BlueDrop className="w-4 h-5 rotate-12" />
+            </span>
+            <span className="absolute right-10 -top-3">
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="8" fill="#F6A800" opacity="0.9"/></svg>
+            </span>
+            <span className="absolute right-2 top-1/3">
+              <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><circle cx="6" cy="6" r="6" fill="#E53030" opacity="0.85"/></svg>
+            </span>
+          </div>
+
+          {/* Subtext description */}
+          <p className="text-[14px] sm:text-[16px] text-[#3A3050] font-medium leading-relaxed mb-8 max-w-md">
+            Browse today&apos;s campus menu, order ahead, and pick up hot at the food truck counter
+            with your token — no more waiting in line between classes.
+          </p>
+
+          {/* Real, Clean, Responsive CTA Buttons */}
+          <div className="flex flex-wrap items-center gap-4">
             <Link
               href="/login?purpose=student"
-              className="inline-flex items-center justify-center gap-2 rounded-full font-black text-[#120B24] transition-all hover:brightness-105 active:scale-95 shadow-sm"
-              style={{
-                background: '#AADB1E',
-                fontSize: 'clamp(12px, 1.3vw, 17px)',
-                padding: 'clamp(8px, 1vw, 16px) clamp(18px, 2.2vw, 34px)',
-              }}
+              className="inline-flex items-center justify-center gap-2.5 px-8 sm:px-10 py-3.5 sm:py-4 rounded-full font-black text-[14px] sm:text-[15px] text-[#120B24] bg-[#AADB1E] hover:bg-[#b8ea27] hover:shadow-lg active:scale-95 transition-all shadow-md"
             >
               <span>Order Now</span>
               <ArrowRight className="w-4 h-4 stroke-[2.5]" />
             </Link>
             <Link
               href="/vendor/login?purpose=vendor"
-              className="inline-flex items-center justify-center rounded-full font-bold text-[#120B24] transition-all hover:bg-black/5 active:scale-95 shadow-sm"
-              style={{
-                background: 'white',
-                border: '2px solid #120B24',
-                fontSize: 'clamp(12px, 1.3vw, 17px)',
-                padding: 'clamp(8px, 1vw, 16px) clamp(18px, 2.2vw, 34px)',
-              }}
+              className="inline-flex items-center justify-center px-8 sm:px-10 py-3.5 sm:py-4 rounded-full font-bold text-[14px] sm:text-[15px] text-[#120B24] bg-white border-2 border-[#120B24] hover:bg-[#F2EEE4] hover:shadow-md active:scale-95 transition-all shadow-sm"
             >
               <span>Vendor Portal</span>
             </Link>
