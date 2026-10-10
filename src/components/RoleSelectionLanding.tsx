@@ -322,29 +322,39 @@ export function RoleSelectionLanding() {
             decoding="async"
           />
 
-          {/* Fully interactive hitboxes positioned exactly over the artwork's Order Now and Vendor Portal buttons */}
+          {/* Real styled buttons with high z-index and pointer-events */}
           <div
-            className="absolute z-30 flex items-center"
+            className="absolute z-40 flex items-center"
             style={{
-              left: '9.3%',
-              bottom: '9%',
-              gap: '1.2%',
-              width: '32%',
-              height: '8.5%',
+              left: '8.8%',
+              bottom: '10.5%',
+              gap: '12px',
             }}
           >
             <Link
               href="/login?purpose=student"
-              className="flex-1 h-full rounded-full cursor-pointer hover:opacity-80 transition-opacity"
-              title="Order Now"
-              aria-label="Order Now"
-            />
+              className="inline-flex items-center justify-center gap-2 rounded-full font-black text-[#120B24] transition-all hover:brightness-105 active:scale-95 shadow-sm"
+              style={{
+                background: '#AADB1E',
+                fontSize: 'clamp(12px, 1.3vw, 17px)',
+                padding: 'clamp(8px, 1vw, 16px) clamp(18px, 2.2vw, 34px)',
+              }}
+            >
+              <span>Order Now</span>
+              <ArrowRight className="w-4 h-4 stroke-[2.5]" />
+            </Link>
             <Link
               href="/vendor/login?purpose=vendor"
-              className="flex-1 h-full rounded-full cursor-pointer hover:opacity-80 transition-opacity"
-              title="Vendor Portal"
-              aria-label="Vendor Portal"
-            />
+              className="inline-flex items-center justify-center rounded-full font-bold text-[#120B24] transition-all hover:bg-black/5 active:scale-95 shadow-sm"
+              style={{
+                background: 'white',
+                border: '2px solid #120B24',
+                fontSize: 'clamp(12px, 1.3vw, 17px)',
+                padding: 'clamp(8px, 1vw, 16px) clamp(18px, 2.2vw, 34px)',
+              }}
+            >
+              <span>Vendor Portal</span>
+            </Link>
           </div>
         </div>
       </section>
