@@ -7,109 +7,102 @@ interface LogoWordmarkProps {
   light?: boolean;
   className?: string;
   glow?: boolean;
+  showTagline?: boolean;
 }
 
 /**
- * ENJIPULI brand wordmark — ഇഞ്ചിപ്പുളി
+ * ENJIPULI brand wordmark — ഇഞ്ചിപ്പുളി & ക്യാമ്പസിന്റെ ഹോട്ട്സ്പോട്ട്
  *
- * Renders the Malayalam name in a hand-lettered style matching the truck's
- * brush-script lettering: electric lime fill, dark indigo outline, ambient glow.
- *
- * Below it: the tagline ക്യാമ്പസിന്റെ ഹോട്ട്സ്പോട്ട് in Baloo Chettan 2
- * webfont with a subtle lime glow for visual cohesion.
- *
- * Props:
- *   size     — controls width in px (height proportional)
- *   light    — unused now (always on dark bg), kept for API compat
- *   glow     — true → apply ambient pulsing glow animation
- *   className — pass-through
+ * Renders the authentic hand-lettered brush-script sticker assets with
+ * bright lime fill, thick black contour, specular highlights, and droplet accents.
  */
-export function LogoWordmark({ size = 140, light = true, className = '', glow = false }: LogoWordmarkProps) {
-  const height = Math.round(size * 0.45);
-  const taglineSize = Math.max(10, Math.round(size * 0.1));
+export function LogoWordmark({
+  size = 140,
+  light = true,
+  className = '',
+  glow = false,
+  showTagline = true,
+}: LogoWordmarkProps) {
+  const wordmarkWidth = size;
+  const wordmarkHeight = Math.round(wordmarkWidth * (377 / 1024)); // ~51px at 140
+  const taglineWidth = Math.round(size * 0.92);
+  const taglineHeight = Math.round(taglineWidth * (341 / 1024)); // ~42px at 128
 
   return (
-    <span
-      className={`${className} ${glow ? 'animate-glow-pulse' : ''}`}
-      style={{ display: 'inline-flex', flexDirection: 'column', alignItems: 'center', lineHeight: 1 }}
+    <div
+      className={`inline-flex flex-col items-center select-none ${className}`}
+      style={{ lineHeight: 1 }}
       aria-label="ഇഞ്ചിപ്പുളി — ക്യാമ്പസിന്റെ ഹോട്ട്സ്പോട്ട്"
     >
-      {/* Hand-lettered wordmark SVG */}
-      <svg
-        width={size}
-        height={height}
-        viewBox="0 0 400 160"
-        fill="none"
-        xmlns="http://www.w3.org/2000/svg"
-        role="img"
-        aria-label="ഇഞ്ചിപ്പുളി"
-      >
-        <defs>
-          {/* Glow filter matching the truck's neon lime outline treatment */}
-          <filter id="wordmark-glow" x="-20%" y="-20%" width="140%" height="140%">
-            <feGaussianBlur in="SourceGraphic" stdDeviation="3" result="blur" />
-            <feColorMatrix
-              in="blur"
-              type="matrix"
-              values="0.83 0 0 0 0  1 0 0 0 0  0.24 0 0 0 0  0 0 0 0.6 0"
-              result="glow"
+      {/* Official sticker wordmark flanked by organic glossy drops */}
+      <div className="relative inline-flex items-center justify-center">
+        {/* Left droplet accents */}
+        <span className="absolute -left-3.5 top-1/2 -translate-y-1/2 flex flex-col gap-0.5 pointer-events-none">
+          <svg viewBox="0 0 32 48" className="w-2.5 h-3.5 -rotate-20" fill="none">
+            <path
+              d="M16 2 C16 2 2 18 2 30 C2 39 8.2 46 16 46 C23.8 46 30 39 30 30 C30 18 16 2 16 2 Z"
+              fill="#FFB800"
             />
-            <feMerge>
-              <feMergeNode in="glow" />
-              <feMergeNode in="SourceGraphic" />
-            </feMerge>
-          </filter>
-          {/* Outline stroke for depth */}
-          <filter id="wordmark-outline" x="-5%" y="-5%" width="110%" height="110%">
-            <feMorphology in="SourceAlpha" operator="dilate" radius="2" result="expanded" />
-            <feFlood floodColor="#150F2E" result="color" />
-            <feComposite in="color" in2="expanded" operator="in" result="outline" />
-            <feMerge>
-              <feMergeNode in="outline" />
-              <feMergeNode in="SourceGraphic" />
-            </feMerge>
-          </filter>
-        </defs>
+            <path
+              d="M8 24 C7 28 8 34 11 38"
+              stroke="white"
+              strokeWidth="2.5"
+              strokeLinecap="round"
+              opacity="0.85"
+            />
+          </svg>
+          <svg viewBox="0 0 32 48" className="w-2 h-3 rotate-15" fill="none">
+            <path
+              d="M16 2 C16 2 2 18 2 30 C2 39 8.2 46 16 46 C23.8 46 30 39 30 30 C30 18 16 2 16 2 Z"
+              fill="#F21B55"
+            />
+          </svg>
+        </span>
 
-        <g filter="url(#wordmark-outline)">
-          <g filter="url(#wordmark-glow)">
-            {/* ഇഞ്ചിപ്പുളി — recreated as flowing brush-script paths */}
-            {/* Main lettering block — using text with a custom font-face fallback */}
-            <text
-              x="200"
-              y="105"
-              textAnchor="middle"
-              fontFamily="'Baloo Chettan 2', 'Noto Sans Malayalam', sans-serif"
-              fontWeight="800"
-              fontSize="82"
-              fill="#D4FF3D"
-              stroke="#150F2E"
-              strokeWidth="3"
-              paintOrder="stroke fill"
-              style={{ letterSpacing: '-0.02em' }}
-            >
-              ഇഞ്ചിപ്പുളി
-            </text>
-          </g>
-        </g>
-      </svg>
+        {/* Wordmark sticker */}
+        <img
+          src="/branding/enjipuli-wordmark.png"
+          alt="ഇഞ്ചിപ്പുളി"
+          width={wordmarkWidth}
+          height={wordmarkHeight}
+          className={`w-auto object-contain transition-all duration-300 ${
+            glow ? 'drop-shadow-[0_0_12px_rgba(212,255,61,0.35)]' : 'drop-shadow-sm'
+          }`}
+          style={{ height: wordmarkHeight, maxWidth: '100%' }}
+          decoding="async"
+        />
 
-      {/* Tagline — webfont, legible at all sizes */}
-      <span
-        lang="ml"
-        style={{
-          fontSize: taglineSize,
-          fontFamily: "'Baloo Chettan 2', 'Noto Sans Malayalam', sans-serif",
-          fontWeight: 600,
-          color: '#D4FF3D',
-          marginTop: Math.round(size * 0.02),
-          textShadow: '0 0 12px rgba(212,255,61,0.3)',
-          letterSpacing: '0.02em',
-          opacity: 0.9,
-        }}
-      >
-        ക്യാമ്പസിന്റെ ഹോട്ട്സ്പോട്ട്
-      </span>
-    </span>
+        {/* Right droplet accents */}
+        <span className="absolute -right-3.5 top-1/2 -translate-y-1/2 flex flex-col gap-0.5 pointer-events-none">
+          <svg viewBox="0 0 32 48" className="w-2 h-3 rotate-25" fill="none">
+            <path
+              d="M16 2 C16 2 2 18 2 30 C2 39 8.2 46 16 46 C23.8 46 30 39 30 30 C30 18 16 2 16 2 Z"
+              fill="#FFB800"
+            />
+          </svg>
+          <svg viewBox="0 0 32 48" className="w-2 h-3 -rotate-15" fill="none">
+            <path
+              d="M16 2 C16 2 2 18 2 30 C2 39 8.2 46 16 46 C23.8 46 30 39 30 30 C30 18 16 2 16 2 Z"
+              fill="#00A3FF"
+            />
+          </svg>
+        </span>
+      </div>
+
+      {/* Official sticker tagline */}
+      {showTagline && (
+        <img
+          src="/branding/enjipuli-tagline.png"
+          alt="ക്യാമ്പസിന്റെ ഹോട്ട്സ്പോട്ട്"
+          width={taglineWidth}
+          height={taglineHeight}
+          className={`w-auto object-contain mt-1 transition-all duration-300 ${
+            glow ? 'drop-shadow-[0_0_8px_rgba(212,255,61,0.2)]' : 'drop-shadow-sm'
+          }`}
+          style={{ height: taglineHeight, maxWidth: '100%' }}
+          decoding="async"
+        />
+      )}
+    </div>
   );
 }

@@ -128,6 +128,20 @@ function StudentMenuDashboard({ session }: { session: any }) {
   const [checkoutError, setCheckoutError] = useState<string | null>(null);
   const [razorpayLoaded, setRazorpayLoaded] = useState(false);
 
+  // User greeting name logic
+  const userEmail = session?.user?.email || '';
+  const cleanEmailPrefix = userEmail
+    ? userEmail.split('@')[0].split('.')[0].replace(/[0-9]/g, '')
+    : '';
+  const rawGreetingName =
+    session?.user?.name &&
+    session.user.name.trim().toLowerCase() !== cleanEmailPrefix.toLowerCase()
+      ? session.user.name.trim().split(' ')[0]
+      : (cleanEmailPrefix || 'Student');
+  const greetingName = rawGreetingName
+    ? rawGreetingName.charAt(0).toUpperCase() + rawGreetingName.slice(1).toLowerCase()
+    : 'Student';
+
   // Fetch Menu
   const fetchMenu = useCallback(async () => {
     try {
@@ -484,6 +498,11 @@ function StudentMenuDashboard({ session }: { session: any }) {
                 Campus Food Truck • Live Counter
               </span>
             </div>
+
+            {/* Welcome Address from user reference */}
+            <h2 className="text-2xl sm:text-3xl font-extrabold text-ej-cream tracking-tight">
+              Welcome, {greetingName}
+            </h2>
 
             {/* The Main Question from Reference Image */}
             <h1 className="text-3xl sm:text-4xl md:text-5xl font-black text-ej-cream tracking-tight leading-[1.12]">

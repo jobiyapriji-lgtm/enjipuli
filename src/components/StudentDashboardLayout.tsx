@@ -55,13 +55,21 @@ export function StudentDashboardLayout({
   const userEmail: string = sessionUser?.email || '';
   const emailPrefix = userEmail ? userEmail.split('@')[0].toLowerCase() : '';
   const hasRealName = Boolean(sessionUser?.name && sessionUser.name.trim().toLowerCase() !== emailPrefix);
-  const displayName: string = hasRealName ? sessionUser.name.trim() : (emailPrefix || 'Student Account');
+  const rawDisplayName: string = hasRealName ? sessionUser.name.trim() : (emailPrefix || 'Student');
+  const displayName: string = rawDisplayName ? rawDisplayName.charAt(0).toUpperCase() + rawDisplayName.slice(1) : 'Student';
   const userInitial: string = displayName ? displayName[0].toUpperCase() : 'S';
 
-  const navItems = [
+  // Desktop navigation under Campus Dining (Order Menu & My Orders)
+  const desktopDiningNav = [
     { href: '/', label: 'Order Menu', icon: UtensilsCrossed },
     { href: '/orders', label: 'My Orders', icon: ShoppingBag },
-    { href: '/profile', label: 'Account', icon: User },
+  ];
+
+  // Mobile bottom tab bar (Order Menu, My Orders, Profile)
+  const mobileNavItems = [
+    { href: '/', label: 'Order Menu', icon: UtensilsCrossed },
+    { href: '/orders', label: 'My Orders', icon: ShoppingBag },
+    { href: '/profile', label: 'Profile', icon: User },
   ];
 
   return (
@@ -75,39 +83,54 @@ export function StudentDashboardLayout({
       >
         <div className="space-y-6">
           {/* Logo & Student Identity Block */}
-          <div className="space-y-4 pb-4 border-b border-ej-border/60">
-            <Link href="/" className="inline-block hover:opacity-90 transition">
-              <LogoWordmark size={140} light glow={true} />
+          <div className="space-y-4 pb-4 border-b border-ej-border/60 flex flex-col items-center">
+            <Link href="/" className="inline-flex flex-col items-center hover:opacity-90 transition">
+              <LogoWordmark size={160} light glow={false} />
             </Link>
 
-            {/* Student Account Card */}
+            {/* Student Account Card — Unified Profile & Account View */}
             <Link
               href="/profile"
-              className="flex items-center gap-3 p-2.5 rounded-2xl bg-ej-surface/70 border border-ej-border/80 hover:border-ej-lime/50 transition group"
+              className={`flex items-center gap-3 p-3 rounded-2xl border transition group ${
+                pathname === '/profile'
+                  ? 'bg-ej-surface border-ej-lime shadow-glow-sm ring-1 ring-ej-lime/50'
+                  : 'bg-ej-surface/70 border-ej-border/80 hover:border-ej-lime/50 hover:bg-ej-surface'
+              }`}
               title="View & Edit Account Profile"
             >
               <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-ej-lime via-ej-teal to-ej-gold text-ej-ink font-black flex items-center justify-center text-sm shadow-glow-sm shrink-0 group-hover:scale-105 transition">
                 {userInitial}
               </div>
               <div className="min-w-0 flex-1">
-                <p className="text-xs font-black text-ej-cream truncate group-hover:text-ej-lime transition">
-                  {displayName}
-                </p>
+                <div className="flex items-center gap-1.5">
+                  <p className="text-xs font-black text-ej-cream truncate group-hover:text-ej-lime transition">
+                    {displayName}
+                  </p>
+                  <span className="text-[9px] font-bold px-1.5 py-0.2 rounded bg-ej-lime/15 text-ej-lime border border-ej-lime/30">
+                    Profile
+                  </span>
+                </div>
                 <p className="text-[10px] text-ej-muted font-mono truncate">
                   {userEmail || 'student@enjipuli.com'}
                 </p>
               </div>
-              <ChevronRight className="w-3.5 h-3.5 text-ej-muted group-hover:text-ej-lime group-hover:translate-x-0.5 transition shrink-0" />
+              <ChevronRight
+                className={`w-3.5 h-3.5 transition shrink-0 ${
+                  pathname === '/profile'
+                    ? 'text-ej-lime translate-x-0.5'
+                    : 'text-ej-muted group-hover:text-ej-lime group-hover:translate-x-0.5'
+                }`}
+              />
             </Link>
           </div>
 
-          {/* Student Nav List */}
+          {/* Student Nav List (Campus Dining actions) */}
           <nav className="space-y-1.5">
             <p className="text-[10px] font-black uppercase tracking-wider text-ej-muted/70 px-3 pb-1">
               Campus Dining
             </p>
 
-            {navItems.map((item) => {
+            {desktopDiningNav.map((item) => {
               const isActive = pathname === item.href;
               const Icon = item.icon;
               return (
@@ -222,7 +245,7 @@ export function StudentDashboardLayout({
         id="student-mobile-bottom-tabs"
         className="lg:hidden fixed bottom-0 left-0 right-0 bg-ej-deep/95 backdrop-blur-md border-t border-ej-border z-40 px-3 py-1.5 flex items-center justify-around shadow-2xl"
       >
-        {navItems.map((item) => {
+        {mobileNavItems.map((item) => {
           const isActive = pathname === item.href;
           const Icon = item.icon;
           return (
