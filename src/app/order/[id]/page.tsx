@@ -59,7 +59,12 @@ export default function OrderConfirmationPage({ params }: { params: Promise<{ id
       setError(null);
 
       if (data.id && data.qrSecret && !qrDataUrl) {
-        const payload = JSON.stringify({ orderId: data.id, qrSecret: data.qrSecret });
+        // Encodes the order ID, human-readable order number/token, and the signed random secret
+        const payload = JSON.stringify({
+          orderId: data.id,
+          token: data.token,
+          qrSecret: data.qrSecret,
+        });
         const url = await QRCode.toDataURL(payload, {
           width: 280,
           margin: 2,
@@ -128,7 +133,7 @@ export default function OrderConfirmationPage({ params }: { params: Promise<{ id
 
           <div id="order-token" className="space-y-1">
             <p className="text-[11px] font-bold text-ej-muted uppercase tracking-widest">
-              Your Pickup Token Number
+              Your Pickup Order Number
             </p>
             <p className="text-5xl font-black text-ej-lime tracking-tight leading-none animate-token-reveal drop-shadow-[0_0_20px_rgba(212,255,61,0.3)]">
               {order.token}
@@ -136,7 +141,7 @@ export default function OrderConfirmationPage({ params }: { params: Promise<{ id
           </div>
 
           {/* QR code */}
-          <div className="mt-5 flex justify-center">
+          <div className="mt-5 flex flex-col items-center justify-center gap-2">
             {qrDataUrl ? (
               <div
                 id="order-qr"
@@ -144,7 +149,7 @@ export default function OrderConfirmationPage({ params }: { params: Promise<{ id
               >
                 <img
                   src={qrDataUrl}
-                  alt={`QR code for order ${order.token}`}
+                  alt={`Pickup QR code for order ${order.token}`}
                   width={200}
                   height={200}
                   className="block rounded-lg"
@@ -155,12 +160,25 @@ export default function OrderConfirmationPage({ params }: { params: Promise<{ id
                 <span className="text-xs text-ej-muted font-medium">Generating QR Code...</span>
               </div>
             )}
+
+            {/* Visible Order Number beneath QR code */}
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-ej-surface/90 border border-ej-border text-xs font-mono font-bold text-ej-cream">
+              <span className="text-ej-muted">Order ID:</span>
+              <span className="text-ej-lime font-black">{order.token}</span>
+            </div>
           </div>
 
-          <div className="mt-4 flex items-center justify-center gap-1.5 text-xs text-ej-muted font-medium">
+          <div className="mt-3 flex items-center justify-center gap-1.5 text-xs text-ej-muted font-medium">
             <QrCode className="w-4 h-4 text-ej-lime" />
-            <span>Show this QR to vendor at pickup</span>
+            <span>Show this QR code to vendor at counter for instant pickup</span>
           </div>
+
+          {order.status === 'DELIVERED' && (
+            <div className="mt-4 p-3 rounded-xl bg-ej-teal/20 border border-ej-teal/40 text-ej-teal flex items-center justify-center gap-2 text-xs font-black">
+              <CheckCircle2 className="w-4 h-4" />
+              <span>Order Fulfilled & Delivered! Enjoy your food 🍔</span>
+            </div>
+          )}
         </section>
 
         {isCancelledOrExpired && (

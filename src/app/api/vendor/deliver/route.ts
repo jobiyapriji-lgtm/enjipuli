@@ -4,6 +4,27 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { getTodayStartIST } from '@/lib/date';
 
+/**
+ * Normalizes input token strings into standard format (e.g., '14' or '014' or 'ej-14' -> 'EJ-014')
+ */
+function normalizeToken(raw: string): string[] {
+  const clean = raw.trim().toUpperCase();
+  const candidates = [clean];
+
+  // If input is purely numeric (e.g. '14' or '014')
+  if (/^\d+$/.test(clean)) {
+    candidates.push(`EJ-${clean.padStart(3, '0')}`);
+  }
+
+  // If input starts with EJ- (e.g. 'EJ-14')
+  const match = clean.match(/^EJ-(\d+)$/);
+  if (match) {
+    candidates.push(`EJ-${match[1].padStart(3, '0')}`);
+  }
+
+  return Array.from(new Set(candidates));
+}
+
 export async function POST(request: Request) {
   try {
     const session = await getServerSession(authOptions);
@@ -14,15 +35,18 @@ export async function POST(request: Request) {
     }
 
     const body = await request.json();
-    const { orderId, qrSecret, token } = body;
+    const { orderId, qrSecret, token, expectedOrderId } = body;
 
     let order;
 
     if (orderId && qrSecret) {
-      // ── Primary path: QR scan (orderId + qrSecret) ───────────────────
+      // ── Primary Path: QR Scan (signed secret validation) ───────────────
       order = await prisma.order.findUnique({
         where: { id: orderId },
-        include: { items: { include: { menuItem: true } } },
+        include: {
+          items: { include: { menuItem: true } },
+          user: { select: { id: true, name: true, email: true, collegeId: true } },
+        },
       });
 
       if (!order || order.qrSecret !== qrSecret) {
@@ -31,89 +55,108 @@ export async function POST(request: Request) {
           { status: 400 }
         );
       }
+
+      // If scanner was locked onto a specific target order in the queue
+      if (expectedOrderId && order.id !== expectedOrderId) {
+        return NextResponse.json(
+          {
+            success: false,
+            error: `This QR code is for Order ${order.token}, not the selected order. Please scan the matching ticket.`,
+          },
+          { status: 400 }
+        );
+      }
     } else if (token) {
-      // ── Fallback path: manual token entry (no QR secret) ─────────────
-      // The vendor is assumed to have physical possession of the customer
-      // since this path requires being logged in as VENDOR. Token lookup is
-      // scoped to today to avoid collisions across days.
+      // ── Fallback Path: Manual Order Number Entry ───────────────────────
       const todayStart = getTodayStartIST();
+      const candidateTokens = normalizeToken(token);
 
       order = await prisma.order.findFirst({
         where: {
-          token: token.trim().toUpperCase(),
+          token: { in: candidateTokens },
           createdAt: { gte: todayStart },
         },
-        include: { items: { include: { menuItem: true } } },
+        include: {
+          items: { include: { menuItem: true } },
+          user: { select: { id: true, name: true, email: true, collegeId: true } },
+        },
+        orderBy: { createdAt: 'desc' },
       });
+
+      // If not found today, search recent orders as fallback
+      if (!order) {
+        order = await prisma.order.findFirst({
+          where: {
+            token: { in: candidateTokens },
+          },
+          include: {
+            items: { include: { menuItem: true } },
+            user: { select: { id: true, name: true, email: true, collegeId: true } },
+          },
+          orderBy: { createdAt: 'desc' },
+        });
+      }
 
       if (!order) {
         return NextResponse.json(
-          { success: false, error: `No order found for token '${token.trim().toUpperCase()}' today.` },
+          {
+            success: false,
+            error: `No order found for order number '${token.trim().toUpperCase()}'. Check for typos.`,
+          },
           { status: 404 }
         );
       }
     } else {
       return NextResponse.json(
-        { success: false, error: 'Provide either (orderId + qrSecret) from a QR scan, or a token for manual entry.' },
+        {
+          success: false,
+          error: 'Provide either a scanned QR code (orderId + signed secret) or an order number for manual lookup.',
+        },
         { status: 400 }
       );
     }
 
-    // ── Idempotency: already delivered ───────────────────────────────────
+    const customerName = order.user?.name || (order.user?.email ? order.user.email.split('@')[0] : 'Customer');
+
+    // ── Idempotency: Already delivered ───────────────────────────────────
     if (order.status === 'DELIVERED') {
       return NextResponse.json({
         success: true,
         alreadyDelivered: true,
-        message: `Order ${order.token} was already marked DELIVERED.`,
+        message: `Order ${order.token} for ${customerName} was already marked DELIVERED.`,
         order,
       });
     }
 
-    // ── Guard: order must exist in a paid/active state ───────────────────
+    // ── Guard: order must be in a paid/active queue state ─────────────────
     if (order.status === 'PENDING_PAYMENT' || order.status === 'EXPIRED' || order.status === 'CANCELLED') {
       return NextResponse.json(
-        { success: false, error: `Order ${order.token} is ${order.status} and cannot be delivered.` },
-        { status: 400 }
-      );
-    }
-
-    // ── Guard: must be READY before delivery ─────────────────────────────
-    // This prevents scanning a QR while food is still PREPARING,
-    // avoiding premature delivery confirmation.
-    if (order.status === 'PAID') {
-      return NextResponse.json(
         {
           success: false,
-          error: `Order ${order.token} has been paid but preparation hasn't started yet. Advance it to PREPARING first.`,
+          error: `Order ${order.token} is currently ${order.status.replace('_', ' ')} and cannot be delivered.`,
         },
         { status: 400 }
       );
     }
 
-    if (order.status === 'PREPARING') {
-      return NextResponse.json(
-        {
-          success: false,
-          error: `Order ${order.token} is still being PREPARED. Mark it READY before scanning for delivery.`,
-        },
-        { status: 400 }
-      );
-    }
-
-    // ── Order is READY — mark as DELIVERED ───────────────────────────────
+    // ── Fulfill: Mark order as DELIVERED ──────────────────────────────────
     const deliveredOrder = await prisma.order.update({
       where: { id: order.id },
       data: { status: 'DELIVERED' },
-      include: { items: { include: { menuItem: true } } },
+      include: {
+        items: { include: { menuItem: true } },
+        user: { select: { id: true, name: true, email: true, collegeId: true } },
+      },
     });
 
     return NextResponse.json({
       success: true,
       alreadyDelivered: false,
-      message: `Order ${deliveredOrder.token} successfully marked DELIVERED.`,
+      message: `Order ${deliveredOrder.token} for ${customerName} successfully marked DELIVERED!`,
       order: deliveredOrder,
     });
   } catch (err: any) {
+    console.error('Vendor deliver error:', err);
     return NextResponse.json({ success: false, error: err.message }, { status: 500 });
   }
 }

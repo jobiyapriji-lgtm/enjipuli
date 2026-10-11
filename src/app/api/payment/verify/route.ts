@@ -3,7 +3,7 @@ import { prisma } from '@/lib/prisma';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import crypto from 'crypto';
-import { getTodayStartIST, dateToISTString } from '@/lib/date';
+import { fulfillOrderPayment } from '@/lib/order-fulfillment';
 
 export async function POST(request: Request) {
   try {
@@ -103,49 +103,10 @@ export async function POST(request: Request) {
     }
     // In mock/dev mode: signature check is skipped intentionally.
 
-    // ── Use IST-based date calculations ──────────────────────────────────
-    const todayStart = getTodayStartIST();
-    // Use order's creation date for stock deduction (handles cross-midnight)
-    const orderDateStr = dateToISTString(order.createdAt);
-
-    // ── Transactionally: generate token, mark paid, convert reservation ─
-    // Token generation is INSIDE the transaction to prevent race collisions.
-    const updatedOrder = await prisma.$transaction(async (tx) => {
-      // Generate daily sequential token inside the transaction
-      const countToday = await tx.order.count({
-        where: {
-          createdAt: { gte: todayStart },
-          status: { in: ['PAID', 'PREPARING', 'READY', 'DELIVERED'] },
-        },
-      });
-      const tokenNumber = (countToday + 1).toString().padStart(3, '0');
-      const token = `EJ-${tokenNumber}`;
-
-      // Convert reservation to permanent deduction on the ORDER's date
-      for (const item of order.items) {
-        await tx.dailyStock.update({
-          where: {
-            menuItemId_date: {
-              menuItemId: item.menuItemId,
-              date: orderDateStr,
-            },
-          },
-          data: {
-            quantityAvailable: { decrement: item.quantity },
-            quantityReserved: { decrement: item.quantity },
-          },
-        });
-      }
-
-      return tx.order.update({
-        where: { id: order.id },
-        data: {
-          status: 'PAID',
-          token,
-          razorpayPaymentId: razorpayPaymentId || `pay_mock_${Date.now()}`,
-          reservedUntil: null, // reservation fulfilled
-        },
-      });
+    // ── Atomic Fulfillment: Token generation & Stock deduction ─────────
+    const { order: updatedOrder } = await fulfillOrderPayment({
+      orderId: order.id,
+      razorpayPaymentId: razorpayPaymentId || `pay_verified_${Date.now()}`,
     });
 
     return NextResponse.json({

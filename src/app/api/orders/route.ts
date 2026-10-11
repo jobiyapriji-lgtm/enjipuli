@@ -32,7 +32,7 @@ export async function GET(request: Request) {
             select: { name: true, email: true, collegeId: true, phone: true },
           },
         },
-        orderBy: { createdAt: 'desc' },
+        orderBy: { createdAt: 'asc' },
       });
 
       return NextResponse.json(queueOrders);

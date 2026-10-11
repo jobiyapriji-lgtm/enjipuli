@@ -162,13 +162,21 @@ export default function VendorScanPage() {
             {scanResult.order && (
               <div className="text-xs space-y-1.5 pt-3 border-t border-white/10 font-mono text-ej-cream bg-ej-deep/50 p-3 rounded-xl">
                 <div className="flex items-center justify-between">
-                  <span className="text-ej-muted">Order Token:</span>
+                  <span className="text-ej-muted">Order Number:</span>
                   <strong className="text-ej-lime font-black text-base">{scanResult.order.token}</strong>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-ej-muted">Customer:</span>
+                  <span className="text-right text-ej-cream font-bold">
+                    {scanResult.order.user?.name ||
+                      scanResult.order.user?.email?.split('@')[0] ||
+                      'Student'}
+                  </span>
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="text-ej-muted">Items:</span>
                   <span className="text-right text-ej-cream font-medium">
-                    {scanResult.order.items?.map((i: any) => `${i.quantity}× ${i.menuItem.name}`).join(', ')}
+                    {scanResult.order.items?.map((i: any) => `${i.quantity}× ${i.menuItem?.name || 'Item'}`).join(', ')}
                   </span>
                 </div>
                 <div className="flex items-center justify-between border-t border-white/5 pt-1">

@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation';
 import { StudentDashboardLayout } from '@/components/StudentDashboardLayout';
 import { ElephantMascot } from '@/components/ElephantMascot';
 import Link from 'next/link';
-import { ShoppingBag, ArrowRight, Clock, User, ChevronRight, UtensilsCrossed } from 'lucide-react';
+import { ShoppingBag, ArrowRight, Clock, User, ChevronRight, UtensilsCrossed, QrCode } from 'lucide-react';
 
 interface OrderItem {
   id: string;
@@ -173,13 +173,25 @@ export default function OrderHistoryPage() {
                     <span className="font-extrabold text-ej-lime text-sm">₹{order.totalAmount}</span>
                   </div>
 
-                  <Link
-                    href={`/order/${order.id}`}
-                    className="inline-flex items-center gap-1 text-xs font-bold text-ej-lime hover:underline"
-                  >
-                    <span>View QR &amp; Live Status</span>
-                    <ArrowRight className="w-3.5 h-3.5" />
-                  </Link>
+                  <div className="flex items-center gap-2">
+                    {order.status !== 'DELIVERED' && order.status !== 'CANCELLED' && order.status !== 'EXPIRED' ? (
+                      <Link
+                        href={`/order/${order.id}`}
+                        className="btn-primary py-1.5 px-3 text-xs font-black flex items-center gap-1.5 shadow-glow-sm"
+                      >
+                        <QrCode className="w-3.5 h-3.5" />
+                        <span>Show Pickup QR</span>
+                      </Link>
+                    ) : (
+                      <Link
+                        href={`/order/${order.id}`}
+                        className="inline-flex items-center gap-1 text-xs font-bold text-ej-muted hover:text-ej-lime transition"
+                      >
+                        <span>View Receipt</span>
+                        <ArrowRight className="w-3.5 h-3.5" />
+                      </Link>
+                    )}
+                  </div>
                 </div>
               </div>
             ))}
