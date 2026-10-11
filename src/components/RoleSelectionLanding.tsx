@@ -12,6 +12,39 @@ interface LandingStats {
 
 /* ─── Inline SVG Decoratives ──────────────────────────────────── */
 
+// Hand-drawn glossy teardrop with specular reflection arc matching target branding
+function GlossyDrop({
+  color,
+  rotate = 0,
+  className = '',
+}: {
+  color: string;
+  rotate?: number;
+  className?: string;
+}) {
+  return (
+    <svg
+      viewBox="0 0 32 48"
+      className={className}
+      style={{ transform: `rotate(${rotate}deg)` }}
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      <path
+        d="M16 2 C16 2 2 18 2 30 C2 39 8.2 46 16 46 C23.8 46 30 39 30 30 C30 18 16 2 16 2 Z"
+        fill={color}
+      />
+      <path
+        d="M8 24 C7 28 8 34 11 38"
+        stroke="white"
+        strokeWidth="2.5"
+        strokeLinecap="round"
+        opacity="0.85"
+      />
+    </svg>
+  );
+}
+
 // Yellow / amber oil drop
 function OilDrop({ className = '' }: { className?: string }) {
   return (
@@ -241,30 +274,39 @@ export function RoleSelectionLanding() {
   return (
     <div
       className="min-h-screen flex flex-col text-[#120B24] overflow-x-hidden scroll-smooth"
-      style={{ background: '#EDE8DC' }}
+      style={{ background: '#FBF3E2' }}
     >
       {/* ═══════════════════════════════════════════════════════════
           NAV BAR — native sticky dark header with exact button placement
           ═══════════════════════════════════════════════════════════ */}
       <header
         className="w-full sticky top-0 z-50 flex items-center justify-between px-6 sm:px-10 lg:px-14 shadow-lg border-b border-white/5"
-        style={{ background: '#130D26', minHeight: 64, height: 64 }}
+        style={{ background: '#0F0C20', minHeight: 64, height: 64 }}
       >
-        {/* Left: Wordmark + colorful accent dots */}
-        <Link href="/" className="flex items-center gap-1 shrink-0 py-2">
-          <div className="relative">
+        {/* Left: Wordmark + exact droplet accents */}
+        <Link href="/" className="flex items-center shrink-0 py-2">
+          <div className="relative flex items-center">
+            {/* Left droplets */}
+            <div className="flex flex-col items-center gap-0.5 -mr-1.5 z-10">
+              <GlossyDrop color="#FFB800" rotate={-25} className="w-3 h-4" />
+              <GlossyDrop color="#F21B55" rotate={20} className="w-2.5 h-3.5" />
+            </div>
+
             <img
               src="/branding/enjipuli-wordmark.png"
               alt="ഇഞ്ചിപ്പുളി"
-              width={180}
-              height={60}
-              className="h-9 sm:h-10 w-auto object-contain"
+              width={160}
+              height={52}
+              className="h-8 sm:h-9 w-auto object-contain"
               decoding="async"
             />
-            {/* Colorful paint splashes around logo */}
-            <span className="absolute -top-1.5 -left-2 w-2.5 h-2.5 rounded-full bg-[#E53030] opacity-90" />
-            <span className="absolute -bottom-1 left-2 w-2 h-2 rounded-full bg-[#F6A800] opacity-90" />
-            <span className="absolute top-0.5 -right-1 w-2 h-2 rounded-full bg-[#2563EB] opacity-80" />
+
+            {/* Right droplets */}
+            <div className="flex flex-col items-center gap-0.5 -ml-1.5 z-10">
+              <GlossyDrop color="#FFB800" rotate={25} className="w-2.5 h-3.5" />
+              <GlossyDrop color="#F21B55" rotate={-15} className="w-2.5 h-3.5" />
+              <GlossyDrop color="#00A3FF" rotate={35} className="w-2 h-3" />
+            </div>
           </div>
         </Link>
 
@@ -308,85 +350,116 @@ export function RoleSelectionLanding() {
       <section
         id="hero-top"
         className="relative w-full overflow-hidden select-none"
-        style={{ background: '#EDE8DC', minHeight: 620 }}
+        style={{ background: '#FBF3E2', minHeight: 620 }}
       >
-        {/* Subtle vertical grid lines */}
+        {/* Subtle vertical grid lines matching target warm tone */}
         <div className="absolute inset-0 pointer-events-none z-0" aria-hidden="true">
           {[14, 28, 42, 57, 71, 85].map((pct) => (
             <div
               key={pct}
               className="absolute top-0 bottom-0 w-[1px]"
-              style={{ left: `${pct}%`, background: '#C8C0A8', opacity: 0.35 }}
+              style={{ left: `${pct}%`, background: '#D8CEB4', opacity: 0.35 }}
             />
           ))}
         </div>
 
-        {/* ── Decorative: Kerala Food Bowl (top right) ── */}
-        <div className="absolute -top-4 -right-4 w-[280px] sm:w-[380px] lg:w-[460px] pointer-events-none z-10" aria-hidden="true">
-          <KeralaFoodBowl className="w-full h-auto" />
-          <OilDrop className="absolute w-6 h-9 top-[50%] -left-3" />
-          <OilDrop className="absolute w-4 h-6 top-[62%] left-4 opacity-80" />
-          <SmallLeaf className="absolute w-12 h-16 top-[55%] left-12 opacity-90 -rotate-12" />
-        </div>
+        {/* ── Decorative: Painterly Hand-Drawn Food Bowl (top right) ── */}
+        <img
+          src="/branding/hero-bowl-perfect.png"
+          alt=""
+          aria-hidden="true"
+          className="absolute -top-1 -right-1 w-[320px] sm:w-[420px] lg:w-[480px] pointer-events-none z-10 object-contain"
+        />
 
-        {/* ── Decorative: Wrap / Roll (bottom left) ── */}
-        <div className="absolute -bottom-10 -left-6 w-[200px] sm:w-[260px] pointer-events-none z-10 -rotate-6" aria-hidden="true">
-          <FooterFoodIllustration className="w-full h-auto opacity-95" />
-        </div>
+        {/* ── Decorative: Painterly Hand-Drawn Burrito Wrap (bottom left) ── */}
+        <img
+          src="/branding/hero-wrap-perfect.png"
+          alt=""
+          aria-hidden="true"
+          className="absolute bottom-0 left-0 w-[170px] sm:w-[220px] lg:w-[260px] pointer-events-none z-10 object-contain"
+        />
 
-        {/* ── Decorative: Tropical Leaf & Chili (bottom right) ── */}
-        <div className="absolute bottom-4 right-[5%] pointer-events-none z-10 flex items-end gap-1" aria-hidden="true">
-          <TropicalLeaf className="w-[100px] sm:w-[130px] h-auto opacity-95" />
-          <ChiliPepper className="w-[34px] sm:w-[44px] h-auto -mb-4 -ml-3 opacity-90" />
-          <OilDrop className="absolute w-5 h-7 bottom-24 right-4 opacity-75" />
-          <OilDrop className="absolute w-4 h-6 bottom-32 right-12 opacity-65" />
-        </div>
-
-        {/* ── Decorative: Paint Drops (left edge) ── */}
-        <div className="absolute left-6 top-[40%] pointer-events-none z-10 space-y-2" aria-hidden="true">
-          <OilDrop className="w-5 h-7 opacity-85" />
-          <RedDrop className="w-4 h-5 opacity-80 translate-x-3" />
-          <BlueDrop className="w-4 h-5 opacity-75 -translate-x-1" />
-        </div>
+        {/* ── Decorative: Painterly Hand-Drawn Tropical Leaf & Chili (bottom right) ── */}
+        <img
+          src="/branding/hero-leaf-chili-perfect.png"
+          alt=""
+          aria-hidden="true"
+          className="absolute bottom-0 right-0 w-[240px] sm:w-[320px] lg:w-[380px] pointer-events-none z-10 object-contain"
+        />
 
         {/* ── Hero Content (Sharp Native Typography & Interactive Elements) ── */}
-        <div className="relative z-20 max-w-7xl mx-auto px-8 sm:px-12 lg:px-16 pt-12 sm:pt-16 pb-20">
-          {/* Badge */}
+        <div className="relative z-20 max-w-7xl mx-auto px-8 sm:px-12 lg:px-16 pt-9 sm:pt-11 pb-16">
+          {/* Badge: Golden Amber pill with thin black border, star left, hand-drawn sparkle right */}
           <div
-            className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full mb-6 border border-[#120B24] shadow-sm"
-            style={{ background: '#F6A800' }}
+            className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full mb-4 border border-[#0F0C20] shadow-sm select-none"
+            style={{ background: '#F5A31E' }}
           >
-            <span className="w-2 h-2 rounded-full bg-[#120B24]" />
-            <span className="text-[11px] font-black uppercase tracking-[0.16em] text-[#120B24]">
+            {/* Outlined 5-point star on left */}
+            <svg
+              className="w-3.5 h-3.5 text-[#0F0C20]"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2.4"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+            </svg>
+            <span className="text-[11px] sm:text-[12px] font-black uppercase tracking-[0.08em] text-[#0F0C20]">
               Campus Favorite • Hot &amp; Fresh
             </span>
-            <Sparkles className="w-3.5 h-3.5 text-[#120B24]" />
+            {/* Hand-drawn 4-point sparkle with top-right accent stroke */}
+            <svg
+              className="w-3.5 h-3.5 text-[#0F0C20]"
+              viewBox="0 0 20 20"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                d="M10 2 C10 6 6 10 2 10 C6 10 10 14 10 18 C10 14 14 10 18 10 C14 10 10 6 10 2 Z"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinejoin="round"
+              />
+              <path
+                d="M15.5 3.5 L17.5 1.5"
+                stroke="currentColor"
+                strokeWidth="1.8"
+                strokeLinecap="round"
+              />
+            </svg>
           </div>
 
-          {/* Headline */}
+          {/* Headline: Ultra-heavy bold display typography with tight line-height and letter-spacing */}
           <h1
-            className="text-[44px] sm:text-[60px] lg:text-[76px] leading-[1.05] font-black text-[#120B24] tracking-tight mb-2"
-            style={{ fontFamily: "'Archivo Black', 'Inter', sans-serif", maxWidth: 700 }}
+            className="text-[44px] sm:text-[62px] lg:text-[76px] leading-[0.98] font-black text-[#0F0C20] tracking-[-0.035em] mb-2"
+            style={{ fontFamily: "'Inter', system-ui, -apple-system, sans-serif", maxWidth: 680 }}
           >
             Skip the Queue,
             <br />
             Order{' '}
-            <span className="relative inline-block text-[#FF7A00]">
+            <span className="relative inline-block text-[#FE8700]">
               Fresh
-              {/* Brush wavy underline */}
+              {/* Double wavy brush underline matching target */}
               <svg
                 className="absolute left-0 w-full"
-                style={{ bottom: '-8px', height: 14 }}
+                style={{ bottom: '-6px', height: 12 }}
                 viewBox="0 0 120 12"
                 preserveAspectRatio="none"
                 fill="none"
               >
                 <path
-                  d="M2 9 C 22 2, 42 12, 62 5 C 82 -1, 102 10, 118 5"
-                  stroke="#FF7A00"
-                  strokeWidth="4.5"
+                  d="M2 5 C 32 1, 75 7, 118 4"
+                  stroke="#FE8700"
+                  strokeWidth="3.5"
                   strokeLinecap="round"
-                  fill="none"
+                />
+                <path
+                  d="M10 10 C 42 6, 80 11, 110 8"
+                  stroke="#FE8700"
+                  strokeWidth="2.5"
+                  strokeLinecap="round"
                 />
               </svg>
             </span>{' '}
@@ -395,8 +468,15 @@ export function RoleSelectionLanding() {
             Only at
           </h1>
 
-          {/* Large Enjipuli Wordmark with Paint Accents */}
-          <div className="relative inline-block mb-6 mt-1">
+          {/* Large Enjipuli Wordmark with Exact Droplet Accents */}
+          <div className="relative inline-flex items-center my-1 select-none">
+            {/* Left droplets: yellow & red */}
+            <div className="flex flex-col items-center gap-1 -mr-2 sm:-mr-3 z-10">
+              <GlossyDrop color="#FFB800" rotate={-25} className="w-5 sm:w-6 h-7 sm:h-8" />
+              <GlossyDrop color="#F21B55" rotate={20} className="w-4 sm:w-5 h-6 sm:h-7" />
+            </div>
+
+            {/* Sticker wordmark with thick black outline & lime fill */}
             <img
               src="/branding/enjipuli-wordmark.png"
               alt="ഇഞ്ചിപ്പുളി"
@@ -405,40 +485,33 @@ export function RoleSelectionLanding() {
               className="h-[76px] sm:h-[96px] lg:h-[115px] w-auto object-contain drop-shadow-sm"
               decoding="async"
             />
-            {/* Colorful accent splashes around wordmark */}
-            <span className="absolute -left-6 top-1/2 -translate-y-1/2 flex flex-col gap-1.5">
-              <OilDrop className="w-4 h-6 -rotate-12" />
-              <RedDrop className="w-3.5 h-5 rotate-6" />
-            </span>
-            <span className="absolute -right-4 bottom-1 flex items-center gap-1">
-              <BlueDrop className="w-4 h-5 rotate-12" />
-            </span>
-            <span className="absolute right-10 -top-3">
-              <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="8" fill="#F6A800" opacity="0.9"/></svg>
-            </span>
-            <span className="absolute right-2 top-1/3">
-              <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><circle cx="6" cy="6" r="6" fill="#E53030" opacity="0.85"/></svg>
-            </span>
+
+            {/* Right droplets: yellow, red & cyan-blue */}
+            <div className="flex flex-col items-center gap-0.5 -ml-2 sm:-ml-3 z-10">
+              <GlossyDrop color="#FFB800" rotate={25} className="w-4 sm:w-5 h-6 sm:h-7" />
+              <GlossyDrop color="#F21B55" rotate={-15} className="w-4 sm:w-5 h-6 sm:h-7" />
+              <GlossyDrop color="#00A3FF" rotate={40} className="w-3.5 sm:w-4 h-5 sm:h-6" />
+            </div>
           </div>
 
-          {/* Subtext description */}
-          <p className="text-[14px] sm:text-[16px] text-[#3A3050] font-medium leading-relaxed mb-8 max-w-md">
+          {/* Subtext description with refined proportions */}
+          <p className="text-[14px] sm:text-[15.5px] text-[#2A2438] font-medium leading-snug mb-6 max-w-[440px]">
             Browse today&apos;s campus menu, order ahead, and pick up hot at the food truck counter
             with your token — no more waiting in line between classes.
           </p>
 
           {/* Real, Clean, Responsive CTA Buttons */}
-          <div className="flex flex-wrap items-center gap-4">
+          <div className="flex flex-wrap items-center gap-3.5">
             <Link
               href="/login?purpose=student"
-              className="inline-flex items-center justify-center gap-2.5 px-8 sm:px-10 py-3.5 sm:py-4 rounded-full font-black text-[14px] sm:text-[15px] text-[#120B24] bg-[#AADB1E] hover:bg-[#b8ea27] hover:shadow-lg active:scale-95 transition-all shadow-md"
+              className="inline-flex items-center justify-center gap-2 px-7 sm:px-9 py-3 sm:py-3.5 rounded-full font-black text-sm sm:text-[15px] text-[#0F0C20] bg-[#D2FF1E] hover:bg-[#bbf014] hover:shadow-lg active:scale-95 transition-all shadow-sm"
             >
               <span>Order Now</span>
               <ArrowRight className="w-4 h-4 stroke-[2.5]" />
             </Link>
             <Link
               href="/vendor/login?purpose=vendor"
-              className="inline-flex items-center justify-center px-8 sm:px-10 py-3.5 sm:py-4 rounded-full font-bold text-[14px] sm:text-[15px] text-[#120B24] bg-white border-2 border-[#120B24] hover:bg-[#F2EEE4] hover:shadow-md active:scale-95 transition-all shadow-sm"
+              className="inline-flex items-center justify-center px-7 sm:px-9 py-3 sm:py-3.5 rounded-full font-bold text-sm sm:text-[15px] text-[#0F0C20] bg-[#FBF3E2] border-2 border-[#0F0C20] hover:bg-white active:scale-95 transition-all shadow-sm"
             >
               <span>Vendor Portal</span>
             </Link>
@@ -452,7 +525,7 @@ export function RoleSelectionLanding() {
       <section
         id="story"
         className="relative w-full overflow-hidden scroll-mt-14"
-        style={{ background: '#EDE8DC' }}
+        style={{ background: '#FBF3E2' }}
       >
         <div className="relative z-10 w-full">
           <img
@@ -466,7 +539,7 @@ export function RoleSelectionLanding() {
           {/* Trust row at bottom of truck block matching final design */}
           <div
             className="absolute bottom-0 left-0 right-0 py-2.5 sm:py-3.5 px-6 sm:px-12 lg:px-16 flex items-center justify-between text-[#120B24] text-[9px] sm:text-[11px] font-black uppercase tracking-[0.18em] border-t border-[#C8C0A8]/40"
-            style={{ background: '#EDE8DC' }}
+            style={{ background: '#FBF3E2' }}
           >
             <span>TAMARIND HOUSE CAFETERIA</span>
             <span>BRINGING CAMPUS FLAVOURS TO YOU</span>
@@ -577,7 +650,7 @@ export function RoleSelectionLanding() {
           ═══════════════════════════════════════════════════════════ */}
       <section
         className="relative w-full overflow-hidden select-none"
-        style={{ background: '#EDE8DC' }}
+        style={{ background: '#FBF3E2' }}
       >
         <div className="relative z-10 w-full">
           <img
@@ -640,7 +713,13 @@ export function RoleSelectionLanding() {
             {/* Left column: wordmark, description, subscribe, socials */}
             <div className="lg:col-span-4 space-y-5 pl-[160px] sm:pl-[200px] lg:pl-0">
               {/* Wordmark + splash */}
-              <div className="relative inline-block">
+              <div className="relative inline-flex items-center">
+                {/* Left droplets */}
+                <div className="flex flex-col items-center gap-0.5 -mr-1.5 z-10">
+                  <GlossyDrop color="#FFB800" rotate={-25} className="w-3.5 h-4.5" />
+                  <GlossyDrop color="#F21B55" rotate={20} className="w-3 h-4" />
+                </div>
+
                 <img
                   src="/branding/enjipuli-wordmark.png"
                   alt="ഇഞ്ചിപ്പുളി"
@@ -648,18 +727,15 @@ export function RoleSelectionLanding() {
                   height={70}
                   className="h-12 sm:h-14 w-auto object-contain"
                   decoding="async"
-                  style={{ filter: 'drop-shadow(0 0 12px rgba(170,219,30,0.35))' }}
+                  style={{ filter: 'drop-shadow(0 0 12px rgba(210,255,30,0.35))' }}
                 />
-                {/* Colorful paint splashes around footer wordmark */}
-                <span className="absolute -left-5 top-0"><RedDrop className="w-4 h-6 -rotate-20 opacity-90" /></span>
-                <span className="absolute -left-3 bottom-0"><OilDrop className="w-3.5 h-5 rotate-10 opacity-85" /></span>
-                <span className="absolute -right-2 -top-2"><BlueDrop className="w-3 h-4 opacity-80" /></span>
-                <span className="absolute right-2 bottom-0">
-                  <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><circle cx="5" cy="5" r="5" fill="#E53030" opacity="0.85"/></svg>
-                </span>
-                <span className="absolute right-8 top-1">
-                  <svg width="8" height="8" viewBox="0 0 8 8" fill="none"><circle cx="4" cy="4" r="4" fill="#F6A800"/></svg>
-                </span>
+
+                {/* Right droplets */}
+                <div className="flex flex-col items-center gap-0.5 -ml-1.5 z-10">
+                  <GlossyDrop color="#FFB800" rotate={25} className="w-3 h-4" />
+                  <GlossyDrop color="#F21B55" rotate={-15} className="w-3 h-4" />
+                  <GlossyDrop color="#00A3FF" rotate={40} className="w-2.5 h-3.5" />
+                </div>
               </div>
 
               {/* Description */}
