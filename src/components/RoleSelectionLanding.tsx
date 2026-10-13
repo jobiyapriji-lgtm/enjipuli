@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { ArrowRight, MapPin, Send, Check, AlertCircle, Sparkles } from 'lucide-react';
+import { ArrowRight, MapPin, Send, Check, AlertCircle, Sparkles, X } from 'lucide-react';
 
 interface LandingStats {
   ordersServed: number;
@@ -231,6 +231,29 @@ export function RoleSelectionLanding() {
   const [subscribing, setSubscribing] = useState(false);
   const [subscribeSuccess, setSubscribeSuccess] = useState<string | null>(null);
   const [subscribeError, setSubscribeError] = useState<string | null>(null);
+
+  // Campus map modal overlay state
+  const [isMapModalOpen, setIsMapModalOpen] = useState(false);
+
+  // Close modal on Escape key and lock body scroll while modal is active
+  useEffect(() => {
+    if (!isMapModalOpen) return;
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        setIsMapModalOpen(false);
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    const originalOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+      document.body.style.overflow = originalOverflow;
+    };
+  }, [isMapModalOpen]);
 
   useEffect(() => {
     fetch('/api/landing/stats')
@@ -662,17 +685,18 @@ export function RoleSelectionLanding() {
             decoding="async"
           />
           {/* Interactive FIND US button hit area right over the banner's FIND US button */}
-          <a
-            href="#story"
-            className="absolute z-20 rounded-md transition-opacity hover:opacity-80 cursor-pointer"
+          <button
+            type="button"
+            onClick={() => setIsMapModalOpen(true)}
+            className="absolute z-20 rounded-md transition-all hover:opacity-85 active:scale-95 cursor-pointer focus:outline-none focus:ring-2 focus:ring-[#AADB1E]"
             style={{
               right: '3.6%',
               bottom: '15.5%',
               width: '10.5%',
               height: '8%',
             }}
-            title="Find Us"
-            aria-label="Find Us"
+            title="Find Us on Campus Map"
+            aria-label="Find Us on Campus Map"
           />
         </div>
       </section>
@@ -908,6 +932,67 @@ export function RoleSelectionLanding() {
           </div>
         </div>
       </footer>
+
+      {/* ═══════════════════════════════════════════════════════════
+          CAMPUS MAP MODAL OVERLAY (Opened via FIND US button)
+          ═══════════════════════════════════════════════════════════ */}
+      {isMapModalOpen && (
+        <div
+          id="campus-map-backdrop"
+          className="fixed inset-0 z-50 bg-[#120B24]/85 backdrop-blur-sm flex items-center justify-center p-3 sm:p-6 animate-fade-in"
+          onClick={(e) => {
+            if ((e.target as HTMLElement).id === 'campus-map-backdrop') {
+              setIsMapModalOpen(false);
+            }
+          }}
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="campus-map-title"
+        >
+          <div
+            className="relative bg-white rounded-2xl sm:rounded-3xl shadow-2xl max-w-2xl w-full max-h-[92vh] flex flex-col border border-stone-200 overflow-hidden animate-scale-up"
+          >
+            {/* Modal Header */}
+            <div className="flex items-center justify-between px-4 sm:px-6 py-3.5 border-b border-stone-200 bg-[#FBF3E2] shrink-0">
+              <div className="flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-xl bg-[#E53030]/10 flex items-center justify-center text-[#E53030]">
+                  <MapPin className="w-4 h-4" />
+                </div>
+                <div>
+                  <h3 id="campus-map-title" className="text-sm sm:text-base font-extrabold text-[#120B24] leading-tight">
+                    Providence Campus Map
+                  </h3>
+                  <p className="text-[11px] text-[#120B24]/70 font-medium">
+                    Injipulli ഇഞ്ചിപ്പുളി Food Truck Location
+                  </p>
+                </div>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => setIsMapModalOpen(false)}
+                className="p-1.5 sm:p-2 rounded-xl text-stone-500 hover:text-stone-900 hover:bg-stone-200/80 transition focus:outline-none focus:ring-2 focus:ring-[#120B24]/20"
+                aria-label="Close campus map"
+                title="Close (Esc)"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Modal Body: Scrollable, readable campus map image */}
+            <div className="flex-1 overflow-y-auto p-2 sm:p-4 bg-white flex justify-center items-start">
+              <img
+                src="/campus-map.png"
+                alt="Providence campus map showing Injipulli food truck location"
+                width={600}
+                height={950}
+                className="w-full h-auto max-w-[620px] rounded-lg shadow-sm border border-stone-100 object-contain select-none"
+                loading="eager"
+              />
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
